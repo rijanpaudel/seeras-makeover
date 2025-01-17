@@ -59,7 +59,7 @@ const Register = () => {
         <div className="mt-4 text-center">
           <p className='text-xl'>
             Already have an account?{' '}
-            <Link to="/" className="text-blue-500">
+            <Link to="/login" className="text-blue-500">
               Login
             </Link>
           </p>

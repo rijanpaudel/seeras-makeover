@@ -25,7 +25,7 @@ const Navbar = () => {
 
   return (
     <nav className="bg-white shadow-sm w-full fixed top-0 left-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20">
           <div className="flex-shrink-0">
           <img
@@ -38,7 +38,7 @@ const Navbar = () => {
           {/* Desktop Menu */}
           <div className="hidden lg:flex items-center justify-center flex-1 px-4">
             <ul className="flex space-x-4 md:space-x-6 lg:space-x-8 text-gray-800 font-medium text-base sm:text-lg md:text-xl">
-              <li><a href="/" className="hover:text-pink-600 transition-colors">Home</a></li>
+              <li><Link to="/" className="hover:text-pink-600 transition-colors">Home</Link></li>
               <li className="relative group">
                 <button className="hover:text-pink-600 transition-colors flex items-center">
                   Services
@@ -63,12 +63,12 @@ const Navbar = () => {
 
           {/* Desktop Buttons */}
           <div className="hidden lg:flex items-center space-x-4">
-            <a href="/login" className="text-base sm:text-lg text-pink-600 hover:text-pink-800 transition-colors">
+            <Link to="/login" className="text-base sm:text-lg text-pink-600 hover:text-pink-800 transition-colors">
               Login
-            </a>
-            <a href="/register" className="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-full text-base sm:text-lg transition-colors">
+            </Link>
+            <Link to="/register" className="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-full text-base sm:text-lg transition-colors">
               Sign up
-            </a>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -106,12 +106,12 @@ const Navbar = () => {
             <li><a href="/enroll" className="block px-3 py-2 text-lg hover:text-pink-600 transition-colors">Enroll Now</a></li>
           </ul>
           <div className="pt-4 space-y-3">
-            <a href="/login" className="block w-full text-center px-4 py-2 text-lg text-pink-600 hover:text-pink-800 transition-colors">
+            <Link to="/login" className="block w-full text-center px-4 py-2 text-lg text-pink-600 hover:text-pink-800 transition-colors">
               Login
-            </a>
-            <a href="/register" className="block w-full text-center px-4 py-2 text-lg bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-full transition-colors">
+            </Link>
+            <Link to="/register" className="block w-full text-center px-4 py-2 text-lg bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-full transition-colors">
               Sign up
-            </a>
+            </Link>
           </div>
         </div>
       </div>
