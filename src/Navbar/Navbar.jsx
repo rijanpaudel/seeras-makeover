@@ -1,119 +1,100 @@
-import React, { useState,useEffect } from 'react';
-import { Link } from 'react-router-dom'; // Import Link from react-router-dom
-import logo from '../assets/logo.png'; 
+import React, { useState } from 'react';
+import logo from "../assets/logo.png"
 
 const Navbar = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-      if (windowWidth >= 768) {
-        setIsMenuOpen(false);
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [windowWidth]);
-
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="bg-white shadow-sm w-full fixed top-0 left-0 z-50">
-      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 sm:h-20">
-          <div className="flex-shrink-0">
-          <img
-            src={logo}
-            alt="Seeras Makover Logo"
-            className="w-36"
-          />
+    <nav className="w-full bg-white shadow-sm fixed z-50">
+      <div className="mx-auto px-6">
+        <div className="flex justify-between items-center h-32">
+          {/* Logo Area */}
+          <div className="flex-shrink-0 w-32 h-12 flex items-center justify-center">
+            <img src={logo} alt="" />
           </div>
 
-          {/* Desktop Menu */}
-          <div className="hidden lg:flex items-center justify-center flex-1 px-4">
-            <ul className="flex space-x-4 md:space-x-6 lg:space-x-8 text-gray-800 font-medium text-base sm:text-lg md:text-xl">
-              <li><Link to="/" className="hover:text-pink-600 transition-colors">Home</Link></li>
-              <li className="relative group">
-                <button className="hover:text-pink-600 transition-colors flex items-center">
-                  Services
-                  <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-              </li>
-              <li><a href="/appointment" className="hover:text-pink-600 transition-colors">Book Appointment</a></li>
-              <li><a href="/about" className="hover:text-pink-600 transition-colors">About us</a></li>
-              <li className="relative group">
-                <button className="hover:text-pink-600 transition-colors flex items-center">
-                  Products
-                  <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-              </li>
-              <li><a href="/enroll" className="hover:text-pink-600 transition-colors">Enroll Now</a></li>
-            </ul>
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-16">
+            <a href="/" className="text-pink-500 hover:text-pink-700 text-2xl font-medium">
+              Home
+            </a>
+            <a href="/services" className="text-gray-800 hover:text-pink-500 text-2xl font-medium">
+              Services
+            </a>
+            <a href="/book" className="text-gray-800 hover:text-pink-500 text-2xl font-medium">
+              Book Appointment
+            </a>
+            <a href="/about" className="text-gray-800 hover:text-pink-500 text-2xl font-medium">
+              About us
+            </a>
+            <a href="/products" className="text-gray-800 hover:text-pink-500 text-2xl font-medium">
+              Products
+            </a>
+            <a href="/enroll" className="text-gray-800 hover:text-pink-500 text-2xl font-medium">
+              Enroll Now
+            </a>
           </div>
 
-          {/* Desktop Buttons */}
-          <div className="hidden lg:flex items-center space-x-4">
-            <Link to="/login" className="text-base sm:text-lg text-pink-600 hover:text-pink-800 transition-colors">
+          {/* Auth Buttons */}
+          <div className="hidden md:flex items-center space-x-6">
+            <a href="/login" className="text-gray-800 hover:text-pink-500 text-xl font-medium">
               Login
-            </Link>
-            <Link to="/register" className="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-full text-base sm:text-lg transition-colors">
-              Sign up
-            </Link>
+            </a>
+            <a href="/signup">
+              <button className="bg-pink-500 text-white px-8 py-3 rounded-full hover:bg-pink-600 transition-colors text-xl">
+                Sign up
+              </button>
+            </a>
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="lg:hidden">
+          {/* Mobile menu button */}
+          <div className="md:hidden">
             <button
-              onClick={toggleMenu}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-800 hover:text-pink-600 focus:outline-none transition-colors"
+              onClick={() => setIsOpen(!isOpen)}
+              className="text-gray-800 hover:text-pink-500 focus:outline-none p-3"
             >
-              <svg
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                {isMenuOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                )}
-              </svg>
+              <div className="w-8 h-1 bg-current mb-2"></div>
+              <div className="w-8 h-1 bg-current mb-2"></div>
+              <div className="w-8 h-1 bg-current"></div>
             </button>
           </div>
         </div>
-      </div>
 
-      {/* Mobile Menu */}
-      <div className={`lg:hidden transition-all duration-300 ease-in-out ${isMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
-        <div className="px-4 pt-2 pb-6 space-y-2 bg-white shadow-lg">
-          <ul className="space-y-3 text-gray-800">
-            <li><a href="/" className="block px-3 py-2 text-lg hover:text-pink-600 transition-colors">Home</a></li>
-            <li><button className="block w-full text-left px-3 py-2 text-lg hover:text-pink-600 transition-colors">Services</button></li>
-            <li><a href="/appointment" className="block px-3 py-2 text-lg hover:text-pink-600 transition-colors">Book Appointment</a></li>
-            <li><a href="/about" className="block px-3 py-2 text-lg hover:text-pink-600 transition-colors">About us</a></li>
-            <li><button className="block w-full text-left px-3 py-2 text-lg hover:text-pink-600 transition-colors">Products</button></li>
-            <li><a href="/enroll" className="block px-3 py-2 text-lg hover:text-pink-600 transition-colors">Enroll Now</a></li>
-          </ul>
-          <div className="pt-4 space-y-3">
-            <Link to="/login" className="block w-full text-center px-4 py-2 text-lg text-pink-600 hover:text-pink-800 transition-colors">
-              Login
-            </Link>
-            <Link to="/register" className="block w-full text-center px-4 py-2 text-lg bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-full transition-colors">
-              Sign up
-            </Link>
+        {/* Mobile Navigation */}
+        {isOpen && (
+          <div className="md:hidden py-6">
+            <div className="flex flex-col space-y-6">
+              <a href="/" className="text-pink-500 hover:text-pink-700 text-xl font-medium">
+                Home
+              </a>
+              <a href="/services" className="text-gray-800 hover:text-pink-500 text-xl font-medium">
+                Services
+              </a>
+              <a href="/book" className="text-gray-800 hover:text-pink-500 text-xl font-medium">
+                Book Appointment
+              </a>
+              <a href="/about" className="text-gray-800 hover:text-pink-500 text-xl font-medium">
+                About us
+              </a>
+              <a href="/products" className="text-gray-800 hover:text-pink-500 text-xl font-medium">
+                Products
+              </a>
+              <a href="/enroll" className="text-gray-800 hover:text-pink-500 text-xl font-medium">
+                Enroll Now
+              </a>
+              <div className="pt-6 border-t border-gray-200">
+                <a href="/login" className="block text-gray-800 hover:text-pink-500 text-xl font-medium mb-6">
+                  Login
+                </a>
+                <a href="/signup">
+                  <button className="w-full bg-pink-500 text-white px-8 py-3 rounded-full hover:bg-pink-600 transition-colors text-xl">
+                    Sign up
+                  </button>
+                </a>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </nav>
   );
