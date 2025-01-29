@@ -5,6 +5,7 @@ import Login from "./Login/login"
 import Home from "./Home/Home"
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import BookAppointment from "./BookAppointment/BookAppointment"
+import ProductsPage from "./Product/ProductsPage"
 export default function App() {
   return (
     <Router>
@@ -14,6 +15,7 @@ export default function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/bookappointment" element={<BookAppointment />} />
+        <Route path="/products" element={<ProductsPage />} />
       </Routes>
     </Router>
   )
