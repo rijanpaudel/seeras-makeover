@@ -4,6 +4,7 @@ import Register from "./Register/Register"
 import Login from "./Login/login"
 import Home from "./Home/Home"
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import BookAppointment from "./BookAppointment/BookAppointment"
 export default function App() {
   return (
     <Router>
@@ -12,6 +13,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/bookappointment" element={<BookAppointment />} />
       </Routes>
     </Router>
   )

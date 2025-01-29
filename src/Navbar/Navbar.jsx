@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import logo from "../assets/logo.png"
+import { Link } from 'react-router-dom';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="w-full bg-white shadow-sm fixed z-50">
+    <nav className="w-full bg-white fixed z-50">
       <div className="mx-auto px-6">
         <div className="flex justify-between items-center h-32">
           {/* Logo Area */}
@@ -15,15 +16,15 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-16">
-            <a href="/" className="text-pink-500 hover:text-pink-700 text-2xl font-medium">
+            <Link to="/" className="text-pink-500 hover:text-pink-700 text-2xl font-medium">
               Home
-            </a>
+            </Link>
             <a href="/services" className="text-gray-800 hover:text-pink-500 text-2xl font-medium">
               Services
             </a>
-            <a href="/book" className="text-gray-800 hover:text-pink-500 text-2xl font-medium">
+            <Link to="/bookappointment" className="text-gray-800 hover:text-pink-500 text-2xl font-medium">
               Book Appointment
-            </a>
+            </Link>
             <a href="/about" className="text-gray-800 hover:text-pink-500 text-2xl font-medium">
               About us
             </a>
@@ -37,14 +38,14 @@ const Navbar = () => {
 
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center space-x-6">
-            <a href="/login" className="text-gray-800 hover:text-pink-500 text-xl font-medium">
+            <Link to="/login" className="text-gray-800 hover:text-pink-500 text-xl font-medium">
               Login
-            </a>
-            <a href="/signup">
+            </Link>
+            <Link to="/register">
               <button className="bg-pink-500 text-white px-8 py-3 rounded-full hover:bg-pink-600 transition-colors text-xl">
                 Sign up
               </button>
-            </a>
+            </Link>
           </div>
 
           {/* Mobile menu button */}
