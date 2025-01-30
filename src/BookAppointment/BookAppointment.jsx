@@ -5,7 +5,6 @@ import Navbar from '../Navbar/navbar'
 const BookAppointment = () => {
   return (
     <div>
-      <Navbar />
       <Appointment />
     </div>
   )

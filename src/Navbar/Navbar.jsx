@@ -25,15 +25,15 @@ const Navbar = () => {
             <Link to="/bookappointment" className="text-gray-800 hover:text-pink-500 text-2xl font-medium">
               Book Appointment
             </Link>
-            <a href="/about" className="text-gray-800 hover:text-pink-500 text-2xl font-medium">
+            <Link to="/aboutus" className="text-gray-800 hover:text-pink-500 text-2xl font-medium">
               About us
-            </a>
+            </Link>
             <Link to="/products" className="text-gray-800 hover:text-pink-500 text-2xl font-medium">
               Products
             </Link>
-            <a href="/enroll" className="text-gray-800 hover:text-pink-500 text-2xl font-medium">
+            <Link to="/enroll" className="text-gray-800 hover:text-pink-500 text-2xl font-medium">
               Enroll Now
-            </a>
+            </Link>
           </div>
 
           {/* Auth Buttons */}
