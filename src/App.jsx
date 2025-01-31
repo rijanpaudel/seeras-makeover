@@ -10,6 +10,8 @@ import Services from "./Services/Services"
 import AboutUs from "./Aboutus/Aboutus"
 import Enroll from "./Enroll/Enroll"
 import AdminDashboard from "./Admin/AdminDashboard"
+import Footer from "./Footer/Footer"
+import Copyright from "./Copyright/Copyright"
 
 export default function App() {
   return (
@@ -26,6 +28,8 @@ export default function App() {
         <Route path="/enroll" element={<Enroll />} />
         <Route path="/admin/*" element={<AdminDashboard />} />
       </Routes>
+      <Footer />
+      <Copyright />
     </Router>
   )
 }

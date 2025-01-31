@@ -14,8 +14,6 @@ import makeupClass from "../assets/makeupClass.png"
 import nailClass from "../assets/nailClass.png"
 import hairCutTraining from "../assets/haircuttraining.png"
 import certificate from "../assets/certificate.png"
-import Footer from '../Footer/footer'
-import Copyright from '../Copyright/Copyright'
 
 const Home = () => {
   return (
@@ -52,8 +50,6 @@ const Home = () => {
           { img: certificate, label: "Certificate on Completion" }
         ]}
       />
-      <Footer />
-      <Copyright />
     </div>
   )
 }
