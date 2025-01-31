@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import AdminDashboard from '../Admin/AdminDashboard';
 
 const Login = () => {
   return (
@@ -31,7 +32,7 @@ const Login = () => {
         <div className="mt-4 text-center">
           <p className='text-xl'>
             Don't have an account?{' '}
-            <Link to="/register" className="text-blue-500">
+            <Link to="/admin" className="text-blue-500">
               Register
             </Link>
           </p>

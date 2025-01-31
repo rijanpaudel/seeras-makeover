@@ -72,7 +72,7 @@ const Services = () => {
       <Navbar />
       <div className="min-h-screen bg-pink-50">
         {/* Header */}
-        <div className="bg-gradient-to-r from-pink-500 to-pink-600 text-white py-12 px-4">
+        <div className="bg-gradient-to-r from-pink-500 to-pink-600 text-white py-24 px-4">
           <div className="max-w-6xl mx-auto">
             <h1 className="text-4xl font-bold mb-4">Our Services</h1>
             <p className="text-lg">Discover our range of professional beauty and wellness services</p>

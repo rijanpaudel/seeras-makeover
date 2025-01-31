@@ -9,6 +9,8 @@ import ProductsPage from "./Product/ProductsPage"
 import Services from "./Services/Services"
 import AboutUs from "./Aboutus/Aboutus"
 import Enroll from "./Enroll/Enroll"
+import AdminDashboard from "./Admin/AdminDashboard"
+
 export default function App() {
   return (
     <Router>
@@ -22,6 +24,7 @@ export default function App() {
         <Route path="/services" element={<Services />} />
         <Route path="/aboutus" element={<AboutUs />} />
         <Route path="/enroll" element={<Enroll />} />
+        <Route path="/admin/*" element={<AdminDashboard />} />
       </Routes>
     </Router>
   )
