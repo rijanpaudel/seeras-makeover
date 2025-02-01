@@ -1,5 +1,5 @@
+import React from 'react';
 import { useState } from 'react';
-import Navbar from '../Navbar/navbar';
 import ServiceHeader from './ServiceHeader';
 import ServiceItem from './ServiceItem';
 
