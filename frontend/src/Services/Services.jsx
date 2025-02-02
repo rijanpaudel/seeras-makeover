@@ -10,85 +10,80 @@ const Services = () => {
     {
       id: 1,
       name: "Hair Care Services",
-      image: "/api/placeholder/400/200",
-      description: "Complete hair care solutions for all types of hair",
+      description: "Expert hair care solutions tailored to enhance your unique style and hair type",
       subServices: [
         {
           id: 'hair-1',
-          name: "Hair Cutting",
-          items: ["Layer Cut", "U-Cut", "Feather Cut", "Bob Cut", "Pixie Cut"]
+          name: "Signature Cuts",
+          items: ["Precision Layer Cut", "Modern U-Cut", "Feather Styling", "Classic Bob", "Pixie Revolution"]
         },
         {
           id: 'hair-2',
-          name: "Hair Styling",
-          items: ["Hair Straightening", "Curling", "Hair Spa", "Oil Treatment"]
+          name: "Luxury Styling",
+          items: ["Silk Press Straightening", "Beach Wave Creation", "Rejuvenating Hair Spa", "Deep Oil Therapy"]
         },
         {
           id: 'hair-3',
-          name: "Hair Color",
-          items: ["Global Color", "Highlights", "Lowlights", "Balayage"]
+          name: "Color Artistry",
+          items: ["Premium Global Color", "Designer Highlights", "Natural Lowlights", "Custom Balayage"]
         }
       ]
     },
     {
       id: 2,
       name: "Skin Care Services",
-      image: "/api/placeholder/400/200",
-      description: "Professional skin treatments for radiant skin",
+      description: "Advanced skincare treatments using premium products for lasting radiance",
       subServices: [
         {
           id: 'skin-1',
-          name: "Facials",
-          items: ["Classic Facial", "Gold Facial", "Diamond Facial", "Anti-aging Facial"]
+          name: "Luxury Facials",
+          items: ["24K Gold Facial", "Diamond Radiance", "Age-Defying Treatment", "Crystal Clear Facial"]
         },
         {
           id: 'skin-2',
-          name: "Skin Treatments",
-          items: ["Skin Brightening", "Acne Treatment", "Pigmentation Treatment"]
+          name: "Skin Solutions",
+          items: ["Luminous Brightening", "Advanced Acne Care", "Pigment Perfect Treatment"]
         }
       ]
     },
     {
       id: 3,
       name: "Bridal Services",
-      image: "/api/placeholder/400/200",
-      description: "Complete bridal makeup and styling packages",
+      description: "Comprehensive bridal beauty services to make your special day unforgettable",
       subServices: [
         {
           id: 'bridal-1',
-          name: "Bridal Makeup",
-          items: ["HD Makeup", "Airbrush Makeup", "Traditional Makeup"]
+          name: "Bridal Artistry",
+          items: ["Premium HD Makeup", "Airbrush Excellence", "Traditional Elegance"]
         },
         {
           id: 'bridal-2',
-          name: "Bridal Packages",
-          items: ["Pre-wedding", "Wedding Day", "Reception"]
+          name: "Complete Packages",
+          items: ["Enchanting Pre-wedding", "Perfect Wedding Day", "Glamorous Reception"]
         }
       ]
     }
   ];
 
   return (
-    <>
-      <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white">
-        <ServiceHeader />
-        
-        <div className="max-w-6xl mx-auto py-12 px-4">
-          <div className="space-y-6">
-            {services.map((service) => (
-              <ServiceItem
-                key={service.id}
-                service={service}
-                isExpanded={expandedService === service.id}
-                onClick={() => setExpandedService(
-                  expandedService === service.id ? null : service.id
-                )}
-              />
-            ))}
-          </div>
+    <div className="min-h-screen bg-gray-50">
+      <ServiceHeader />
+      
+      <div className="max-w-6xl mx-auto py-16 px-4">
+        <div className="space-y-6">
+          {services.map((service) => (
+            <ServiceItem
+              key={service.id}
+              service={service}
+              isExpanded={expandedService === service.id}
+              onClick={() => setExpandedService(
+                expandedService === service.id ? null : service.id
+              )}
+            />
+          ))}
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
