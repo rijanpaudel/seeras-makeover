@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import axios from "axios";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -12,6 +13,7 @@ const Register = () => {
   });
 
   const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -21,26 +23,43 @@ const Register = () => {
     });
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (Object.values(formData).some(value => value.trim() === '')) {
       showError("Please fill in all the fields.");
     }
 
-    else if(formData.password < 6) {
+    else if (formData.password < 6) {
       showError('Password must have greater than 6 digits');
       return;
     }
 
-    else if(formData.password != formData.confirmPassword) {
+    else if (formData.password != formData.confirmPassword) {
       showError('Password do not match');
       return;
     }
 
-    
+    try {
+      //Send form data to backend API
+      const response = await axios.post("http://localhost:5000/api/auth/register", formData);
 
-    console.log('Form Data Submitted', formData);
+      setSuccessMessage(response.data.message);
+      setErrorMessage("");
+
+      //Clear form after successfull registration
+      setFormData({
+        fullName: "",
+        email: "",
+        phoneNumber: "",
+        address: "",
+        password: "",
+        confirmPassword: ""
+      });
+
+    } catch (error) {
+      showError(error.response?.data?.message || "Registration failed. Please try again");
+    }
   };
 
   const showError = (message) => {
@@ -134,12 +153,8 @@ const Register = () => {
         </div>
       </div>
 
-      {errorMessage && (
-        <div className="mt-4 p-3 bg-red-500 text-white text-center rounded">
-          {errorMessage}
-        </div>
-      )}
-
+      {errorMessage && <div className="mt-4 p-3 bg-red-500 text-white text-center rounded">{errorMessage}</div>}
+      {successMessage && <div className="mb-4 p-3 bg-green-500 text-white text-center rounded">{successMessage}</div>}
     </>
   );
 };
