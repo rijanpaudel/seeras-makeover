@@ -1,14 +1,24 @@
-// Import the Express framework to build a web server
-const express = require("express");
-// Initialize an Express application instance.
-// This `app` object is used to set up routes, middleware, and handle HTTP requests.
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+
+//Load environment variables
+dotenv.config();
+
+//Initalize express
 const app = express();
 
-app.get("/", (req, res)=> {
-  res.status(200).send("Sucessfull");
+//Enable cors to allow frontend requests
+app.use(cors());
+
+//Middleware to parse JSON data from requests
+app.use(express.json());
+
+//Simple test route
+app.get("/", (req, res) => {
+  res.send("API is running..");
 });
 
-const PORT = 5000;
-app.listen(PORT, ()=> {
-  console.log(`Server running in Port ${PORT}`);
-})
+//Set the server to listen on PORT
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
