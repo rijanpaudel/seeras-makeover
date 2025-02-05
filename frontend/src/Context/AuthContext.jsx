@@ -1,11 +1,37 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
-const AuthContext = () => {
+const AuthContext = createContext();
+
+export const AuthProvider = ({ children }) => {
+  const [user, setUser]= useState(null);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
+  const login = (userData, token) => {
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(userData));
+    setUser(userData);
+  };
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setUser(null);
+    window.location.href = "/";
+  }
   return (
-    <div>
-      
-    </div>
+    <AuthContext.Provider value = {{ user, login, logout }}>
+      {children}
+    </AuthContext.Provider>
   )
+
 }
 
-export default AuthContext
+export const useAuth = () => {
+  return useContext(AuthContext);
+}

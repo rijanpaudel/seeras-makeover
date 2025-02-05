@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
 import logo from "../assets/logo.png"
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../Context/AuthContext';
 
 const Navbar = () => {
+  const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation(); //Get the current route
 
+  //Function to check if a link is active
+  const isActive = (path) => location.pathname === path ? "text-pink-500" : "text-gray-800";
   return (
     <nav className="w-full bg-white fixed z-50">
       <div className="mx-auto px-6">
@@ -16,29 +21,36 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-16">
-            <Link to="/" className="text-pink-500 hover:text-pink-700 text-2xl font-medium">
+            <Link to="/" className={`${isActive("/")} hover:text-pink-700 text-2xl font-medium`}>
               Home
             </Link>
-            <Link to="/services" className="text-gray-800 hover:text-pink-500 text-2xl font-medium">
+            <Link to="/services" className={`${isActive("/services")} hover:text-pink-500 text-2xl font-medium`}>
               Services
             </Link>
-            <Link to="/bookappointment" className="text-gray-800 hover:text-pink-500 text-2xl font-medium">
+            <Link to="/bookappointment" className={`${isActive("/bookappointment")} hover:text-pink-500 text-2xl font-medium`}>
               Book Appointment
             </Link>
-            <Link to="/aboutus" className="text-gray-800 hover:text-pink-500 text-2xl font-medium">
+            <Link to="/aboutus" className={`${isActive("/aboutus")} hover:text-pink-500 text-2xl font-medium`}>
               About us
             </Link>
-            <Link to="/products" className="text-gray-800 hover:text-pink-500 text-2xl font-medium">
+            <Link to="/products" className={`${isActive("/products")} hover:text-pink-500 text-2xl font-medium`}>
               Products
             </Link>
-            <Link to="/enroll" className="text-gray-800 hover:text-pink-500 text-2xl font-medium">
+            <Link to="/enroll" className={`${isActive("/enroll")} hover:text-pink-500 text-2xl font-medium`}>
               Enroll Now
             </Link>
           </div>
 
           {/* Auth Buttons */}
+          {user ? (
+            <>
+              <button onClick = {logout} className={`${isActive("/login")} hover:text-pink-500 text-xl font-medium`}>
+                Logout
+                </button>
+            </>
+          ) : (
           <div className="hidden md:flex items-center space-x-6">
-            <Link to="/login" className="text-gray-800 hover:text-pink-500 text-xl font-medium">
+            <Link to="/login" className={`${isActive("/login")} hover:text-pink-500 text-xl font-medium`}>
               Login
             </Link>
             <Link to="/register">
@@ -47,7 +59,8 @@ const Navbar = () => {
               </button>
             </Link>
           </div>
-
+          )}
+          
           {/* Mobile menu button */}
           <div className="md:hidden">
             <button

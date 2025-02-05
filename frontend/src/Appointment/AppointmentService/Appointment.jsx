@@ -37,7 +37,7 @@ export default function AppointmentService() {
   const [selectedService, setSelectedService] = React.useState("")
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-12">
+    <div className="max-w-4xl mx-auto px-6 py-36">
       {/* Title */}
       <h1 className="text-3xl font-bold text-center mb-12">Book your appointment now</h1>
 
