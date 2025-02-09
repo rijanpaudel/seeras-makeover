@@ -1,9 +1,9 @@
-import React from "react"
+import React, { useEffect, useState } from "react"
 import Navbar from "./Navbar/Navbar"
 import Register from "./Register/Register"
 import Login from "./Login/login"
 import Home from "./Home/Home"
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Link, Navigate } from 'react-router-dom';
 import BookAppointment from "./BookAppointment/BookAppointment"
 import ProductsPage from "./Product/ProductsPage"
 import Services from "./Services/Services"
@@ -13,6 +13,29 @@ import AdminDashboard from "./Admin/AdminDashboard"
 import Footer from "./Footer/Footer"
 import Copyright from "./Copyright/Copyright"
 import { AuthProvider } from "./Context/AuthContext"
+
+const PrivateAdminRoute = ({ children }) => {
+  const [isAdmin, setIsAdmin] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect (() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user && user.role === "admin") {
+        setIsAdmin(true);
+    } 
+    else {
+    setIsAdmin(false);
+    }
+
+    setLoading(false);
+  }, [])
+  
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  return isAdmin ? children : <Navigate to="/" />;
+};
 
 export default function App() {
   return (
@@ -28,7 +51,7 @@ export default function App() {
           <Route path="/services" element={<Services />} />
           <Route path="/aboutus" element={<AboutUs />} />
           <Route path="/enroll" element={<Enroll />} />
-          <Route path="/admin/*" element={<AdminDashboard />} />
+          <Route path="/admin-dashboard" element={<PrivateAdminRoute><AdminDashboard /></PrivateAdminRoute>} />
         </Routes>
         <Footer />
         <Copyright />

@@ -1,15 +1,21 @@
 import React, { useState } from 'react';
 import logo from "../assets/logo.png"
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../Context/AuthContext';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation(); //Get the current route
+  const navigate = useState();
 
   //Function to check if a link is active
   const isActive = (path) => location.pathname === path ? "text-pink-500" : "text-gray-800";
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  }
   return (
     <nav className="w-full bg-white fixed z-50">
       <div className="mx-auto px-6">

@@ -1,6 +1,6 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import { useState } from 'react';
+import { Routes, Route, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import DashboardHome from './DashboardHome';
 import AppointmentManagement from './AppointmentManagement';
@@ -9,6 +9,18 @@ import CourseManagement from "./CourseManagement"
 
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if(!user || user.role !== "admin"){
+      navigate("/")
+    }
+    else{
+      setLoading(false);
+    }
+  }, [navigate])
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (

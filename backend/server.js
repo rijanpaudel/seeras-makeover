@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 import cors from "cors";
 import mongoose from "mongoose";
 import authRoutes from "./routes/authRoutes.js";
+import User from "./models/User.js";
+import bcrypt from "bcryptjs"
 
 // Load environment variables
 dotenv.config();
@@ -22,10 +24,41 @@ app.use(cors());
 // Middleware to parse JSON data from requests
 app.use(express.json());
 
+//Function to see the admin user
+const seedAdminUser = async() => {
+  try {
+    const adminExists = await User.findOne({ email: "seerasmakeover90@gmail.com" });
+
+    if(!adminExists) {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash("Seerasmakeover18@", salt);
+
+    const adminUser = new User({
+      email: "seerasmakeover90@gmail.com",
+      password: hashedPassword,
+      role: "admin"
+    });
+
+    await adminUser.save();
+    console.log("Admin User Created Sucessfully");
+  }
+  else{
+    console.log("Admin User Already Exists");
+  }
+
+  } catch (error) {
+    console.error("Error seeding admin", error);
+  }
+};
+
 // Connect to MongoDB locally
 mongoose.connect(process.env.MONGO_URI, {
 })
-  .then(() => console.log("MongoDB connected successfully!"))
+  .then(async() => {
+    console.log("MongoDB connected successfully!");
+  await seedAdminUser();
+})
+
   .catch((error) => {
     console.error("MongoDB Connection Failed:", error);
     process.exit(1); // Exit the process if DB connection fails
