@@ -1,16 +1,28 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import AdminProductCard from "./AdminProductCard";
 
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);
   const [newProduct, setNewProduct] = useState({ title: "", description: "", price: "", stock: "", image: null });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // ✅ Fetch Products
   useEffect(() => {
-    axios.get("http://localhost:5000/api/products")
-      .then(res => setProducts(res.data))
-      .catch(err => console.log(err));
+    fetchProducts();
   }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/products");
+      setProducts(response.data);
+    } catch (error) {
+      setError("Failed to load products.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // ✅ Handle Input Change (for text fields)
   const handleChange = (e) => {
@@ -57,6 +69,15 @@ const AdminProducts = () => {
 
         <button type="submit" className="w-full bg-blue-500 text-white p-2">Add Product</button>
       </form>
+
+      {loading && <p>Loading products...</p>}
+      {error && <p className="text-red-500">{error}</p>}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {products.map((product) => (
+          <AdminProductCard key={product._id} {...product} onProductUpdate={fetchProducts} />
+        ))}
+      </div>
     </div>
   );
 };
