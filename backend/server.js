@@ -3,8 +3,10 @@ import dotenv from "dotenv";
 import cors from "cors";
 import mongoose from "mongoose";
 import authRoutes from "./routes/authRoutes.js";
+import productRoutes from "./routes/productRoutes.js"
 import User from "./models/User.js";
 import bcrypt from "bcryptjs"
+import path from "path";
 
 // Load environment variables
 dotenv.config();
@@ -19,10 +21,17 @@ if (!process.env.MONGO_URI) {
 const app = express();
 
 // Enable CORS to allow frontend requests
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true
+}));
 
 // Middleware to parse JSON data from requests
 app.use(express.json());
+
+app.use("/uploads", express.static(path.join(path.resolve(), "uploads")));
+
+app.use("/api/products", productRoutes);
 
 //Function to see the admin user
 const seedAdminUser = async() => {
@@ -63,6 +72,7 @@ mongoose.connect(process.env.MONGO_URI, {
     console.error("MongoDB Connection Failed:", error);
     process.exit(1); // Exit the process if DB connection fails
   });
+
 
 // Use authentication routes
 app.use("/api/auth", authRoutes);

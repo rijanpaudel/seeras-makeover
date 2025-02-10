@@ -1,9 +1,36 @@
-import * as React from "react";
+import React, { useState } from "react";
 import { useAuth } from "../Context/AuthContext";
+import axios from "axios";
+import heartFilled from "../assets/heart-filled.png"
+import heartOutlined from "../assets/heart-outlined.png"
 
-function ProductCard({ image, wishlistIcon, title, price }) {
+function ProductCard({ _id, image, title, price, isWishlisted }) {
   const { user } = useAuth();
-  const [message, setMessage] = React.useState(""); // State for showing login warning
+  const [wishlist, setWishlist] = useState(isWishlisted || false);
+  const [message, setMessage] = useState(""); // State for showing login warning
+
+  const handleWishListToggle = async () => {
+    if (!user) {
+      setMessage("You must be login to add to wishlist");
+      setTimeout(() => setMessage(""), 3000);
+      return;
+    }
+
+    try {
+      const response = await axios.post("http://localhost:5000/api/products/wishlist", {
+        userId: user._id,
+        productId: _id,
+        action: wishlist ? "remove" : "add"
+      });
+
+      if(response.status === 200) {
+        setWishlist(!wishlist); //Toggle wishlist icon
+      }
+    }
+    catch (error) {
+      console.log("Failed to update wishlist:", error);
+    }
+  };
 
   // Handle button clicks
   const handleClick = (action) => {
@@ -20,21 +47,25 @@ function ProductCard({ image, wishlistIcon, title, price }) {
     <div className="flex flex-col w-full">
       <div className="pt-3.5 pr-3 pb-16 pl-20 bg-gray-200 rounded-3xl max-md:pl-5 max-md:max-w-full">
         <div className="flex gap-5 max-md:flex-col">
-          <div className="flex flex-col w-[81%] max-md:ml-0 max-md:w-full">
+          <div className="flex flex-col w-[81%] max-md:ml-0 max-md:w-full relative">
+            {/* Product Image */}
             <img
               loading="lazy"
               src={image}
               alt={title}
               className="object-contain grow mt-11 w-full aspect-[0.93] max-md:mt-10 max-md:-mr-4"
             />
-          </div>
-          <div className="flex flex-col ml-5 w-[19%] max-md:ml-0 max-md:w-full">
-            <img
-              loading="lazy"
-              src={wishlistIcon}
-              alt="Wishlist icon"
-              className="object-contain shrink-0 w-20 aspect-[0.89] max-md:mt-3.5"
-            />
+            {/* Wishlist icon */}
+            <button
+              onClick={handleWishListToggle}
+              className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md">
+              
+              <img 
+                src={wishlist? heartFilled : heartOutlined} 
+                alt="Wishlist" 
+                className="w-8 h-8"
+                />
+            </button>
           </div>
         </div>
       </div>

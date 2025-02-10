@@ -26,7 +26,7 @@ const Login = () => {
       // Navigate based on user role
       setTimeout (() => {
       if (response.data.user.role === "admin") {
-        navigate("/admin-dashboard"); // Redirect admin to Admin Dashboard
+        navigate("/admin"); // Redirect admin to Admin Dashboard
       } 
       else {
         navigate("/"); // Redirect normal user to homepage
@@ -42,7 +42,7 @@ const Login = () => {
 
       //Redirect User
       if (response.data.user.role === "admin") {
-        navigate("/admin-dashboard");
+        navigate("/admin");
       } else {
         navigate("/");
       }
@@ -86,7 +86,7 @@ const Login = () => {
         <div className="mt-4 text-center">
           <p className='text-xl'>
             Don't have an account?{' '}
-            <Link to="/admin-dashboard" className="text-blue-500">
+            <Link to="/admin" className="text-blue-500">
               Register
             </Link>
           </p>
