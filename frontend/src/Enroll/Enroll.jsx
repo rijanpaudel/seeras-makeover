@@ -1,39 +1,28 @@
-import React, { useState } from 'react';
-
-// Mock data for courses
-const initialCourses = [
-  {
-    id: 1,
-    title: 'Professional Makeup Course',
-    duration: '6 Weeks',
-    modules: [
-      'Basic Skin Preparation',
-      'Color Theory & Correction',
-      'Day & Evening Makeup',
-      'Bridal Makeup Techniques'
-    ],
-    description: 'Master professional makeup techniques for various occasions',
-    progress: 0
-  },
-  {
-    id: 2,
-    title: 'Advanced Hair Styling',
-    duration: '4 Weeks',
-    modules: [
-      'Hair Cutting Techniques',
-      'Coloring & Highlighting',
-      'Modern Styling Methods',
-      'Hair Care Treatments'
-    ],
-    description: 'Comprehensive training in modern hair styling methods',
-    progress: 0
-  }
-];
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 const Enroll = () => {
-  const [courses, setCourses] = useState(initialCourses);
+  const [courses, setCourses] = useState([]);
   const [enrolledCourses, setEnrolledCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  //Fetch courses from backend
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/courses/all-course");
+        setCourses(response.data); //Set courses from backend to state
+      } catch (error) {
+        setError("Failed to load courses.");
+      }
+      finally {
+        setLoading(false);
+      }
+    };
+    fetchCourses();
+  }, []) // Runs only once when the component mounts
+ 
   const handleEnroll = (courseId) => {
     const courseToEnroll = courses.find(course => course.id === courseId);
     setEnrolledCourses([...enrolledCourses, { ...courseToEnroll, enrolledDate: new Date().toLocaleDateString() }]);
@@ -60,6 +49,9 @@ const Enroll = () => {
     );
   };
 
+  if (loading) return <p>Loading courses...</p>;
+  if (error) return <p className="text-red-500">{error}</p>;
+
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
@@ -73,15 +65,15 @@ const Enroll = () => {
           <div className="grid md:grid-cols-2 gap-6">
             {courses.map(course => (
               <div key={course.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">{course.title}</h3>
-                <p className="text-gray-600 mb-4">{course.description}</p>
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">{course.Coursetitle}</h3>
+                <p className="text-gray-600 mb-4">{course.courseDescription}</p>
                 <div className="flex justify-between items-center mb-4">
                   <span className="text-sm font-medium text-pink-600">
-                    Duration: {course.duration}
+                    Duration: {course.courseDduration}
                   </span>
                 </div>
                 <button 
-                  onClick={() => handleEnroll(course.id)}
+                  onClick={() => handleEnroll(course._id)}
                   className="w-full bg-pink-600 text-white py-2 rounded-md hover:bg-pink-700 transition-colors"
                 >
                   Enroll Now
@@ -100,7 +92,7 @@ const Enroll = () => {
                 <div key={course.id} className="bg-white rounded-lg shadow-md p-6">
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h3 className="text-xl font-semibold text-gray-800">{course.title}</h3>
+                      <h3 className="text-xl font-semibold text-gray-800">{course.courseTitle}</h3>
                       <p className="text-gray-500 text-sm mt-1">
                         Enrolled on: {course.enrolledDate}
                       </p>
@@ -129,11 +121,11 @@ const Enroll = () => {
                         <input
                           type="checkbox"
                           checked={module.completed || false}
-                          onChange={() => updateProgress(course.id, index)}
+                          onChange={() => updateProgress(course._id, index)}
                           className="form-checkbox h-5 w-5 text-pink-600 rounded"
                         />
                         <span className={`text-gray-600 ${module.completed ? 'line-through text-gray-400' : ''}`}>
-                          {typeof module === 'string' ? module : module.content}
+                          {module}
                         </span>
                       </label>
                     ))}

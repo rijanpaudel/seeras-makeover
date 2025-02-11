@@ -1,18 +1,67 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 
 const CourseManagement = () => {
-  const [courses, setCourses] = useState([
-    { id: 1, title: 'Professional Makeup', duration: '6 Weeks', students: 15 },
-    { id: 2, title: 'Advanced Hair Styling', duration: '4 Weeks', students: 8 }
-  ]);
-  const [newCourse, setNewCourse] = useState({ title: '', duration: '', description: '' });
+  const [courses, setCourses] = useState([]);
+  const [newCourse, setNewCourse] = useState({ courseTitle: "", courseDescription: "", courseDuration: "", coursePrice: "" });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const handleAddCourse = (e) => {
-    e.preventDefault();
-    setCourses([...courses, { ...newCourse, id: courses.length + 1, students: 0 }]);
-    setNewCourse({ title: '', duration: '', description: '' });
+
+  // Fetch Courses
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  const fetchCourses = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/courses/all-course");
+      setCourses(response.data);
+    } catch (error) {
+      setError("Failed to load courses.");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  // ✅ Handle Input Change (for text fields)
+  const handleChange = (e) => {
+    setNewCourse({ ...newCourse, [e.target.name]: e.target.value });
+  };
+
+  // Add Course
+  const handleAddCourse = async (e) => {
+    e.preventDefault();
+
+    try {
+      await axios.post("http://localhost:5000/api/courses/add-course", newCourse);
+      alert("Course Added!");
+      fetchCourses();  // Refresh the courses list
+    } catch (error) {
+      alert("Error adding course.");
+    }
+  };
+
+  // Delete Course
+  const handleDeleteCourse = async (id) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/courses/delete-course/${id}`);
+      alert("Course Deleted!");
+      fetchCourses();  // Refresh the courses list
+    } catch (error) {
+      alert("Error deleting course.");
+    }
+  };
+
+  // Edit Course
+  const handleEditCourse = async (id) => {
+    const courseToEdit = courses.find(course => course._id === id);
+    setNewCourse(courseToEdit); // Pre-fill the form with course details for editing
+  };
+
+  if (loading) return <p>Loading courses...</p>;
+  if (error) return <p className="text-red-500">{error}</p>;
 
   return (
     <div>
@@ -26,16 +75,34 @@ const CourseManagement = () => {
           <input
             type="text"
             placeholder="Course Title"
+            name="courseTitle"
             className="border rounded px-4 py-2"
-            value={newCourse.title}
-            onChange={(e) => setNewCourse({ ...newCourse, title: e.target.value })}
+            value={newCourse.courseTitle}
+            onChange={handleChange}
           />
           <input
             type="text"
-            placeholder="Duration"
+            placeholder="Course Description"
+            name="courseDescription"
             className="border rounded px-4 py-2"
-            value={newCourse.duration}
-            onChange={(e) => setNewCourse({ ...newCourse, duration: e.target.value })}
+            value={newCourse.courseDescription}
+            onChange={handleChange}
+          />
+          <input
+            type="text"
+            placeholder="Course Duration"
+            name="courseDuration"
+            className="border rounded px-4 py-2"
+            value={newCourse.courseDuration}
+            onChange={handleChange}
+          />
+          <input
+            type="text"
+            placeholder="Course Price"
+            name="coursePrice"
+            className="border rounded px-4 py-2"
+            value={newCourse.coursePrice}
+            onChange={handleChange}
           />
           <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
             Add Course
@@ -45,14 +112,22 @@ const CourseManagement = () => {
 
       <div className="grid gap-4">
         {courses.map(course => (
-          <div key={course.id} className="bg-white p-6 rounded-lg shadow flex justify-between items-center">
+          <div key={course.__id} className="bg-white p-6 rounded-lg shadow flex justify-between items-center">
             <div>
-              <h3 className="text-lg font-semibold">{course.title}</h3>
-              <p className="text-gray-600">{course.duration} • {course.students} students enrolled</p>
+              <h3 className="text-lg font-semibold">{course.courseTitle}</h3>
+              <p className="text-gray-600">{course.courseDuration} hours - Rs {course.coursePrice}</p>
             </div>
             <div className="space-x-2">
-              <button className="text-blue-600 hover:text-blue-800">Edit</button>
-              <button className="text-red-600 hover:text-red-800">Delete</button>
+              <button
+                className="text-blue-600 hover:text-blue-800"
+                onClick={() => handleEditCourse(course._id)}>
+                  Edit
+              </button>
+              <button
+                className="text-red-600 hover:text-red-800"
+                onClick={() => handleDeleteCourse(course._id)}>
+                  Delete
+              </button>
             </div>
           </div>
         ))}

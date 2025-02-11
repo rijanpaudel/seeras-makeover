@@ -8,7 +8,7 @@ const AdminProducts = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // ✅ Fetch Products
+  // Fetch Products
   useEffect(() => {
     fetchProducts();
   }, []);
