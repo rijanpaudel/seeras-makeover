@@ -7,6 +7,7 @@ import CustomerManagement from "./CustomerManagement";
 import CourseManagement from "./CourseManagement";
 import AdminProducts from "./AdminProducts";
 import { AuthProvider } from "../Context/AuthContext";
+import ServiceManagement from "./ServiceManagement";
 
 const PrivateAdminRoute = ({ children }) => {
   const user = JSON.parse(localStorage.getItem("user"));
@@ -28,6 +29,7 @@ export default function AdminApp() {
             <Route path="/appointments" element={<PrivateAdminRoute><AppointmentManagement /></PrivateAdminRoute>} />
             <Route path="/customers" element={<PrivateAdminRoute><CustomerManagement /></PrivateAdminRoute>} />
             <Route path="/courses" element={<PrivateAdminRoute><CourseManagement /></PrivateAdminRoute>} />
+            <Route path="/services" element={<PrivateAdminRoute><ServiceManagement /></PrivateAdminRoute>} />
             <Route path="/adminProducts" element={<PrivateAdminRoute><AdminProducts /></PrivateAdminRoute>} />
             <Route path="*" element={<Navigate to="/admin" />} />
           </Routes>

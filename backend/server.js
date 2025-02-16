@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import authRoutes from "./routes/authRoutes.js";
 import productRoutes from "./routes/productRoutes.js"
 import courseRoutes from "./routes/courseRoutes.js"
+import cartRoutes from "./routes/cartRoutes.js"
 import User from "./models/User.js";
 import bcrypt from "bcryptjs"
 import path from "path";
@@ -35,6 +36,8 @@ app.use("/uploads", express.static(path.join(path.resolve(), "uploads")));
 app.use("/api/products", productRoutes);
 
 app.use("/api/courses", courseRoutes);
+
+app.use("/api/cart", cartRoutes);
 
 //Function to see the admin user
 const seedAdminUser = async() => {

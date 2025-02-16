@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import ProductCard from "./ProductCard.jsx";
 import CategoryFilter from "./CategoryFilter";
 import axios from "axios";
@@ -17,8 +18,8 @@ function ProductsPage() {
         const updatedProducts = response.data.map(product => ({
           ...product,
           image: product.image.startsWith("/uploads")
-          ? `http://localhost:5000${product.image}`
-          : product.image
+            ? `http://localhost:5000${product.image}`
+            : product.image
         }));
         setProducts(updatedProducts); //Set products in state
       }
@@ -78,7 +79,12 @@ function ProductsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 p-20">
         {products.map((product, index) => (
-          <ProductCard key={index} {...product} />
+          <div key={index}>
+            <Link to={`/products/product/${product._id}`}>
+              <ProductCard {...product} />
+            </Link>
+
+          </div>
         ))}
       </div>
     </div>

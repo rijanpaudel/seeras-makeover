@@ -48,6 +48,14 @@ const Sidebar = () => {
           Products
         </Link>
         <Link 
+          to="/admin/services"
+          className={`block p-2 rounded ${
+            location.pathname === "/admin/services" ? "bg-gray-700" : "hover:bg-gray-800"
+          }`}
+        >
+          Services
+        </Link>
+        <Link 
           to="/admin/courses"
           className={`block p-2 rounded ${
             location.pathname === "/admin/courses" ? "bg-gray-700" : "hover:bg-gray-800"

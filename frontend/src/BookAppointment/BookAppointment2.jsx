@@ -71,10 +71,7 @@ export default function BookAppointment2() {
           />
         </div>
       </div>
-      <div className="overflow-hidden px-16 py-3 mt-2.5 w-full text-xl text-center text-black bg-pink-100 max-md:px-5 max-md:max-w-full">
-        Copyright ©2024 Seeras Makeover Unisex Parlour And Saloon All rights
-        reserved
-      </div>
+      
     </div>
   );
 }
