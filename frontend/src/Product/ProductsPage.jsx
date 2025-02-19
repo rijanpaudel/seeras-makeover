@@ -6,9 +6,11 @@ import axios from "axios";
 
 function ProductsPage() {
   const categories = ["Skincare", "Haircare", "Kerabon", "Brilliare", "Lotus"];
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [products, setProducts] = useState([]); //Store products
   const [loading, setLoading] = useState(true); //Loading state
   const [error, setError] = useState(null); //Error state
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -22,6 +24,7 @@ function ProductsPage() {
             : product.image
         }));
         setProducts(updatedProducts); //Set products in state
+        setFilteredProducts(updatedProducts);
       }
       catch (error) {
         setError("Failed to load products.");
@@ -32,6 +35,27 @@ function ProductsPage() {
     };
     fetchProducts();
   }, []);
+
+  //Filter products based on search term whenever searchTerm or products change
+  useEffect(() => {
+    if (!searchTerm) {
+      setFilteredProducts(products);
+    } else {
+      setFilteredProducts(
+        products.filter((product) =>
+          product.title.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+    }
+  }, [searchTerm, products]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p className="text-2xl text-gray-600">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex overflow-hidden flex-col bg-white">
@@ -57,12 +81,16 @@ function ProductsPage() {
 
         <div className="flex flex-wrap gap-5 justify-between items-start mt-9 w-full max-w-[1773px] max-md:max-w-full">
           <h1 className="self-end mt-6 text-4xl font-bold">All Products</h1>
-          <form className="flex overflow-hidden flex-wrap gap-10 self-start px-9 py-3.5 text-2xl bg-zinc-100 rounded-[100px] max-md:px-5 max-md:max-w-full">
+          <form
+            onSubmit={(e) => e.preventDefault()}
+            className="flex overflow-hidden flex-wrap gap-10 self-start px-9 py-3.5 text-2xl bg-zinc-100 rounded-[100px] max-md:px-5 max-md:max-w-full">
             <label htmlFor="searchProducts" className="sr-only">Search Products</label>
             <input
               id="searchProducts"
               type="search"
               placeholder="Search Products"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="my-auto bg-transparent border-none outline-none"
             />
             <button type="submit" aria-label="Search">
@@ -78,12 +106,11 @@ function ProductsPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 p-20">
-        {products.map((product, index) => (
-          <div key={index}>
+        {filteredProducts.map(product => (
+          <div key={product._id}>
             <Link to={`/products/product/${product._id}`}>
               <ProductCard {...product} />
             </Link>
-
           </div>
         ))}
       </div>
