@@ -47,11 +47,32 @@ const Navbar = () => {
             <Link to="/products" className={`${isActive("/products")} hover:text-pink-500 text-2xl font-medium`}>Products</Link>
             <Link to="/enroll" className={`${isActive("/enroll")} hover:text-pink-500 text-2xl font-medium`}>Enroll Now</Link>
           </div>
+
+          {user ? (
+            <>
           <div className="cart">
             <Link to="/cart">
               Cart ({cartCount})
             </Link>
           </div>
+          </>
+          ) : (
+            <div></div>
+          )
+        }
+
+          {user ? (
+            <>
+          <div className="myAccount">
+            <Link to="/myAccount">
+              My Account
+            </Link>
+          </div>
+          </>
+          ) : (
+            <div></div>
+          )
+        }
 
           {/* Auth Buttons */}
           {user ? (

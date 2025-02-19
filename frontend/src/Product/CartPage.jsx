@@ -1,4 +1,3 @@
-// CartPage.jsx
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../Context/AuthContext";
 import axios from "axios";
@@ -6,40 +5,51 @@ import axios from "axios";
 function CartPage() {
   const { user } = useAuth();
   const [cart, setCart] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchCart = async () => {
-      try {
-        const response = await axios.get(`http://localhost:5000/api/cart/cart/${user._id}`);
-        setCart(response.data);
-      } catch (error) {
-        console.error("Error fetching cart:", error);
+      if (user?._id) {
+        try {
+          const response = await axios.get(`http://localhost:5000/api/cart/${user._id}`);
+          setCart(response.data);
+        } catch (error) {
+          console.error("Error fetching cart:", error);
+          setError("Failed to load cart items");
+        } finally {
+          setLoading(false);
+        }
       }
     };
 
-    if (user) {
       fetchCart();
-    }
   }, [user]);
 
-  if (!cart) {
+  if (loading) {
     return <div>Loading cart...</div>;
   }
 
+  if(error) {
+    return <div>Error: {error}</div>;
+  }
+
+  if(!cart?.items?.length) {
+    return <div>Your cart is empty.</div>;
+  }
+
   return (
-    <div>
-      <h2>Your Cart</h2>
-      {cart.items.length === 0 ? (
-        <p>Your cart is empty.</p>
-      ) : (
-        cart.items.map((item) => (
-          <div key={item._id}>
-            <h3>{item.productId.title}</h3>
-            <p>Quantity: {item.quantity}</p>
-            <p>Price: Rs {item.productId.price}</p>
+    <div className="container mx-auto px-4 py-8">
+      <h2 className="text-2xl font-bold mb-4">Your Cart</h2>
+      <div className="space-y-4">
+        {cart.items.map((item) => (
+          <div key={item._id} className="border p-4 rounded-lg">
+            <h3 className="text-xl font-semibold">{item.product.title}</h3>
+            <p className="text-gray-600">Quantity: {item.quantity}</p>
+            <p className="text-gray-800">Price: Rs {item.product.price}</p>
           </div>
-        ))
-      )}
+        ))}
+      </div>
     </div>
   );
 }

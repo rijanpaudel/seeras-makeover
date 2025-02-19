@@ -6,6 +6,9 @@ import authRoutes from "./routes/authRoutes.js";
 import productRoutes from "./routes/productRoutes.js"
 import courseRoutes from "./routes/courseRoutes.js"
 import cartRoutes from "./routes/cartRoutes.js"
+import purchaseRoutes from './routes/purchaseRoutes.js';
+import subServiceRoutes from './routes/subServiceRoutes.js'
+import enrollmentRoutes from './routes/enrollmentRoutes.js'
 import User from "./models/User.js";
 import bcrypt from "bcryptjs"
 import path from "path";
@@ -38,6 +41,12 @@ app.use("/api/products", productRoutes);
 app.use("/api/courses", courseRoutes);
 
 app.use("/api/cart", cartRoutes);
+
+app.use('/api/purchases', purchaseRoutes);
+
+app.use("/api/enrollments", enrollmentRoutes);
+
+app.use("/api/sub-services", subServiceRoutes);
 
 //Function to see the admin user
 const seedAdminUser = async() => {

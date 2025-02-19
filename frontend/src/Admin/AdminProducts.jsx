@@ -32,18 +32,21 @@ const AdminProducts = () => {
     }
   };
 
-  const handleChange = (e) => {
-    setNewProduct({ ...newProduct, [e.target.name]: e.target.value });
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setNewProduct({ 
+      ...newProduct, 
+      [name]: value });
   };
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
     setNewProduct({ ...newProduct, image: file });
     setPreviewImage(URL.createObjectURL(file));
-  };
+  }; //This function updates the image field in the newProduct state with the selected file
 
-  const handleAddProduct = async (e) => {
-    e.preventDefault();
+  const handleAddProduct = async (event) => {
+    event.preventDefault();
     setIsAddingProduct(true);
     
     try {

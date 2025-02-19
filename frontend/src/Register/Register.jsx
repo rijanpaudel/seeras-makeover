@@ -10,7 +10,7 @@ const Register = () => {
     address: '',
     password: '',
     confirmPassword: ''
-  });
+  });//formData holds the data entered by user
 
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -21,14 +21,14 @@ const Register = () => {
       ...formData,
       [name]: value
     });
-  };
+  };//This function is called every time there is change in any field
 
   const handleSubmit = async (event) => {
-    event.preventDefault();
+    event.preventDefault(); //This prevents the page to refresh when user submits the form and 
 
     if (Object.values(formData).some(value => value.trim() === '')) {
       showError("Please fill in all the fields.");
-    }
+    }// This checks if any of the field is empty
 
     else if (formData.password < 6) {
       showError('Password must have greater than 6 digits');

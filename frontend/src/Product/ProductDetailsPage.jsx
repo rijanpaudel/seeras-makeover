@@ -72,12 +72,16 @@ function ProductDetailsPage() {
       const response = await axios.post("http://localhost:5000/api/cart/add", {
         userId: user._id,
         productId: product._id,
-        quantity,
+        quantity: quantity,
       });
 
-      alert("Product added to cart");
+      if (response.status === 200) {
+        alert("Product added to cart");
+      } else {
+        alert("Error adding to cart");
+      }
     } catch (error) {
-      console.log("Error adding to cart:", error);
+      console.error("Error adding to cart:", error);
       alert("Error adding to cart");
     }
   };

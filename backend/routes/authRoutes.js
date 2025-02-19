@@ -11,18 +11,18 @@ router.post("/register", async (req, res) => {
     const { fullName, email, phoneNumber, address, password, confirmPassword } = req.body;
 
     //Check if any field is empty
-    if(!fullName || !email || !phoneNumber || !address || !password || !confirmPassword){
+    if (!fullName || !email || !phoneNumber || !address || !password || !confirmPassword) {
       return res.status(400).json({ message: "All fields are required." });
     }
 
     //Check is user already exists
     const userExists = await User.findOne({ email })
-    if(userExists){
+    if (userExists) {
       return res.status(400).json({ message: "The User already exists." });
     }
 
     //Check if passwords match
-    if(confirmPassword !== password){
+    if (confirmPassword !== password) {
       return res.status(400).json({ message: "Passwords do no match." })
     }
 
@@ -79,7 +79,12 @@ router.post("/login", async (req, res) => {
     res.status(200).json({
       message: "Login Successful",
       token,
-      user: { fullName: user.fullName, email: user.email, role: user.role },
+      user: {
+        _id: user._id,  // Add this line
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role
+      },
     });
   } catch (error) {
     console.log("Login Error:", error);
@@ -95,6 +100,29 @@ router.get("/all-users", async (req, res) => {
   } catch (error) {
     console.error("Error fetching users:", error);
     res.status(500).json({ message: "Error fetching users", error });
+  }
+});
+
+// Update user profile
+router.put('/:userId', async (req, res) => {
+  const { userId } = req.params;
+  const { fullName, email, address, phoneNumber } = req.body;
+
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { fullName, email, address, phoneNumber },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    console.error('Error updating user:', error);
+    res.status(500).json({ message: 'Error updating user profile', error: error.message });
   }
 });
 

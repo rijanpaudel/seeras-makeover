@@ -1,133 +1,204 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Check, AlertCircle } from "lucide-react";
+import { Trash2, Edit, Plus } from "lucide-react";
 
 const ServiceManagement = () => {
-  const [services] = useState([
-    { _id: "1", name: "Makeup" },
-    { _id: "2", name: "Hair" },
-    { _id: "3", name: "Nails" }
-  ]);
-  const [selectedService, setSelectedService] = useState("");
-  const [subService, setSubService] = useState({ name: "", description: "" });
-  const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState(""); // 'success' or 'error'
+  const [mainService, setMainService] = useState("Makeup");
+  const [subServices, setSubServices] = useState([]);
+  const [isAddingNew, setIsAddingNew] = useState(false);
+  const [newSubService, setNewSubService] = useState({
+    name: "",
+    description: "",
+    price: "",
+    duration: "",
+  });
 
-  const handleChange = (e) => {
-    setSubService({ ...subService, [e.target.name]: e.target.value });
-  };
+  useEffect(() => {
+    const fetchSubServices = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5000/api/sub-services/${mainService}`);
+        setSubServices(response.data); // Set the fetched sub-services for the selected service
+      } catch (error) {
+        console.error("Error fetching sub-services:", error);
+      }
+    };
 
-  const handleAddSubService = async (e) => {
-    e.preventDefault();
+    fetchSubServices();
+  }, [mainService]); // Run this whenever mainService changes
 
+  const handleAddSubService = async () => {
     try {
-      await axios.post("http://localhost:5000/api/services/add-subservice", {
-        serviceName: selectedService,
-        subServiceName: subService.name,
-        subServiceDescription: subService.description,
+      await axios.post("http://localhost:5000/api/sub-services/add", {
+        ...newSubService,
+        mainService,
+        price: Number(newSubService.price),
       });
-      setMessage("Sub-service added successfully!");
-      setMessageType("success");
-      setSubService({ name: "", description: "" });
+      
+      // Refresh the list after adding new sub-service
+      const response = await axios.get(`http://localhost:5000/api/sub-services/${mainService}`);
+      setSubServices(response.data);
+      
+      // Reset form
+      setNewSubService({
+        name: "",
+        description: "",
+        price: "",
+        duration: "",
+      });
+      setIsAddingNew(false);
     } catch (error) {
-      setMessage("Failed to add sub-service.");
-      setMessageType("error");
+      console.error("Error adding sub-service:", error);
     }
-
-    // Clear message after 3 seconds
-    setTimeout(() => {
-      setMessage("");
-      setMessageType("");
-    }, 3000);
   };
+
+  const mainServices = [
+    { value: "Makeup", label: "Makeup Services" },
+    { value: "Hair", label: "Hair Services" },
+    { value: "Nails", label: "Nail Services" },
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Add Sub-Service</h1>
-          <p className="text-gray-600">Create new sub-services for your beauty categories</p>
+    <div className="container mx-auto px-4 py-56">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-4xl font-bold mb-8">Service Management</h1>
+
+        {/* Service Type Selector */}
+        <div className="mb-8">
+          <label className="block text-gray-700 text-sm font-medium mb-2">
+            Select Service Category
+          </label>
+          <select
+            value={mainService}
+            onChange={(e) => setMainService(e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-pink-500 bg-white"
+          >
+            {mainServices.map((service) => (
+              <option key={service.value} value={service.value}>
+                {service.label}
+              </option>
+            ))}
+          </select>
         </div>
 
-        <form onSubmit={handleAddSubService} className="space-y-6">
-          {/* Service Selection */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Select Service Category
-            </label>
-            <select
-              value={selectedService}
-              onChange={(e) => setSelectedService(e.target.value)}
-              required
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors"
-            >
-              <option value="">Select a Service</option>
-              {services.map((service) => (
-                <option key={service._id} value={service.name}>
-                  {service.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Sub-Service Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Sub-Service Name
-            </label>
-            <input
-              type="text"
-              name="name"
-              value={subService.name}
-              onChange={handleChange}
-              required
-              placeholder="e.g., Bridal Makeup, Hair Coloring, Gel Nails"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors"
-            />
-          </div>
-
-          {/* Sub-Service Description */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Sub-Service Description
-            </label>
-            <textarea
-              name="description"
-              value={subService.description}
-              onChange={handleChange}
-              required
-              placeholder="Enter a detailed description of the sub-service..."
-              rows="4"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors resize-none"
-            />
-          </div>
-
-          {/* Submit Button */}
+        {/* Add New Service Button */}
+        <div className="mb-6">
           <button
-            type="submit"
-            className="w-full bg-pink-500 text-white py-3 px-6 rounded-lg hover:bg-pink-600 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500"
+            onClick={() => setIsAddingNew(true)}
+            className="flex items-center gap-2 px-6 py-3 bg-pink-500 text-white rounded-full hover:bg-pink-600 transition-colors"
           >
-            Add Sub-Service
+            <Plus size={20} />
+            Add New Service
           </button>
-        </form>
+        </div>
 
-        {/* Success/Error Message */}
-        {message && (
-          <div
-            className={`mt-4 p-4 rounded-lg flex items-center ${
-              messageType === "success"
-                ? "bg-green-50 text-green-700"
-                : "bg-red-50 text-red-700"
-            }`}
-          >
-            {messageType === "success" ? (
-              <Check className="w-5 h-5 mr-2" />
-            ) : (
-              <AlertCircle className="w-5 h-5 mr-2" />
-            )}
-            {message}
+        {/* Add New Service Form */}
+        {isAddingNew && (
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 className="text-2xl font-semibold mb-4">Add New Service</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-gray-700 text-sm font-medium mb-2">
+                  Service Name
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g., Bridal Makeup"
+                  value={newSubService.name}
+                  onChange={(e) => setNewSubService({ ...newSubService, name: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-pink-500"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-gray-700 text-sm font-medium mb-2">
+                  Description
+                </label>
+                <textarea
+                  placeholder="Service description..."
+                  value={newSubService.description}
+                  onChange={(e) => setNewSubService({ ...newSubService, description: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-pink-500 h-32"
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-2">
+                    Price (Rs)
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="0"
+                    value={newSubService.price}
+                    onChange={(e) => setNewSubService({ ...newSubService, price: e.target.value })}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-pink-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-2">
+                    Duration
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g., 2 hours"
+                    value={newSubService.duration}
+                    onChange={(e) => setNewSubService({ ...newSubService, duration: e.target.value })}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-pink-500"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-4 mt-6">
+                <button
+                  onClick={handleAddSubService}
+                  className="px-6 py-3 bg-pink-500 text-white rounded-full hover:bg-pink-600 transition-colors"
+                >
+                  Save Service
+                </button>
+                <button
+                  onClick={() => setIsAddingNew(false)}
+                  className="px-6 py-3 text-gray-600 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
           </div>
         )}
+
+        {/* Services List */}
+        <div className="grid gap-4">
+          {subServices.map((service) => (
+            <div
+              key={service._id}
+              className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
+            >
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="text-xl font-semibold mb-2">{service.name}</h3>
+                  <p className="text-gray-600 mb-4">{service.description}</p>
+                  <div className="flex gap-4">
+                    <div className="text-pink-500 font-medium">
+                      Rs {service.price.toLocaleString()}
+                    </div>
+                    <div className="text-gray-600">
+                      Duration: {service.duration}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button className="p-2 text-gray-600 hover:text-pink-500 transition-colors">
+                    <Edit size={20} />
+                  </button>
+                  <button className="p-2 text-gray-600 hover:text-red-500 transition-colors">
+                    <Trash2 size={20} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

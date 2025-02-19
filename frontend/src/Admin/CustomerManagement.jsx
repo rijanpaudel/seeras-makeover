@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Search, Loader2, User, Phone, Mail, MapPin } from "lucide-react";
 
 const CustomerManagement = () => {
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -24,7 +26,7 @@ const CustomerManagement = () => {
   }, []);
 
   // Filter users based on search term
-  const filteredUsers = users.filter(user => 
+  const filteredUsers = users.filter(user =>
     user.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.phoneNumber?.includes(searchTerm)
@@ -105,7 +107,9 @@ const CustomerManagement = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <button className="text-pink-500 hover:text-pink-700 font-medium transition-colors">
+                        <button
+                          onClick={() => navigate(`/course-progress/${user._id}`)}
+                          className="text-pink-500 hover:text-pink-700 font-medium transition-colors">
                           View Details
                         </button>
                       </td>

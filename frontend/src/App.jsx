@@ -12,6 +12,7 @@ import AboutUs from "./Aboutus/Aboutus";
 import Enroll from "./Enroll/Enroll";
 import Footer from "./Footer/Footer";
 import Copyright from "./Copyright/Copyright";
+import MyAccount from "./MyAccount/MyAccount";
 import { AuthProvider } from "./Context/AuthContext";
 import { CartProvider } from "./Context/CartContext";
 import AdminApp from "./Admin/AdminApp";
@@ -48,6 +49,7 @@ export default function App() {
                     <Route path="/services" element={<Services />} />
                     <Route path="/aboutus" element={<AboutUs />} />
                     <Route path="/enroll" element={<Enroll />} />
+                    <Route path="/myaccount" element={<MyAccount />} />
                   </Routes>
                   <Footer />
                   <Copyright />
