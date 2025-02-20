@@ -10,6 +10,7 @@ import ProductDetailsPage from "./Product/ProductDetailsPage";
 import Services from "./Services/Services";
 import AboutUs from "./Aboutus/Aboutus";
 import Enroll from "./Enroll/Enroll";
+import CourseProgress from "./Enroll/CourseProgress";
 import Footer from "./Footer/Footer";
 import Copyright from "./Copyright/Copyright";
 import MyAccount from "./MyAccount/MyAccount";
@@ -49,6 +50,7 @@ export default function App() {
                     <Route path="/services" element={<Services />} />
                     <Route path="/aboutus" element={<AboutUs />} />
                     <Route path="/enroll" element={<Enroll />} />
+                    <Route path="/courses/progress/:enrollmentId" element={<CourseProgress />} />
                     <Route path="/myaccount" element={<MyAccount />} />
                   </Routes>
                   <Footer />

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Search, Loader2, User, Phone, Mail, MapPin } from "lucide-react";
 
@@ -108,7 +108,7 @@ const CustomerManagement = () => {
                       </td>
                       <td className="px-6 py-4">
                         <button
-                          onClick={() => navigate(`/course-progress/${user._id}`)}
+                          onClick={() => navigate(`/admin/customer/${user._id}`)}
                           className="text-pink-500 hover:text-pink-700 font-medium transition-colors">
                           View Details
                         </button>

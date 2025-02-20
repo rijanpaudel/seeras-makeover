@@ -9,6 +9,7 @@ import AdminProducts from "./AdminProducts";
 import { AuthProvider } from "../Context/AuthContext";
 import ServiceManagement from "./ServiceManagement";
 import UserCourseProgress from "./UserCourseProgress";
+import CustomerDetails from "./CustomerDetails";
 
 const PrivateAdminRoute = ({ children }) => {
   const user = JSON.parse(localStorage.getItem("user"));
@@ -19,9 +20,9 @@ export default function AdminApp() {
   return (
     <AuthProvider>
       <div className="admin-container flex">
-        
+
         {/* ✅ Sidebar stays fixed */}
-        <Sidebar />  
+        <Sidebar />
 
         {/* ✅ Content area with left margin so it doesn't overlap */}
         <div className="admin-content flex-grow p-8 ml-64">
@@ -32,7 +33,8 @@ export default function AdminApp() {
             <Route path="/courses" element={<PrivateAdminRoute><CourseManagement /></PrivateAdminRoute>} />
             <Route path="/services" element={<PrivateAdminRoute><ServiceManagement /></PrivateAdminRoute>} />
             <Route path="/adminProducts" element={<PrivateAdminRoute><AdminProducts /></PrivateAdminRoute>} />
-            <Route path="/course-progress/:userId" element={<PrivateAdminRoute><UserCourseProgress /></PrivateAdminRoute>} />
+            <Route path="/customer/:userId" element={<PrivateAdminRoute><CustomerDetails /></PrivateAdminRoute>} />
+            <Route path="/course-progress/:enrollmentId" element={<PrivateAdminRoute><UserCourseProgress /></PrivateAdminRoute>} />
             <Route path="*" element={<Navigate to="/admin" />} />
           </Routes>
         </div>

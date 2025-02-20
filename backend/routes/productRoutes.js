@@ -19,9 +19,9 @@ const upload = multer({ storage });
 // Add New Product
 router.post("/add", upload.single("image"), async (req, res) => {
   try {
-    const { title, description, price, stock, image } = req.body;
+    const { title, description, price, stock, brand, category, image } = req.body;
     const imageUrl = `/uploads/${req.file.filename}`; //image path
-    const newProduct = new Product({ title, description, price, stock, image: imageUrl });
+    const newProduct = new Product({ title, description, price: Number(price), stock: Number(price), brand, category, image: imageUrl });
     await newProduct.save();
     res.status(201).json({ message: "Product added successfully!", product: newProduct });
   } catch (error) {

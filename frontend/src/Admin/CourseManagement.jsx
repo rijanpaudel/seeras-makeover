@@ -1,254 +1,133 @@
 import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { PlusCircle, Edit2, Trash2, Clock, BookOpen } from "lucide-react";
+import { Search, Loader2, User, Phone, Mail, MapPin } from "lucide-react";
 
-const CourseManagement = () => {
-  const [courses, setCourses] = useState([]);
-  const [isAddingNew, setIsAddingNew] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [newCourse, setNewCourse] = useState({
-    courseTitle: "",
-    courseDescription: "",
-    courseDuration: "",
-    coursePrice: ""
-  });
+const CustomerManagement = () => {
+  const navigate = useNavigate();
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    fetchCourses();
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/auth/all-users");
+        setUsers(response.data);
+      } catch (error) {
+        setError("Failed to load users.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
   }, []);
 
-  const fetchCourses = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/api/courses/all-course");
-      setCourses(response.data);
-    } catch (error) {
-      setError("Failed to load courses.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleChange = (e) => {
-    setNewCourse({ ...newCourse, [e.target.name]: e.target.value });
-  };
-
-  const handleAddOrUpdateCourse = async (e) => {
-    e.preventDefault();
-
-    if (isEditing) {
-      //Edit course
-      try {
-        await axios.put(`http://localhost:5000/api/courses/edit-course/${newCourse._id}`, newCourse);
-        await fetchCourses(); //Refresht the courses
-        resetForm();
-      } catch (error) {
-        setError("Error updating course.");
-      }
-    } else {
-      //Add new course
-      try {
-        await axios.post("http://localhost:5000/api/courses/add-course", newCourse);
-        await fetchCourses();
-        resetForm();
-      } catch (error) {
-        setError("Error adding course.");
-      }
-    }
-  };
-
-  const handleDeleteCourse = async (id) => {
-    if (window.confirm("Are you sure you want to delete this course?")) {
-      try {
-        await axios.delete(`http://localhost:5000/api/courses/delete-course/${id}`);
-        await fetchCourses();
-      } catch (error) {
-        setError("Error deleting course.");
-      }
-    }
-  };
-
-  const handleEditCourse = (course) => {
-    setNewCourse(course);
-    setIsEditing(true);
-    setIsAddingNew(true);
-  };
-
-  const resetForm = () => {
-    setNewCourse({
-      courseTitle: "",
-      courseDescription: "",
-      courseDuration: "",
-      coursePrice: ""
-    });
-    setIsAddingNew(false);
-    setIsEditing(false);
-  };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-2xl text-gray-600">Loading courses...</div>
-      </div>
-    );
-  }
+  const filteredUsers = users.filter(user =>
+    user.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.phoneNumber?.includes(searchTerm)
+  );
 
   return (
-    <div className="container mx-auto px-4 py-56">
+    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800">Course Management</h1>
-          <button
-            onClick={() => setIsAddingNew(true)}
-            className="flex items-center gap-2 px-6 py-3 bg-pink-500 text-white rounded-full hover:bg-pink-600 transition-colors"
-          >
-            <PlusCircle size={20} />
-            Add New Course
-          </button>
-        </div>
-
-        {error && (
-          <div className="bg-red-50 text-red-500 p-4 rounded-lg mb-6">
-            {error}
-          </div>
-        )}
-
-        {isAddingNew && (
-          <div className="bg-white p-8 rounded-lg shadow-md mb-8">
-            <h2 className="text-2xl font-semibold mb-6">
-              {isEditing ? "Edit Course" : "Add New Course"}
-            </h2>
-            <form onSubmit={handleAddOrUpdateCourse} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-gray-700 text-sm font-medium mb-2">
-                    Course Title
-                  </label>
-                  <input
-                    type="text"
-                    name="courseTitle"
-                    placeholder="Enter course title"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-pink-500"
-                    value={newCourse.courseTitle}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-700 text-sm font-medium mb-2">
-                    Duration (weeks)
-                  </label>
-                  <input
-                    type="text"
-                    name="courseDuration"
-                    placeholder="e.g., 12"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-pink-500"
-                    value={newCourse.courseDuration}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-gray-700 text-sm font-medium mb-2">
-                  Description
-                </label>
-                <textarea
-                  name="courseDescription"
-                  placeholder="Enter course description"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-pink-500 h-32"
-                  value={newCourse.courseDescription}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-gray-700 text-sm font-medium mb-2">
-                  Price (Rs)
-                </label>
+        {/* Header Section */}
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Customer Management</h1>
+              <p className="text-gray-600">Manage and view all customer information</p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+              <div className="relative">
                 <input
                   type="text"
-                  name="coursePrice"
-                  placeholder="Enter course price"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-pink-500"
-                  value={newCourse.coursePrice}
-                  onChange={handleChange}
-                  required
+                  placeholder="Search customers..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 w-full sm:w-64"
                 />
-              </div>
-
-              <div className="flex gap-4">
-                <button
-                  type="submit"
-                  className="px-6 py-3 bg-pink-500 text-white rounded-full hover:bg-pink-600 transition-colors"
-                >
-                  {isEditing ? "Update Course" : "Add Course"}
-                </button>
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="px-6 py-3 text-gray-600 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
-
-        <div className="grid gap-6">
-          {courses.map((course) => (
-            <div
-              key={course._id}
-              className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow"
-            >
-              <div className="flex justify-between items-start">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <BookOpen size={20} className="text-pink-500" />
-                    <h3 className="text-xl font-semibold">{course.courseTitle}</h3>
-                  </div>
-                  <p className="text-gray-600 max-w-2xl">{course.courseDescription}</p>
-                  <div className="flex gap-6">
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <Clock size={18} />
-                      <span>{course.courseDuration} hours</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-pink-500 font-medium">
-                      <span>Rs {course.coursePrice}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleEditCourse(course)}
-                    className="p-2 text-gray-600 hover:text-pink-500 transition-colors"
-                  >
-                    <Edit2 size={20} />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteCourse(course._id)}
-                    className="p-2 text-gray-600 hover:text-red-500 transition-colors"
-                  >
-                    <Trash2 size={20} />
-                  </button>
-                </div>
+                <Search className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" />
               </div>
             </div>
-          ))}
+          </div>
         </div>
 
-        {courses.length === 0 && !loading && (
-          <div className="text-center py-12 text-gray-500">
-            No courses available. Add your first course to get started.
-          </div>
-        )}
+        {/* Main Content */}
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          {loading ? (
+            <div className="flex items-center justify-center h-64">
+              <Loader2 className="w-8 h-8 text-pink-500 animate-spin" />
+            </div>
+          ) : error ? (
+            <div className="flex items-center justify-center h-64 text-red-500">
+              {error}
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Name</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Email</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Phone</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Address</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 bg-white">
+                  {filteredUsers.map((user) => (
+                    <tr key={user._id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center">
+                          <User className="w-5 h-5 text-gray-400 mr-2" />
+                          <span className="text-sm font-medium text-gray-900">{user.fullName}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center text-sm text-gray-700">
+                          <Mail className="w-4 h-4 text-gray-400 mr-2" />
+                          {user.email}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center text-sm text-gray-700">
+                          <Phone className="w-4 h-4 text-gray-400 mr-2" />
+                          {user.phoneNumber}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center text-sm text-gray-700">
+                          <MapPin className="w-4 h-4 text-gray-400 mr-2" />
+                          {user.address}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <button
+                          onClick={() => navigate(`/admin/customer/${user._id}`)}
+                          className="text-pink-500 hover:text-pink-700 font-medium transition-colors"
+                        >
+                          View Details
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {filteredUsers.length === 0 && (
+                <div className="text-center py-12">
+                  <p className="text-gray-500">No customers found matching your search.</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 };
 
-export default CourseManagement;
+export default CustomerManagement;

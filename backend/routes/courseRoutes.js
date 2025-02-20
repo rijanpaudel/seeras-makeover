@@ -6,8 +6,8 @@ const router = express.Router();
 // Add New Course
 router.post("/add-course", async (req, res) => {
   try {
-    const { courseTitle, courseDescription, courseDuration, coursePrice } = req.body;
-    const newCourse = new Course({ courseTitle, courseDescription, courseDuration, coursePrice });
+    const { courseTitle, courseDescription, courseDuration, coursePrice, modules } = req.body;
+    const newCourse = new Course({ courseTitle, courseDescription, courseDuration, coursePrice, modules });
     await newCourse.save();
     res.status(201).json({ message: "Course added successfully!", course: newCourse });
   } catch (error) {
@@ -18,10 +18,10 @@ router.post("/add-course", async (req, res) => {
 // Edit Course
 router.put("/edit-course/:id", async (req, res) => {
   try {
-    const { courseTitle, courseDescription, courseDuration, coursePrice } = req.body;
+    const { courseTitle, courseDescription, courseDuration, coursePrice, modules } = req.body;
     const updatedCourse = await Course.findByIdAndUpdate(
       req.params.id,
-      { courseTitle, courseDescription, courseDuration, coursePrice },
+      { courseTitle, courseDescription, courseDuration, coursePrice, modules },
       { new: true }
     );
     res.status(200).json({ message: "Course updated successfully!", course: updatedCourse });

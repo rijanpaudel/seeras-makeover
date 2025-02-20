@@ -3,14 +3,19 @@ import { Link } from "react-router-dom";
 import ProductCard from "./ProductCard.jsx";
 import CategoryFilter from "./CategoryFilter";
 import axios from "axios";
+import BrandFilter from "./BrandFilter.jsx";
 
 function ProductsPage() {
-  const categories = ["Skincare", "Haircare", "Kerabon", "Brilliare", "Lotus"];
+  const categories = ["Skincare", "Haircare", "Nailcare"];
+  const brands = ["Brillare", "Kerabon", "Lotus", "Dermaco"]
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [products, setProducts] = useState([]); //Store products
   const [loading, setLoading] = useState(true); //Loading state
   const [error, setError] = useState(null); //Error state
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortOrder, setSortOrder] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const[selectedBrand, setSelectedBrand] = useState("");
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -38,16 +43,39 @@ function ProductsPage() {
 
   //Filter products based on search term whenever searchTerm or products change
   useEffect(() => {
-    if (!searchTerm) {
-      setFilteredProducts(products);
-    } else {
-      setFilteredProducts(
-        products.filter((product) =>
-          product.title.toLowerCase().includes(searchTerm.toLowerCase())
-        )
+    let updatedList = [...products];
+
+    //Filter by searchTerm (title)
+    if (searchTerm) {
+      updatedList = updatedList.filter((product) =>
+        product.title.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-  }, [searchTerm, products]);
+
+    if (selectedCategory) {
+      updatedList = updatedList.filter(
+        (product) => product.category === selectedCategory
+      );
+    }
+
+    if (selectedBrand) {
+      updatedList = updatedList.filter(
+        (product) => product.brand === selectedBrand
+      );
+    }
+
+
+    //Sort by price if sortOrder is set
+    if (sortOrder === "asc") {
+      updatedList.sort((a, b) => a.price - b.price);
+    }
+    else if (sortOrder === "desc") {
+      updatedList.sort((a, b) => b.price - a.price);
+    }
+
+    setFilteredProducts(updatedList);
+  }, [searchTerm, products, sortOrder, selectedCategory, selectedBrand]);
+
 
   if (loading) {
     return (
@@ -67,16 +95,29 @@ function ProductsPage() {
           className="object-contain self-stretch w-full aspect-[2.76] max-md:max-w-full"
         />
         <div className="flex flex-wrap gap-5 justify-between mt-14 w-full text-2xl max-w-[1769px] max-md:mt-10 max-md:max-w-full">
-          <CategoryFilter categories={categories} />
-          <button className="flex overflow-hidden gap-2.5 self-start px-8 py-3.5 bg-white border border-black border-solid rounded-[100px] max-md:px-5">
-            <span className="grow my-auto">Sort by</span>
-            <img
-              loading="lazy"
-              src="https://cdn.builder.io/api/v1/image/assets/TEMP/ac30c86e27ae0206f629ef6e29cc8303d77ebf59fd737b027005d7ab960f90fe?placeholderIfAbsent=true&apiKey=cfca82077f5c43a2b0ca74d2f8c59792"
-              alt=""
-              className="object-contain shrink-0 aspect-[0.68] w-[23px]"
-            />
-          </button>
+          <CategoryFilter
+            categories={categories}
+            selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
+          />
+
+          <BrandFilter
+            brands={brands}
+            selectedBrand={selectedBrand}
+            setSelectedBrand={setSelectedBrand}
+          />
+          <div className="flex items-center gap-4">
+            {/* Sort dropdown */}
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+              className="p-3 border border-gray-300 rounded-lg text-gray-800"
+            >
+              <option value="">Sort by Price</option>
+              <option value="asc">Low to High</option>
+              <option value="desc">High to Low</option>
+            </select>
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-5 justify-between items-start mt-9 w-full max-w-[1773px] max-md:max-w-full">

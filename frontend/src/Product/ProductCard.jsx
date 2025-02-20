@@ -4,7 +4,7 @@ import axios from "axios";
 import heartFilled from "../assets/heart-filled.png"
 import heartOutlined from "../assets/heart-outlined.png"
 
-function ProductCard({ _id, image, title, price, isWishlisted }) {
+function ProductCard({ _id, image, title, price, brand, category, isWishlisted }) {
   const { user } = useAuth();
   const [wishlist, setWishlist] = useState(isWishlisted || false);
   const [message, setMessage] = useState(""); // State for showing login warning
@@ -23,7 +23,7 @@ function ProductCard({ _id, image, title, price, isWishlisted }) {
         action: wishlist ? "remove" : "add"
       });
 
-      if(response.status === 200) {
+      if (response.status === 200) {
         setWishlist(!wishlist); //Toggle wishlist icon
       }
     }
@@ -59,12 +59,12 @@ function ProductCard({ _id, image, title, price, isWishlisted }) {
             <button
               onClick={handleWishListToggle}
               className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md">
-              
-              <img 
-                src={wishlist? heartFilled : heartOutlined} 
-                alt="Wishlist" 
+
+              <img
+                src={wishlist ? heartFilled : heartOutlined}
+                alt="Wishlist"
                 className="w-8 h-8"
-                />
+              />
             </button>
           </div>
         </div>
@@ -73,6 +73,10 @@ function ProductCard({ _id, image, title, price, isWishlisted }) {
       <div className="flex flex-col items-start pr-3.5 pl-1.5 mt-5 w-full text-3xl max-md:max-w-full">
         <div className="font-medium text-black">{title}</div>
         <div className="mt-5 font-bold text-black">Rs {price}</div>
+        <div className="mt-2 text-sm text-gray-500">
+          <span>Brand: {brand}</span> • <span>Category: {category}</span>
+        </div>
+
         <div className="flex gap-5 justify-between self-stretch mt-10 max-md:max-w-full">
           {/* Add to Cart Button */}
           <button

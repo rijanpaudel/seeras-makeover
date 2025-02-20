@@ -9,6 +9,8 @@ const AdminProducts = () => {
     title: "",
     description: "",
     price: "",
+    brand: "",
+    category: "",
     stock: "",
     image: null
   });
@@ -34,26 +36,35 @@ const AdminProducts = () => {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-    setNewProduct({ 
-      ...newProduct, 
-      [name]: value });
+    setNewProduct({
+      ...newProduct,
+      [name]: value
+    });
   };
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
+    if (!file) return;
     setNewProduct({ ...newProduct, image: file });
     setPreviewImage(URL.createObjectURL(file));
   }; //This function updates the image field in the newProduct state with the selected file
 
   const handleAddProduct = async (event) => {
     event.preventDefault();
+
+    if (!newProduct.image) {
+      setError("Please choose an image for the product.");
+      return;
+    }
     setIsAddingProduct(true);
-    
+
     try {
       const formData = new FormData();
       formData.append("title", newProduct.title);
       formData.append("description", newProduct.description);
       formData.append("price", newProduct.price);
+      formData.append("brand", newProduct.brand);
+      formData.append("category", newProduct.category);
       formData.append("stock", newProduct.stock);
       formData.append("image", newProduct.image);
 
@@ -62,7 +73,7 @@ const AdminProducts = () => {
       });
 
       // Reset form and refresh products
-      setNewProduct({ title: "", description: "", price: "", stock: "", image: null });
+      setNewProduct({ title: "", description: "", price: "", brand: "", category: "", stock: "", image: null });
       setPreviewImage(null);
       fetchProducts();
     } catch (error) {
@@ -122,6 +133,42 @@ const AdminProducts = () => {
               />
             </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Brand
+                </label>
+                <input
+                  type="text"
+                  name="brand"
+                  value={newProduct.brand || ""}
+                  onChange={handleChange}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Category
+                </label>
+                <select
+                  name="category"
+                  value={newProduct.category || ""}
+                  onChange={handleChange}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                  required
+                >
+                  <option value="">Select Category</option>
+                  <option value="Skincare">Skincare</option>
+                  <option value="Haircare">Haircare</option>
+                  <option value="Kerabon">Kerabon</option>
+                  <option value="Brilliare">Brilliare</option>
+                  <option value="Lotus">Lotus</option>
+                </select>
+              </div>
+            </div>
+
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Stock Quantity</label>
@@ -143,7 +190,6 @@ const AdminProducts = () => {
                       onChange={handleImageUpload}
                       className="hidden"
                       accept="image/*"
-                      required
                     />
                     <Upload className="w-5 h-5 text-gray-400 mr-2" />
                     <span className="text-gray-600">Choose image</span>

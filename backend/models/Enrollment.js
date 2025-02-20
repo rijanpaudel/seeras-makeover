@@ -20,6 +20,10 @@ const enrollmentSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  completedModules: {
+    type: [Boolean],
+    default: []
+  }
 });
 
 const Enrollment = mongoose.model("Enrollment", enrollmentSchema);
