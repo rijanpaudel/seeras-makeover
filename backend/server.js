@@ -6,7 +6,7 @@ import authRoutes from "./routes/authRoutes.js";
 import productRoutes from "./routes/productRoutes.js"
 import courseRoutes from "./routes/courseRoutes.js"
 import cartRoutes from "./routes/cartRoutes.js"
-import purchaseRoutes from './routes/purchaseRoutes.js';
+import orderRoutes from "./routes/orderRoutes.js"
 import subServiceRoutes from './routes/subServiceRoutes.js'
 import enrollmentRoutes from './routes/enrollmentRoutes.js'
 import User from "./models/User.js";
@@ -42,7 +42,7 @@ app.use("/api/courses", courseRoutes);
 
 app.use("/api/cart", cartRoutes);
 
-app.use('/api/purchases', purchaseRoutes);
+app.use("/api/orders", orderRoutes);
 
 app.use("/api/enrollments", enrollmentRoutes);
 

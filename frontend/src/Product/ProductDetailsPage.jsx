@@ -103,6 +103,17 @@ function ProductDetailsPage() {
     setQuantity((prevQuantity) => (prevQuantity > 1 ? prevQuantity - 1 : 1));
   };
 
+  const handleBuyNow = () => {
+    if (!user) {
+      alert("You must be logged in to proceed.");
+      return;
+    }
+  
+    navigate("/checkout", {
+      state: { product, quantity },
+    });
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -183,7 +194,7 @@ function ProductDetailsPage() {
                 Add to Cart
               </button>
               <button
-                onClick={() => handleAction("buy now")}
+                onClick={handleBuyNow}
                 className="flex-1 px-8 py-4 text-white bg-pink-500 rounded-full hover:bg-pink-600 transition-colors"
               >
                 Buy Now

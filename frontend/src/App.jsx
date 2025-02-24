@@ -7,6 +7,7 @@ import Home from "./Home/Home";
 import BookAppointment from "./BookAppointment/BookAppointment";
 import ProductsPage from "./Product/ProductsPage";
 import ProductDetailsPage from "./Product/ProductDetailsPage";
+import CheckoutPage from "./Product/CheckoutPage";
 import Services from "./Services/Services";
 import ServiceDetails from "./Services/ServiceDetails";
 import AboutUs from "./Aboutus/Aboutus";
@@ -48,6 +49,7 @@ export default function App() {
                     <Route path="/bookappointment" element={<BookAppointment />} />
                     <Route path="/products" element={<ProductsPage />} />
                     <Route path="/products/product/:id" element={<ProductDetailsPage />} />
+                    <Route path="/checkout" element={<CheckoutPage />} />
                     <Route path="/services" element={<Services />} />
                     <Route path="/services/:id" element={<ServiceDetails />} />
                     <Route path="/aboutus" element={<AboutUs />} />
