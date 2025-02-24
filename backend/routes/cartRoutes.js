@@ -1,71 +1,93 @@
 import express from "express";
-import User from "../models/User.js"
+import mongoose from "mongoose";
 import Cart from "../models/Cart.js";
 import Product from "../models/Product.js";
 
 const router = express.Router();
 
-// Add item to cart
+// Validate ObjectId function
+const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
+
+// Get Cart by User ID
+router.get("/:userId", async (req, res) => {
+  const { userId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return res.status(400).json({ message: "Invalid user ID format" });
+  }
+
+  try {
+    const cart = await Cart.findOne({ userId }).populate("items.product");
+
+    if (!cart) {
+      return res.status(200).json({ userId, items: [] }); // Always return items as an array
+    }
+
+    console.log("Returning Cart Data:", cart); // Debugging
+    res.status(200).json(cart);
+  } catch (error) {
+    console.error("Error fetching cart:", error);
+    res.status(500).json({ message: "Error fetching cart", error });
+  }
+});
+
+
+
+/// Add to Cart Route
 router.post("/add", async (req, res) => {
   const { userId, productId, quantity } = req.body;
 
+  // Validate MongoDB ObjectIds
+  if (!isValidObjectId(userId) || !isValidObjectId(productId)) {
+    return res.status(400).json({ message: "Invalid user or product ID format" });
+  }
+
   try {
-    //Find user and product
-    const user = await User.findById(userId);
+    let cart = await Cart.findOne({ userId });
+
+    if (!cart) {
+      cart = new Cart({ userId, items: [] });
+    }
+
+    // Find Product
     const product = await Product.findById(productId);
-
-    if (!userId || !productId || !quantity) {
-      return res.status(400).json({ message: "Missing required fields" });
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
     }
 
-    //Find if the product is already in the cart
-    let cart = await Cart.findOne( { userId });
+    const existingItem = cart.items.find((item) => item.product.toString() === productId);
 
-    if(!cart){
-      //If no cart exists for the user, create new one
-      cart = new Cart({
-        userId,
-        items: [],
-      });
+    if (existingItem) {
+      existingItem.quantity += quantity;
+    } else {
+      cart.items.push({ product: productId, quantity });
     }
-      // Check if the product already exists in the cart
-      const existingItem = cart.items.find(
-        (item) => item.product.toString() === productId
-      );
 
-      if (existingItem) {
-        // If the item already exists, update the quantity
-       existingItem.quantity += quantity;
-      } else {
-        // If the item doesn't exist, add it to the cart
-        cart.items.push({ 
-          product: productId, 
-          quantity,
-        });
-      }
     await cart.save();
-
-    res.status(200).json({ message: "Product added to cart", cart });
+    res.status(200).json({ message: "Product added to cart!", cart });
   } catch (error) {
     console.error("Error adding item to cart:", error);
     res.status(500).json({ message: "Error adding item to cart", error: error.message });
   }
 });
 
-// Get cart for a specific user
-router.get("/:userId", async (req, res) => {
-  const { userId } = req.params;
+
+// Remove Item from Cart
+router.delete("/remove/:userId/:productId", async (req, res) => {
+  if (!isValidObjectId(req.params.userId) || !isValidObjectId(req.params.productId)) {
+    return res.status(400).json({ message: "Invalid user or product ID format" });
+  }
 
   try {
-    const cart = await Cart.findOne({ userId }).populate("items.product");
+    const cart = await Cart.findOneAndUpdate(
+      { userId: req.params.userId },
+      { $pull: { items: { product: req.params.productId } } },
+      { new: true }
+    );
 
-    if (!cart) {
-      return res.status(404).json({ message: "Cart not found" });
-    }
-
-    res.status(200).json(cart);
+    res.status(200).json({ message: "Item removed", cart });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching cart", error });
+    res.status(500).json({ message: "Error removing item", error });
   }
 });
 

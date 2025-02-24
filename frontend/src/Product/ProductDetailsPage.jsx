@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../Context/AuthContext";
+import { useCart } from "../Context/CartContext";
 import axios from "axios";
 
 function ProductDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth(); // Get the logged-in user from context
+  const { user } = useAuth(); 
+  const { fetchCart } = useCart();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -63,28 +65,35 @@ function ProductDetailsPage() {
   };
 
   const handleAddToCart = async () => {
-    if (!user) {
+    if (!user || !user._id) {
       alert("You must be logged in to add to cart");
       return;
     }
-
+  
+    if (!product || !product._id) {
+      alert("Invalid product data");
+      return;
+    }
+  
     try {
       const response = await axios.post("http://localhost:5000/api/cart/add", {
         userId: user._id,
         productId: product._id,
         quantity: quantity,
       });
-
+  
       if (response.status === 200) {
-        alert("Product added to cart");
+        alert("Product added to cart!");
+        await fetchCart();
       } else {
         alert("Error adding to cart");
       }
     } catch (error) {
-      console.error("Error adding to cart:", error);
-      alert("Error adding to cart");
+      console.error("Error adding to cart:", error.response?.data || error.message);
+      alert(error.response?.data?.message || "Failed to add to cart");
     }
   };
+  
 
   const incrementQuantity = () => {
     setQuantity((prevQuantity) => prevQuantity + 1);

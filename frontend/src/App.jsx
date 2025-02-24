@@ -8,6 +8,7 @@ import BookAppointment from "./BookAppointment/BookAppointment";
 import ProductsPage from "./Product/ProductsPage";
 import ProductDetailsPage from "./Product/ProductDetailsPage";
 import Services from "./Services/Services";
+import ServiceDetails from "./Services/ServiceDetails";
 import AboutUs from "./Aboutus/Aboutus";
 import Enroll from "./Enroll/Enroll";
 import CourseProgress from "./Enroll/CourseProgress";
@@ -48,6 +49,7 @@ export default function App() {
                     <Route path="/products" element={<ProductsPage />} />
                     <Route path="/products/product/:id" element={<ProductDetailsPage />} />
                     <Route path="/services" element={<Services />} />
+                    <Route path="/services/:id" element={<ServiceDetails />} />
                     <Route path="/aboutus" element={<AboutUs />} />
                     <Route path="/enroll" element={<Enroll />} />
                     <Route path="/courses/progress/:enrollmentId" element={<CourseProgress />} />

@@ -5,27 +5,25 @@ import { useAuth } from '../Context/AuthContext';
 import { useCart } from "../Context/CartContext";
 
 const Navbar = () => {
-  const { user, logout } = useAuth(); // Get user and logout from AuthContext
-  const [isOpen, setIsOpen] = useState(false);
-  const location = useLocation();
+  const { user, logout } = useAuth();
+  const { cart } = useCart();  // Get cart data
   const navigate = useNavigate();
-  const { cart } = useCart();
-  const cartCount = cart.length;
+  const location = useLocation();
+  const [isOpen, setIsOpen] = useState(false);
 
-  // Check if the current link is active
+  // Fix: Prevent crash if cart is null or undefined
+  const cartCount = cart?.items?.length ?? 0; 
+
   const isActive = (path) => location.pathname === path ? "text-pink-500" : "text-gray-800";
 
-  // Handle logout and redirect to homepage
   const handleLogout = () => {
-    logout(); // Logout and clear user data
-    navigate('/'); // Redirect to homepage
+    logout();
+    navigate('/');
   };
 
-  // Ensure Navbar is updated on login or logout
   useEffect(() => {
     if (user) {
-      // If user is logged in, set the navbar as logged in
-      setIsOpen(false);  // Close mobile menu if it's open
+      setIsOpen(false);
     }
   }, [user]);
 
@@ -33,7 +31,7 @@ const Navbar = () => {
     <nav className="w-full bg-white fixed z-50">
       <div className="mx-auto px-6">
         <div className="flex justify-between items-center h-32">
-          {/* Logo Area */}
+          {/* Logo */}
           <div className="flex-shrink-0 w-32 h-12 flex items-center justify-center">
             <img src={logo} alt="Logo" />
           </div>
@@ -48,42 +46,26 @@ const Navbar = () => {
             <Link to="/enroll" className={`${isActive("/enroll")} hover:text-pink-500 text-2xl font-medium`}>Enroll Now</Link>
           </div>
 
-          {user ? (
-            <>
-          <div className="cart">
-            <Link to="/cart">
-              Cart ({cartCount})
-            </Link>
-          </div>
-          </>
-          ) : (
-            <div></div>
-          )
-        }
-
-          {user ? (
-            <>
-          <div className="myAccount">
-            <Link to="/myAccount">
-              My Account
-            </Link>
-          </div>
-          </>
-          ) : (
-            <div></div>
-          )
-        }
+          {/* Cart & Account Section */}
+          {user && (
+            <div className="flex items-center space-x-6">
+              <Link to="/cart" className="text-gray-800 hover:text-pink-500 text-xl font-medium">
+                Cart ({cartCount}) 
+              </Link>
+              <Link to="/myAccount" className="text-gray-800 hover:text-pink-500 text-xl font-medium">
+                My Account
+              </Link>
+            </div>
+          )}
 
           {/* Auth Buttons */}
           {user ? (
-            <>
-              <button onClick={handleLogout} className={`${isActive("/login")} hover:text-pink-500 text-xl font-medium`}>
-                Logout
-              </button>
-            </>
+            <button onClick={handleLogout} className="hover:text-pink-500 text-xl font-medium">
+              Logout
+            </button>
           ) : (
             <div className="hidden md:flex items-center space-x-6">
-              <Link to="/login" className={`${isActive("/login")} hover:text-pink-500 text-xl font-medium`}>Login</Link>
+              <Link to="/login" className="hover:text-pink-500 text-xl font-medium">Login</Link>
               <Link to="/register">
                 <button className="bg-pink-500 text-white px-8 py-3 rounded-full hover:bg-pink-600 transition-colors text-xl">
                   Sign up
@@ -92,12 +74,9 @@ const Navbar = () => {
             </div>
           )}
 
-          {/* Mobile menu button */}
+          {/* Mobile Menu Button */}
           <div className="md:hidden">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="text-gray-800 hover:text-pink-500 focus:outline-none p-3"
-            >
+            <button onClick={() => setIsOpen(!isOpen)} className="text-gray-800 hover:text-pink-500 focus:outline-none p-3">
               <div className="w-8 h-1 bg-current mb-2"></div>
               <div className="w-8 h-1 bg-current mb-2"></div>
               <div className="w-8 h-1 bg-current"></div>
