@@ -28,21 +28,21 @@ const Footer = () => {
         </div>
 
         <div className="mt-8 md:absolute md:w-[226px] md:h-[241px] md:top-[111px] md:left-[1347px] text-center md:text-left">
-          <div className="md:absolute md:top-0 md:left-0 font-medium text-black text-[20px] md:text-[25px] leading-[normal] whitespace-nowrap">
+          <div className="md:absolute md:top-0 md:left-0 font-medium text-black text-[20px] md:text-[25px] whitespace-nowrap">
             +977 9805238286
           </div>
 
           <div className="flex justify-center md:block mt-4 md:mt-0">
-            <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer">
+            <a href="https://www.facebook.com/makeoverseer/" target="_blank">
               <img
-                className="w-[36px] h-auto md:w-[52px] md:h-auto mx-2 md:mx-0 md:absolute md:top-4 md:left-[87px]"
+                className="w-[36px] h-auto md:w-[52px] md:h-auto mx-2 md:mx-0 md:absolute md:top-[60px] md:left-0"
                 alt="Facebook"
                 src={facebook}
               />
             </a>
-            <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer">
+            <a href="https://www.instagram.com/seeras_makeover/" target="_blank">
               <img
-                className="w-[42px] h-auto md:w-[63px] md:h-auto mx-2 md:mx-0 md:absolute md:top-[93px] md:left-[81px]"
+                className="w-[42px] h-auto md:w-[63px] md:h-auto mx-2 md:mx-0 md:absolute md:top-[60px] md:left-[70px]"
                 alt="Instagram"
                 src={instagram}
               />

@@ -35,7 +35,6 @@ const CartPage = () => {
     return <div className="text-center text-red-500 py-8">{error}</div>;
   }
 
-  // 🚀 Debugging: Check if cart is undefined or empty
   console.log("Final Cart Data in UI:", cart);
 
   if (!cart || !cart.items || cart.items.length === 0) {

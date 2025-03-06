@@ -10,22 +10,21 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // Fix: Prevent crash if cart is null or undefined
   const cartCount = cart?.items?.length ?? 0; 
 
   const isActive = (path) => location.pathname === path ? "text-pink-500" : "text-gray-800";
 
+  useEffect(() => {
+    setIsLoggedIn(!!user);
+  }, [user]);
+
   const handleLogout = () => {
     logout();
     navigate('/');
   };
-
-  useEffect(() => {
-    if (user) {
-      setIsOpen(false);
-    }
-  }, [user]);
 
   return (
     <nav className="w-full bg-white fixed z-50">

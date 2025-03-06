@@ -1,22 +1,18 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from '../Context/AuthContext';
 
 const Login = () => {
-  const [formData, setFormData] = useState({ 
-    email: '', 
-    password: '' 
-  });
+  const { login } = useAuth();
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const navigate = useNavigate();
 
   const handleChange = (event) => {
-    const { name, value } = event.target;
-    setFormData({ 
-      ...formData, 
-      [name]: value });
-  }
+    setFormData({ ...formData, [event.target.name]: event.target.value });
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -24,39 +20,16 @@ const Login = () => {
       const response = await axios.post("http://localhost:5000/api/auth/login", formData);
 
       //Store user data in local storage
-      localStorage.setItem("token", response.data.token);
       localStorage.setItem("user", JSON.stringify(response.data.user));
 
-      console.log("User role after login:", response.data.user.role);
-
-      // Navigate based on user role
-      setTimeout (() => {
-      if (response.data.user.role === "admin") {
-        navigate("/admin"); // Redirect admin to Admin Dashboard
-      } 
-      else {
-        navigate("/"); // Redirect normal user to homepage
-      }
-    },100);
-      
-      setSuccessMessage(response.data.message);
-      setErrorMessage("");
-
-      //Store JWT token in local storage
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
-
-      //Redirect User
-      if (response.data.user.role === "admin") {
-        navigate("/admin");
-      } else {
-        navigate("/");
-      }
-      
+      login(response.data.user);
+      // Redirect based on role
+      navigate(response.data.user.role === "admin" ? "/admin" : "/");
     } catch (error) {
-        setErrorMessage(error.response?.data?.message || "Login failed. Please try again.");
+      setErrorMessage(error.response?.data?.message || "Login failed. Please try again.");
     }
   };
+  
   return (
     <div className="flex items-center justify-center h-screen bg-gray-100">
       <div className="w-full max-w-xl bg-white p-8 rounded-lg shadow-md">
