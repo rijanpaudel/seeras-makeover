@@ -32,6 +32,8 @@ const Footer = () => {
             +977 9805238286
           </div>
 
+          
+
           <div className="flex justify-center md:block mt-4 md:mt-0">
             <a href="https://www.facebook.com/makeoverseer/" target="_blank">
               <img

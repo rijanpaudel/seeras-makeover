@@ -66,10 +66,6 @@ const seedAdminUser = async() => {
     await adminUser.save();
     console.log("Admin User Created Sucessfully");
   }
-  else{
-    console.log("Admin User Already Exists");
-  }
-
   } catch (error) {
     console.error("Error seeding admin", error);
   }

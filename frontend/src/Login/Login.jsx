@@ -20,7 +20,17 @@ const Login = () => {
       const response = await axios.post("http://localhost:5000/api/auth/login", formData);
 
       //Store user data in local storage
+      localStorage.setItem("token", response.data.token);
       localStorage.setItem("user", JSON.stringify(response.data.user));
+
+      // Fetch cart immediately after login
+    try {
+      console.log("Fetching cart after login...");
+      const cartResponse = await axios.get(`http://localhost:5000/api/cart/${response.data.user._id}`);
+      console.log("Cart after login:", cartResponse.data);
+    } catch (error) {
+      console.error("Failed to fetch cart after login:", error);
+    }
 
       login(response.data.user);
       // Redirect based on role
@@ -29,7 +39,7 @@ const Login = () => {
       setErrorMessage(error.response?.data?.message || "Login failed. Please try again.");
     }
   };
-  
+
   return (
     <div className="flex items-center justify-center h-screen bg-gray-100">
       <div className="w-full max-w-xl bg-white p-8 rounded-lg shadow-md">

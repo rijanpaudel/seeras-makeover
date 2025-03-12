@@ -26,7 +26,17 @@ const AdminProducts = () => {
   const fetchProducts = async () => {
     try {
       const response = await axios.get("http://localhost:5000/api/products");
-      setProducts(response.data);
+      const products = response.data;
+
+      //Fix image URL if they are relative
+      const updatedProducts = products.map((product) => {
+        if(product.image && product.image.startsWith("/uploads")){
+          product.image = `http://localhost:5000${product.image}`;
+        }
+        return product;
+      });
+
+      setProducts(updatedProducts);
     } catch (error) {
       setError("Failed to load products.");
     } finally {

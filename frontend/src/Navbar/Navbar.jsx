@@ -1,19 +1,32 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import logo from "../assets/logo.png";
+import { FaUserCircle } from "react-icons/fa";
+import { FaShoppingCart } from "react-icons/fa";
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../Context/AuthContext';
-import { useCart } from "../Context/CartContext";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
-  const { cart } = useCart();  // Get cart data
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
 
-  // Fix: Prevent crash if cart is null or undefined
-  const cartCount = cart?.items?.length ?? 0; 
+  useEffect(() => {
+    const fetchCartCount = async () => {
+      if (!user?._id) return; // Don't fetch if no user
+      try {
+        const response = await axios.get(`http://localhost:5000/api/cart/${user._id}`);
+        setCartCount(response.data.items.length);
+      } catch (error) {
+        console.error("Error fetching cart count:", error);
+      }
+    };
+
+    fetchCartCount();
+  }, [user]); // Runs when user logs in
 
   const isActive = (path) => location.pathname === path ? "text-pink-500" : "text-gray-800";
 
@@ -48,11 +61,16 @@ const Navbar = () => {
           {/* Cart & Account Section */}
           {user && (
             <div className="flex items-center space-x-6">
-              <Link to="/cart" className="text-gray-800 hover:text-pink-500 text-xl font-medium">
-                Cart ({cartCount}) 
+              <Link to="/cart" className="relative">
+                <FaShoppingCart className="text-gray-800 text-3xl hover:text-pink-500" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
+                    {cartCount}
+                  </span>
+                )}
               </Link>
               <Link to="/myAccount" className="text-gray-800 hover:text-pink-500 text-xl font-medium">
-                My Account
+                <FaUserCircle size={32} className="text-gray-800 hover:text-pink-500" />
               </Link>
             </div>
           )}

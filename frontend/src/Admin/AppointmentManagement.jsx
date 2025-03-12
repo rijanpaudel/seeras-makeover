@@ -3,10 +3,10 @@ import { Calendar, Edit2, X, Plus } from "lucide-react";
 
 const AppointmentManagement = () => {
   const [appointments] = useState([
-    { id: 1, customer: 'John Doe', service: 'Bridal Makeup', date: '2024-03-15', time: '10:00 AM', status: 'Confirmed' },
-    { id: 2, customer: 'Jane Smith', service: 'Hair Styling', date: '2024-03-16', time: '2:30 PM', status: 'Pending' },
-    { id: 3, customer: 'Alice Johnson', service: 'Gel Nails', date: '2024-03-16', time: '4:00 PM', status: 'Cancelled' },
-    { id: 4, customer: 'Emily Davis', service: 'Hair Coloring', date: '2024-03-17', time: '11:30 AM', status: 'Confirmed' }
+    { id: 1, customer: 'Ram Thapa', service: 'Bridal Makeup', date: '2024-03-15', time: '10:00 AM', status: 'Confirmed' },
+    { id: 2, customer: 'Bishal Karki', service: 'Hair Styling', date: '2024-03-16', time: '2:30 PM', status: 'Pending' },
+    { id: 3, customer: 'Arbit Bhandari', service: 'Gel Nails', date: '2024-03-16', time: '4:00 PM', status: 'Cancelled' },
+    { id: 4, customer: 'Rijan Paudel', service: 'Hair Coloring', date: '2024-03-17', time: '11:30 AM', status: 'Confirmed' }
   ]);
 
   return (

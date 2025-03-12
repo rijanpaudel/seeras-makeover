@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../Context/AuthContext";
-import { useCart } from "../Context/CartContext";
 import axios from "axios";
 
 function ProductDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth(); 
-  const { fetchCart } = useCart();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -41,6 +39,17 @@ function ProductDetailsPage() {
       fetchProduct();
     }
   }, [id]);
+
+  const fetchCart = async () => {
+    if (!user?._id) return;
+    try {
+      const response = await axios.get(`http://localhost:5000/api/cart/${user._id}`);
+      console.log("Updated Cart Data:", response.data);
+    } catch (error) {
+      console.error("Error fetching cart:", error);
+    }
+  };
+
 
   const handleWishListToggle = async () => {
     if (!user) {

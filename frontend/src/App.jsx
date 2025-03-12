@@ -10,15 +10,15 @@ import ProductDetailsPage from "./Product/ProductDetailsPage";
 import CheckoutPage from "./Product/CheckoutPage";
 import Services from "./Services/Services";
 import ServiceDetails from "./Services/ServiceDetails";
-import AboutUs from "./Aboutus/Aboutus";
+import AboutUs from "./AboutUs/AboutUs";
 import Enroll from "./Enroll/Enroll";
 import CourseProgress from "./Enroll/CourseProgress";
 import Footer from "./Footer/Footer";
 import Copyright from "./Copyright/Copyright";
 import MyAccount from "./MyAccount/MyAccount";
 import { AuthProvider } from "./Context/AuthContext";
-import { CartProvider } from "./Context/CartContext";
 import AdminApp from "./Admin/AdminApp";
+import CartPage from "./Product/CartPage";
 
 export default function App() {
   // Scroll to top component
@@ -32,11 +32,9 @@ export default function App() {
   };
   return (
     <AuthProvider>
-      <CartProvider>
         <Router>
           <ScrollToTop />
           <Routes>
-            {/* ✅ Routes that should include Navbar & Footer */}
             <Route
               path="/*"
               element={
@@ -49,6 +47,7 @@ export default function App() {
                     <Route path="/bookappointment" element={<BookAppointment />} />
                     <Route path="/products" element={<ProductsPage />} />
                     <Route path="/products/product/:id" element={<ProductDetailsPage />} />
+                    <Route path="/cart" element={<CartPage />} />
                     <Route path="/checkout" element={<CheckoutPage />} />
                     <Route path="/services" element={<Services />} />
                     <Route path="/services/:id" element={<ServiceDetails />} />
@@ -66,7 +65,6 @@ export default function App() {
           </Routes>
 
         </Router>
-      </CartProvider>
     </AuthProvider>
   );
 }
