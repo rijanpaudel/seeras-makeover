@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../Context/AuthContext";
 import axios from "axios";
@@ -8,6 +8,7 @@ const CheckoutPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { product, quantity } = location.state || {}; // Get product & quantity from Buy Now button
+  const [cartItems, setCartItems] = useState([]);
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -32,34 +33,112 @@ const CheckoutPage = () => {
     setError("");
 
     try {
-      const response = await axios.post("http://localhost:5000/api/orders/place", {
-        userId: user._id,
-        productId: product._id,
-        quantity,
-        ...formData,
-      });
+      if (product) {
+        // ✅ Buy Now
+        const response = await axios.post("http://localhost:5000/api/orders/place", {
+          userId: user._id,
+          items: [
+            {
+              productId: product._id,
+              quantity,
+            }
+          ],
+          ...formData,
+        });
 
-      if (response.status === 201) {
-        alert("Order placed successfully!");
-        navigate("/"); // Redirect to home page after success
+        if (response.status === 201) {
+          alert("Order placed successfully!");
+          navigate("/");
+        }
+
+      } else if (cartItems.length > 0) {
+        // ✅ Cart Checkout
+        const cartOrderItems = cartItems.map(item => ({
+          productId: item.product._id,
+          quantity: item.quantity,
+        }));
+
+        const response = await axios.post("http://localhost:5000/api/orders/place", {
+          userId: user._id,
+          items: cartOrderItems,
+          ...formData,
+        });
+
+        if (response.status === 201) {
+          alert("Cart order placed successfully!");
+          navigate("/");
+        }
+
+      } else {
+        alert("No items to place an order!");
       }
+
     } catch (error) {
-      setError("Failed to place order. Try again.");
       console.error("Order error:", error);
+      setError("Failed to place order. Try again.");
     } finally {
       setLoading(false);
     }
   };
 
+
+  useEffect(() => {
+    const fetchCartItems = async () => {
+      if (!user?._id || product) return; // Don't fetch if buy now
+      try {
+        const response = await axios.get(`http://localhost:5000/api/cart/${user._id}`);
+        console.log("Cart Items for Checkout:", response.data.items);
+        setCartItems(response.data.items);
+      } catch (error) {
+        console.error("Failed to fetch cart items for checkout", error);
+      }
+    };
+
+    fetchCartItems();
+  }, [user, product]);
+
+  const handleBuyNow = () => {
+    if (!user) {
+      alert("You must be logged in to proceed.");
+      return;
+    }
+  
+    navigate("/checkout", {
+      state: { 
+        product:{ _id, image, title, price }, 
+        quantity: quantity 
+      },
+    });
+  };
+
+
   return (
     <div className="container mx-auto px-4 py-16">
       <h2 className="text-2xl font-bold mb-6">Checkout</h2>
 
-      <div className="border p-4 rounded-lg mb-6">
-        <h3 className="text-xl font-semibold">{product.title}</h3>
-        <p>Price: Rs {product.price}</p>
-        <p>Quantity: {quantity}</p>
-      </div>
+      {/* Show Buy Now product */}
+      {product && (
+        <div className="border p-4 rounded-lg mb-6">
+          <h3 className="text-xl font-semibold">{product.title}</h3>
+          <p>Price: Rs {product.price}</p>
+          <p>Quantity: {quantity}</p>
+        </div>
+      )}
+
+      {/* Show Cart Items */}
+      {!product && cartItems.length > 0 && (
+        <div className="border p-4 rounded-lg mb-6">
+          <h3 className="text-xl font-semibold mb-4">Cart Items</h3>
+          {cartItems.map(item => (
+            <div key={item.product._id} className="mb-4 border-b pb-2">
+              <h4 className="text-lg">{item.product.title}</h4>
+              <p>Price: Rs {item.product.price}</p>
+              <p>Quantity: {item.quantity}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -100,7 +179,7 @@ const CheckoutPage = () => {
 
         {error && <p className="text-red-500">{error}</p>}
 
-        <button type="submit" className="bg-pink-500 text-white px-6 py-3 rounded hover:bg-pink-600">
+        <button type="submit" onClick={handleBuyNow} className="bg-pink-500 text-white px-6 py-3 rounded hover:bg-pink-600">
           {loading ? "Placing Order..." : "Place Order"}
         </button>
       </form>

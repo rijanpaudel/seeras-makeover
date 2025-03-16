@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useToast } from '../Context/ToastContext';
 import axios from "axios";
 
 const Register = () => {
@@ -12,8 +13,7 @@ const Register = () => {
     confirmPassword: ''
   });//formData holds the data entered by user
 
-  const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  const { showToast } = useToast();
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -27,25 +27,22 @@ const Register = () => {
     event.preventDefault(); //This prevents the page to refresh when user submits the form and 
 
     if (Object.values(formData).some(value => value.trim() === '')) {
-      showError("Please fill in all the fields.");
+      showToast("Please fill in all the fields.");
     }// This checks if any of the field is empty
 
     else if (formData.password < 6) {
-      showError('Password must have greater than 6 digits');
+      showToast('Password must have greater than 6 digits');
       return;
     }
 
     else if (formData.password != formData.confirmPassword) {
-      showError('Password do not match');
+      showToast('Password do not match');
       return;
     }
 
     try {
       //Send form data to backend API
       const response = await axios.post("http://localhost:5000/api/auth/register", formData);
-
-      setSuccessMessage(response.data.message);
-      setErrorMessage("");
 
       //Clear form after successfull registration
       setFormData({
@@ -58,16 +55,10 @@ const Register = () => {
       });
 
     } catch (error) {
-      showError(error.response?.data?.message || "Registration failed. Please try again");
+      showToast(error.response?.data?.message || "Registration failed. Please try again");
     }
   };
 
-  const showError = (message) => {
-    setErrorMessage(message);
-    setTimeout(() => {
-      setErrorMessage('');
-    }, 5000)
-  }
 
   return (
     <>
@@ -152,9 +143,6 @@ const Register = () => {
           </div>
         </div>
       </div>
-
-      {errorMessage && <div className="mt-4 p-3 bg-red-500 text-white text-center rounded">{errorMessage}</div>}
-      {successMessage && <div className="mb-4 p-3 bg-green-500 text-white text-center rounded">{successMessage}</div>}
     </>
   );
 };

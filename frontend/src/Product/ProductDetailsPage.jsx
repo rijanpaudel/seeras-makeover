@@ -119,7 +119,10 @@ function ProductDetailsPage() {
     }
   
     navigate("/checkout", {
-      state: { product, quantity },
+      state: { 
+        product:{ _id, image, title, price }, 
+        quantity: quantity 
+      },
     });
   };
 

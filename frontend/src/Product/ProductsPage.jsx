@@ -15,7 +15,7 @@ function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
-  const[selectedBrand, setSelectedBrand] = useState("");
+  const [selectedBrand, setSelectedBrand] = useState("");
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -146,12 +146,10 @@ function ProductsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 p-20">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-20 p-20">
         {filteredProducts.map(product => (
           <div key={product._id}>
-            <Link to={`/products/product/${product._id}`}>
-              <ProductCard {...product} />
-            </Link>
+            <ProductCard {...product} />
           </div>
         ))}
       </div>

@@ -4,7 +4,7 @@ import Navbar from "./Navbar/Navbar";
 import Register from "./Register/Register";
 import Login from "./Login/Login";
 import Home from "./Home/Home";
-import BookAppointment from "./BookAppointment/BookAppointment";
+import Appointment from "./Appointment/AppointmentService/Appointment"
 import ProductsPage from "./Product/ProductsPage";
 import ProductDetailsPage from "./Product/ProductDetailsPage";
 import CheckoutPage from "./Product/CheckoutPage";
@@ -19,6 +19,7 @@ import MyAccount from "./MyAccount/MyAccount";
 import { AuthProvider } from "./Context/AuthContext";
 import AdminApp from "./Admin/AdminApp";
 import CartPage from "./Product/CartPage";
+import { ToastProvider } from "./Context/ToastContext";
 
 export default function App() {
   // Scroll to top component
@@ -32,6 +33,7 @@ export default function App() {
   };
   return (
     <AuthProvider>
+      <ToastProvider>
         <Router>
           <ScrollToTop />
           <Routes>
@@ -44,7 +46,7 @@ export default function App() {
                     <Route path="/" element={<Home />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/login" element={<Login />} />
-                    <Route path="/bookappointment" element={<BookAppointment />} />
+                    <Route path="/appointment" element={<Appointment />} />
                     <Route path="/products" element={<ProductsPage />} />
                     <Route path="/products/product/:id" element={<ProductDetailsPage />} />
                     <Route path="/cart" element={<CartPage />} />
@@ -63,8 +65,8 @@ export default function App() {
             />
             <Route path="/admin/*" element={<AdminApp />} />
           </Routes>
-
         </Router>
+      </ToastProvider>
     </AuthProvider>
   );
 }

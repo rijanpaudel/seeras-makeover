@@ -2,18 +2,20 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../Context/AuthContext';
+import { useToast } from '../Context/ToastContext';
 
 const Login = () => {
   const { login } = useAuth();
   const [formData, setFormData] = useState({ email: '', password: '' });
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
   const navigate = useNavigate();
+  const { showToast } = useToast();
+
 
   const handleChange = (event) => {
     setFormData({ ...formData, [event.target.name]: event.target.value });
   };
 
+  
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
@@ -24,19 +26,20 @@ const Login = () => {
       localStorage.setItem("user", JSON.stringify(response.data.user));
 
       // Fetch cart immediately after login
-    try {
-      console.log("Fetching cart after login...");
-      const cartResponse = await axios.get(`http://localhost:5000/api/cart/${response.data.user._id}`);
-      console.log("Cart after login:", cartResponse.data);
-    } catch (error) {
-      console.error("Failed to fetch cart after login:", error);
-    }
+      try {
+        console.log("Fetching cart after login...");
+        const cartResponse = await axios.get(`http://localhost:5000/api/cart/${response.data.user._id}`);
+        console.log("Cart after login:", cartResponse.data);
+      } catch (error) {
+        console.error("Failed to fetch cart after login:", error);
+      }
 
       login(response.data.user);
+      showToast("Login successful!", "success");
       // Redirect based on role
       navigate(response.data.user.role === "admin" ? "/admin" : "/");
     } catch (error) {
-      setErrorMessage(error.response?.data?.message || "Login failed. Please try again.");
+      showToast(error.response?.data?.message || "Login failed. Please try again.", "error");
     }
   };
 
@@ -49,9 +52,9 @@ const Login = () => {
             <input
               type="email"
               placeholder="Email"
-              name = "email"
-              value = {formData.email}
-              onChange = {handleChange}
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
               className="w-full p-4 border border-gray-300 rounded"
             />
           </div>
@@ -59,9 +62,9 @@ const Login = () => {
             <input
               type="password"
               placeholder="Password"
-              name = "password"
-              value = {formData.password}
-              onChange = {handleChange}
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
               className="w-full p-4 border border-gray-300 rounded"
             />
           </div>
