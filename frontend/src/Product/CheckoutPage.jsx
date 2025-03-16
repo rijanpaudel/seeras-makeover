@@ -19,8 +19,9 @@ const CheckoutPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  if (!product) {
-    return <div className="text-center py-8 text-red-500">Error: No product selected.</div>;
+  // Check for valid product or cart items
+  if (!product && cartItems.length === 0) {
+    return <div className="text-center py-8 text-red-500">Error: No product selected or cart is empty.</div>;
   }
 
   const handleChange = (e) => {
@@ -34,7 +35,7 @@ const CheckoutPage = () => {
 
     try {
       if (product) {
-        // ✅ Buy Now
+        // Buy Now - Single product purchase
         const response = await axios.post("http://localhost:5000/api/orders/place", {
           userId: user._id,
           items: [
@@ -52,7 +53,7 @@ const CheckoutPage = () => {
         }
 
       } else if (cartItems.length > 0) {
-        // ✅ Cart Checkout
+        // Cart Checkout - Multiple items in cart
         const cartOrderItems = cartItems.map(item => ({
           productId: item.product._id,
           quantity: item.quantity,
@@ -81,7 +82,6 @@ const CheckoutPage = () => {
     }
   };
 
-
   useEffect(() => {
     const fetchCartItems = async () => {
       if (!user?._id || product) return; // Don't fetch if buy now
@@ -96,21 +96,6 @@ const CheckoutPage = () => {
 
     fetchCartItems();
   }, [user, product]);
-
-  const handleBuyNow = () => {
-    if (!user) {
-      alert("You must be logged in to proceed.");
-      return;
-    }
-  
-    navigate("/checkout", {
-      state: { 
-        product:{ _id, image, title, price }, 
-        quantity: quantity 
-      },
-    });
-  };
-
 
   return (
     <div className="container mx-auto px-4 py-16">
@@ -138,7 +123,6 @@ const CheckoutPage = () => {
           ))}
         </div>
       )}
-
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -179,7 +163,7 @@ const CheckoutPage = () => {
 
         {error && <p className="text-red-500">{error}</p>}
 
-        <button type="submit" onClick={handleBuyNow} className="bg-pink-500 text-white px-6 py-3 rounded hover:bg-pink-600">
+        <button type="submit" className="bg-pink-500 text-white px-6 py-3 rounded hover:bg-pink-600">
           {loading ? "Placing Order..." : "Place Order"}
         </button>
       </form>
