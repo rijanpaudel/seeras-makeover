@@ -6,8 +6,6 @@ const router = express.Router();
 // Add a new sub-service to a main service
 router.post("/add", addNewService);
 
-// // Serve images statically
-// router.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Edit an existing sub-service
 router.put("/edit/:id", editService);

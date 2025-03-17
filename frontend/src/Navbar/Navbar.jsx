@@ -52,7 +52,7 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-16">
             <Link to="/" className={`${isActive("/")} hover:text-pink-700 text-2xl font-medium`}>Home</Link>
             <Link to="/services" className={`${isActive("/services")} hover:text-pink-500 text-2xl font-medium`}>Services</Link>
-            <Link to="/bookappointment" className={`${isActive("/bookappointment")} hover:text-pink-500 text-2xl font-medium`}>Book Appointment</Link>
+            <Link to="/appointment" className={`${isActive("/bookappointment")} hover:text-pink-500 text-2xl font-medium`}>Book Appointment</Link>
             <Link to="/aboutus" className={`${isActive("/aboutus")} hover:text-pink-500 text-2xl font-medium`}>About us</Link>
             <Link to="/products" className={`${isActive("/products")} hover:text-pink-500 text-2xl font-medium`}>Products</Link>
             <Link to="/enroll" className={`${isActive("/enroll")} hover:text-pink-500 text-2xl font-medium`}>Enroll Now</Link>

@@ -4,7 +4,8 @@ import Navbar from "./Navbar/Navbar";
 import Register from "./Register/Register";
 import Login from "./Login/Login";
 import Home from "./Home/Home";
-import Appointment from "./Appointment/AppointmentService/Appointment"
+import AppointmentService from "./BookAppointment/AppointmentService";
+import SubservicesPage from "./BookAppointment/SubservicesPage";
 import ProductsPage from "./Product/ProductsPage";
 import ProductDetailsPage from "./Product/ProductDetailsPage";
 import CheckoutPage from "./Product/CheckoutPage";
@@ -46,7 +47,8 @@ export default function App() {
                     <Route path="/" element={<Home />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/login" element={<Login />} />
-                    <Route path="/appointment" element={<Appointment />} />
+                    <Route path="/appointment" element={<AppointmentService />} />
+                    <Route path="/appointment/subservice/:mainService" element={<SubservicesPage />} />
                     <Route path="/products" element={<ProductsPage />} />
                     <Route path="/products/product/:id" element={<ProductDetailsPage />} />
                     <Route path="/cart" element={<CartPage />} />
