@@ -27,11 +27,9 @@ const Login = () => {
 
       // Fetch cart immediately after login
       try {
-        console.log("Fetching cart after login...");
-        const cartResponse = await axios.get(`http://localhost:5000/api/cart/${response.data.user._id}`);
-        console.log("Cart after login:", cartResponse.data);
+        await axios.get(`http://localhost:5000/api/cart/${response.data.user._id}`);
       } catch (error) {
-        console.error("Failed to fetch cart after login:", error);
+        showToast(error);
       }
 
       login(response.data.user);

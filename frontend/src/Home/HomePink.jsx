@@ -14,9 +14,17 @@ const HomePink = ({
   const displayItems = services.length > 0 ? services : classes;
   const navigate = useNavigate();
   
-    const goToRoute = () => {
-      navigate("/bookappointment");
+  if(buttonName === "Book Appointment"){
+    var goToRoute = () => {
+      navigate("/appointment");
     }
+  }
+  else if(buttonName === "Enroll Now"){
+    var goToRoute = () => {
+      navigate("/enroll");
+    }
+  }
+    
 
   return (
     <div className="bg-pink-100 py-10 px-36">

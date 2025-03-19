@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useAuth } from "../Context/AuthContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const CartPage = () => {
   const { user } = useAuth();
@@ -9,6 +9,7 @@ const CartPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [updating, setUpdating] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCart = async () => {
@@ -18,16 +19,16 @@ const CartPage = () => {
         setLoading(false);
         return;
       }
-  
+
       try {
         console.log(`📡 Fetching cart for user: ${user._id}`);
         const response = await axios.get(`http://localhost:5000/api/cart/${user._id}`);
-        console.log("✅ Cart Data:", response.data);
-  
+        console.log("Cart Data:", response.data);
+
         if (!response.data.items || response.data.items.length === 0) {
           console.log("⚠️ Cart is empty.");
         }
-  
+
         setCart(response.data);
       } catch (error) {
         console.error("Error fetching cart:", error.response?.data || error.message);
@@ -36,18 +37,18 @@ const CartPage = () => {
         setLoading(false);
       }
     };
-  
+
     // Only fetch if user is available (avoids fetching on first load before auth is restored)
     if (user) {
       fetchCart();
     }
   }, [user]); // Dependency on user
-  
+
 
   const handleUpdateQuantity = async (productId, newQuantity) => {
     if (newQuantity < 1) return;
     setUpdating(true);
-    
+
     try {
       // This assumes you have an API endpoint to update quantity
       // If not, you'll need to create one or modify the add endpoint to handle updates
@@ -56,13 +57,13 @@ const CartPage = () => {
         productId,
         quantity: 1 // Add one more
       });
-      
+
       // Update the local state
       setCart(prevCart => ({
         ...prevCart,
-        items: prevCart.items.map(item => 
-          item.product._id === productId 
-            ? { ...item, quantity: newQuantity } 
+        items: prevCart.items.map(item =>
+          item.product._id === productId
+            ? { ...item, quantity: newQuantity }
             : item
         )
       }));
@@ -72,12 +73,21 @@ const CartPage = () => {
       setUpdating(false);
     }
   };
-  
+
+  const handleBuyNow = () => {
+    if (cart && cart.items.length > 0) {
+      // Send all cart items to the checkout page
+      navigate("/checkout", { state: { cartItems: cart.items } });
+    } else {
+      alert("Your cart is empty!");
+    }
+  }
+
   const handleRemoveItem = async (productId) => {
     setUpdating(true);
     try {
       await axios.delete(`http://localhost:5000/api/cart/remove/${user._id}/${productId}`);
-      
+
       // Update the local cart state
       setCart(prevCart => ({
         ...prevCart,
@@ -97,7 +107,7 @@ const CartPage = () => {
       </div>
     );
   }
-  
+
   if (error) {
     return (
       <div className="min-h-[60vh] flex flex-col justify-center items-center p-8">
@@ -135,19 +145,19 @@ const CartPage = () => {
   }
 
   // Calculate total price
-  const totalPrice = cart.items.reduce((total, item) => 
+  const totalPrice = cart.items.reduce((total, item) =>
     total + ((item.product?.price || 0) * item.quantity), 0);
 
   return (
     <div className="container mx-auto px-4 py-12 min-h-[60vh]">
       <h1 className="text-3xl font-bold mb-8 text-center">Your Shopping Cart</h1>
-      
+
       {updating && (
         <div className="fixed top-4 right-4 bg-pink-100 text-pink-800 px-4 py-2 rounded-md shadow-md z-50">
           Updating cart...
         </div>
       )}
-      
+
       <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
         <div className="hidden md:grid md:grid-cols-5 bg-gray-50 p-4 border-b text-gray-600 font-medium">
           <div className="col-span-2">Product</div>
@@ -155,16 +165,16 @@ const CartPage = () => {
           <div className="text-center">Quantity</div>
           <div className="text-right">Subtotal</div>
         </div>
-        
+
         <div className="divide-y">
           {cart.items.map((item) => (
             <div key={item._id} className="p-4 md:grid md:grid-cols-5 md:gap-4 items-center">
               <div className="col-span-2 flex items-center space-x-4 mb-4 md:mb-0">
                 <div className="w-16 h-16 bg-gray-100 rounded-md flex-shrink-0 flex items-center justify-center">
                   {item.product?.image ? (
-                    <img 
-                      src={item.product.image} 
-                      alt={item.product?.title || "Product"} 
+                    <img
+                      src={item.product.image}
+                      alt={item.product?.title || "Product"}
                       className="w-full h-full object-cover rounded-md"
                     />
                   ) : (
@@ -183,16 +193,16 @@ const CartPage = () => {
                   </button>
                 </div>
               </div>
-              
+
               <div className="text-gray-800 md:text-center mb-4 md:mb-0">
                 <span className="md:hidden text-gray-500 mr-2">Price:</span>
                 Rs {item.product?.price || "N/A"}
               </div>
-              
+
               <div className="md:text-center mb-4 md:mb-0">
                 <span className="md:hidden text-gray-500 mr-2">Quantity:</span>
                 <div className="inline-flex items-center border rounded-md">
-                  <button 
+                  <button
                     onClick={() => handleUpdateQuantity(item.product._id, item.quantity - 1)}
                     disabled={item.quantity <= 1}
                     className="px-3 py-1 border-r hover:bg-gray-100 transition-colors disabled:opacity-50"
@@ -200,7 +210,7 @@ const CartPage = () => {
                     -
                   </button>
                   <span className="px-4 py-1">{item.quantity}</span>
-                  <button 
+                  <button
                     onClick={() => handleUpdateQuantity(item.product._id, item.quantity + 1)}
                     className="px-3 py-1 border-l hover:bg-gray-100 transition-colors"
                   >
@@ -208,7 +218,7 @@ const CartPage = () => {
                   </button>
                 </div>
               </div>
-              
+
               <div className="text-gray-800 font-semibold md:text-right">
                 <span className="md:hidden text-gray-500 mr-2">Subtotal:</span>
                 Rs {(item.product?.price || 0) * item.quantity}
@@ -217,10 +227,10 @@ const CartPage = () => {
           ))}
         </div>
       </div>
-      
+
       <div className="bg-white rounded-xl shadow-lg overflow-hidden p-6 md:w-1/2 md:ml-auto">
         <h2 className="text-xl font-bold mb-4 pb-2 border-b">Order Summary</h2>
-        
+
         <div className="space-y-3 mb-6">
           <div className="flex justify-between">
             <span className="text-gray-600">Subtotal</span>
@@ -235,16 +245,16 @@ const CartPage = () => {
             <span className="font-bold text-lg">Rs {totalPrice}</span>
           </div>
         </div>
-        
+
         <div className="space-y-3">
-          <Link 
-            to="/checkout" 
+          <button
+            onClick={handleBuyNow}
             className="block w-full bg-pink-500 hover:bg-pink-600 text-white text-center font-semibold py-3 rounded-lg transition-colors"
           >
             Proceed to Checkout
-          </Link>
-          <Link 
-            to="/products" 
+          </button>
+          <Link
+            to="/products"
             className="block w-full bg-white border border-gray-300 hover:bg-gray-50 text-gray-800 text-center font-medium py-3 rounded-lg transition-colors"
           >
             Continue Shopping

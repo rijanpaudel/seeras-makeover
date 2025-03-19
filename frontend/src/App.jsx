@@ -6,6 +6,7 @@ import Login from "./Login/Login";
 import Home from "./Home/Home";
 import AppointmentService from "./BookAppointment/AppointmentService";
 import SubservicesPage from "./BookAppointment/SubservicesPage";
+import DateTimeSelector from "./BookAppointment/DateTimeSelector";
 import ProductsPage from "./Product/ProductsPage";
 import ProductDetailsPage from "./Product/ProductDetailsPage";
 import CheckoutPage from "./Product/CheckoutPage";
@@ -49,6 +50,7 @@ export default function App() {
                     <Route path="/login" element={<Login />} />
                     <Route path="/appointment" element={<AppointmentService />} />
                     <Route path="/appointment/subservice/:mainService" element={<SubservicesPage />} />
+                    <Route path="/datetime/:subServiceId" element={<DateTimeSelector />} />
                     <Route path="/products" element={<ProductsPage />} />
                     <Route path="/products/product/:id" element={<ProductDetailsPage />} />
                     <Route path="/cart" element={<CartPage />} />

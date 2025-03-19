@@ -1,6 +1,8 @@
 import React from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 
 export const ServiceCard = ({ title, duration, price, onSelect }) => {
+  const navigate = useNavigate();
   return (
     <div className="w-full border-b border-gray-300">
       <div className="flex flex-wrap justify-between items-center py-6">
@@ -15,7 +17,6 @@ export const ServiceCard = ({ title, duration, price, onSelect }) => {
         </div>
         <div className="text-xl font-medium">{price}</div>
         <button 
-          onClick={onSelect}
           className="px-10 py-2 text-lg text-pink-500 bg-white border border-pink-500 rounded-full hover:bg-pink-50 focus:outline-none"
           aria-label={`Select ${title} service`}
         >

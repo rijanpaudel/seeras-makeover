@@ -3,18 +3,33 @@ import mongoose from "mongoose";
 
 // Place an order
 export const placeOrder = async (req, res) => {
-  const { userId, productId, quantity, fullName, address, phoneNumber } = req.body;
+  const { userId, items, fullName, address, phoneNumber } = req.body;
 
-  if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(productId)) {
-    return res.status(400).json({ message: "Invalid user or product ID format" });
+  // Validate that all required fields are provided
+  if (!userId || !fullName || !address || !phoneNumber || !Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ message: "Missing required fields. Please check the data." });
+  }
+
+  //Ensure each item has a valid product and quantity
+  for (let item of items) {
+    if (!item.productId || !item.quantity) {
+      return res.status(400).json({ message: "Each item must have a valid product and quantity." });
+    }
   }
 
   try {
+
+    console.log("Order data received:", req.body);
+
+
     const newOrder = new Order({
       userId,
-      product: productId,
-      quantity,
+      items: items.map(item => ({
+        product: item.productId,
+        quantity: item.quantity
+      })),
       deliveryDetails: { fullName, address, phoneNumber },
+      status: "Pending",
     });
 
     await newOrder.save();
@@ -28,7 +43,7 @@ export const placeOrder = async (req, res) => {
 // Get all orders for Admin
 export const getAllOrders = async (req, res) => {
   try {
-    const orders = await Order.find().populate("userId", "email").populate("product");
+    const orders = await Order.find().populate("userId", "email").populate("items.product");
     res.status(200).json(orders);
   } catch (error) {
     console.error("Error fetching orders:", error);

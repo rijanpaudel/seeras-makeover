@@ -9,12 +9,16 @@ export const bookAppointment = async (req, res) => {
     return res.status(400).json({ message: "Invalid user or sub service ID format" });
   }
 
+  const appointmentTimeObj = new Date(appointmentDate);
+  const [hour, minute] = appointmentTime.split(":");
+  appointmentTimeObj.setHours(hour, minute);
+
   try {
     const newAppointment = new Appointment({
       userId,
-      subService: subserviceId,
-      appointmentDate,
-      appointmentTime,
+      subserviceId,
+      appointmentDate: new Date(appointmentDate),
+      appointmentTime: appointmentTimeObj,
     });
 
     await newAppointment.save();

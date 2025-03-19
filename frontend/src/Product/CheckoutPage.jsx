@@ -7,8 +7,7 @@ const CheckoutPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const { product, quantity } = location.state || {}; // Get product & quantity from Buy Now button
-  const [cartItems, setCartItems] = useState([]);
+  const { product, quantity, cartItems } = location.state || {}; // Get product & quantity from Buy Now button
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -19,11 +18,6 @@ const CheckoutPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Check for valid product or cart items
-  if (!product && cartItems.length === 0) {
-    return <div className="text-center py-8 text-red-500">Error: No product selected or cart is empty.</div>;
-  }
-
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -33,68 +27,55 @@ const CheckoutPage = () => {
     setLoading(true);
     setError("");
 
+    // Ensure all required fields are populated
+    if (!formData.fullName || !formData.address || !formData.phoneNumber) {
+      setError("Please provide all the required fields");
+      setLoading(false);
+      return;
+    }
+
+
     try {
+      let orderData = {
+        userId: user._id,
+        fullName: formData.fullName,
+        address: formData.address,
+        phoneNumber: formData.phoneNumber,
+      };
+
       if (product) {
-        // Buy Now - Single product purchase
-        const response = await axios.post("http://localhost:5000/api/orders/place", {
-          userId: user._id,
-          items: [
-            {
-              productId: product._id,
-              quantity,
-            }
-          ],
-          ...formData,
-        });
-
-        if (response.status === 201) {
-          alert("Order placed successfully!");
-          navigate("/");
-        }
-
-      } else if (cartItems.length > 0) {
-        // Cart Checkout - Multiple items in cart
-        const cartOrderItems = cartItems.map(item => ({
+        // For single product purchase
+        orderData.items = [{ productId: product._id, quantity }];
+      }
+      else if (cartItems.length > 0) {
+        // For cart checkout (multiple products)
+        orderData.items = cartItems.map((item) => ({
           productId: item.product._id,
           quantity: item.quantity,
         }));
-
-        const response = await axios.post("http://localhost:5000/api/orders/place", {
-          userId: user._id,
-          items: cartOrderItems,
-          ...formData,
-        });
-
-        if (response.status === 201) {
-          alert("Cart order placed successfully!");
-          navigate("/");
-        }
-
-      } else {
-        alert("No items to place an order!");
+      }
+      else {
+        alert("No items to place an order");
+        setLoading(false);
+        return;
       }
 
+      const response = await axios.post("http://localhost:5000/api/orders/place", orderData);
+
+      if (response.status === 201) {
+        alert("Order placed successfully!");
+        navigate("/");
+      }
     } catch (error) {
       console.error("Order error:", error);
-      setError("Failed to place order. Try again.");
+      setError(error.response ? error.response.data.message : "Something went wrong");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    const fetchCartItems = async () => {
-      if (!user?._id || product) return; // Don't fetch if buy now
-      try {
-        const response = await axios.get(`http://localhost:5000/api/cart/${user._id}`);
-        console.log("Cart Items for Checkout:", response.data.items);
-        setCartItems(response.data.items);
-      } catch (error) {
-        console.error("Failed to fetch cart items for checkout", error);
-      }
-    };
 
-    fetchCartItems();
+  useEffect(() => {
   }, [user, product]);
 
   return (

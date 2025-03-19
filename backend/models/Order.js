@@ -2,14 +2,18 @@ import mongoose from "mongoose";
 
 const orderSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  product: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
-  quantity: { type: Number, required: true },
+  items: [
+    {
+      product: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
+      quantity: { type: Number, required: true },
+    }
+  ],
   deliveryDetails: {
     fullName: { type: String, required: true },
     address: { type: String, required: true },
     phoneNumber: { type: String, required: true },
   },
-  status: { type: String, default: "Pending" }, // Order status (Pending, Delivered, etc.)
+  status: { type: String, default: "Pending" },
   createdAt: { type: Date, default: Date.now }
 });
 
