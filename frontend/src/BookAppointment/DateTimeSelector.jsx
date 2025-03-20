@@ -1,15 +1,16 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../Context/AuthContext';
 
 const DateTimeSelector = () => {
-  const { subServiceId } = useParams();
+  const { subServiceId } = useParams(); 
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [calendarDays, setCalendarDays] = useState([]);
-  const navigate = useNavigate();
-  
+  const { user } = useAuth();
+
   const weekdays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
   
   const timeSlots = [
@@ -18,6 +19,7 @@ const DateTimeSelector = () => {
     '1:00 AM',
     '2:00 AM'
   ];
+
 
   useEffect(() => {
     const year = currentMonth.getFullYear();
@@ -103,7 +105,7 @@ const DateTimeSelector = () => {
 
       try {
         const response = await axios.post("http://localhost:5000/api/appointments/book", {
-          userId : userId,
+          userId : user._id,
           subServiceId: subServiceId,
           appointmentDate: formattedDate,
           appointmentTime: appointmentTime,
@@ -128,14 +130,12 @@ const DateTimeSelector = () => {
       currentMonth.getFullYear() === today.getFullYear()
     );
   };
-  
+
 
   return (
     <div className="container mx-auto px-4">
       <h1 className="text-4xl font-bold text-center my-8">Book your appointment now</h1>
-      
       <h2 className="text-2xl font-medium mb-8">Select Date and Time</h2>
-      
       <div className="flex flex-col md:flex-row gap-8">
         {/* Calendar Section */}
         <div className="flex-1">
