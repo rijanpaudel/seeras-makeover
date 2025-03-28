@@ -22,6 +22,7 @@ import { AuthProvider } from "./Context/AuthContext";
 import AdminApp from "./Admin/AdminApp";
 import CartPage from "./Product/CartPage";
 import { ToastProvider } from "./Context/ToastContext";
+import AppointmentConfirmation from "./BookAppointment/AppointmentConfirmation";
 
 export default function App() {
   // Scroll to top component
@@ -51,6 +52,7 @@ export default function App() {
                     <Route path="/appointment" element={<AppointmentService />} />
                     <Route path="/appointment/subservice/:mainService" element={<SubservicesPage />} />
                     <Route path="/datetimeselector/:subServiceId" element={<DateTimeSelector />} />
+                    <Route path="/confirmation" element={<AppointmentConfirmation />} />
                     <Route path="/products" element={<ProductsPage />} />
                     <Route path="/products/product/:id" element={<ProductDetailsPage />} />
                     <Route path="/cart" element={<CartPage />} />

@@ -15,11 +15,12 @@ const DateTimeSelector = () => {
   
   const timeSlots = [
     '11:00 AM',
-    '12:00 AM',
-    '1:00 AM',
-    '2:00 AM'
+    '12:00 PM',
+    '1:00 PM',
+    '2:00 PM'
   ];
 
+  const navigate = useNavigate();
 
   useEffect(() => {
     const year = currentMonth.getFullYear();
@@ -61,7 +62,6 @@ const DateTimeSelector = () => {
     
   }, [currentMonth]);
 
-  // Format month and year for display
   const formatMonthYear = () => {
     const options = { month: 'long', year: 'numeric' };
     return currentMonth.toLocaleDateString('en-US', options);
@@ -103,34 +103,25 @@ const DateTimeSelector = () => {
 
       const appointmentTime = selectedTime;
 
-      try {
-        const response = await axios.post("http://localhost:5000/api/appointments/book", {
-          userId : user._id,
+      // Navigate to confirmation page with selected data
+      navigate('/confirmation', {
+        state: {
+          userId: user._id,
           subServiceId: subServiceId,
           appointmentDate: formattedDate,
           appointmentTime: appointmentTime,
-        });
-        console.log("Appointment Confirmed: ", response.data);
-      }
-      catch (error){
-        console.log("Error confirming appointment: ", error);
-      }
-    }
-    else {
-      console.log("Please select both data and time.");
+        },
+      });
+    } else {
+      console.log("Please select both date and time.");
     }
   };
 
-  // Check if the date is today
-  const isToday = (date) => {
+  const isDisabledDate = (date) => {
     const today = new Date();
-    return (
-      date === today.getDate() &&
-      currentMonth.getMonth() === today.getMonth() &&
-      currentMonth.getFullYear() === today.getFullYear()
-    );
+    const selectedDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), date);
+    return selectedDate < today;
   };
-
 
   return (
     <div className="container mx-auto px-4">
@@ -178,10 +169,11 @@ const DateTimeSelector = () => {
                     className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl font-medium ${
                       selectedDate === item.date
                         ? 'bg-blue-100 text-blue-500'
-                        : isToday(item.date)
-                        ? 'border border-blue-300'
+                        : isDisabledDate(item.date)
+                        ? 'bg-gray-200 cursor-not-allowed'
                         : 'hover:bg-gray-100'
                     }`}
+                    disabled={isDisabledDate(item.date)}
                   >
                     {item.date}
                   </button>
