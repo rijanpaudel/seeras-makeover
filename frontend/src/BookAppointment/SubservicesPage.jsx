@@ -35,8 +35,8 @@ const SubservicePage = () => {
 
       <div className="w-full">
         {subServices.length > 0 ? (
-          subServices.map((service) => (
-            <div key={service._id} className="border-b border-gray-300">
+          subServices.map((service, index) => (
+            <div key={service._subServiceId || `service-${index}`} className="border-b border-gray-300">
               <div className="flex justify-between items-center py-6">
                 <div className="flex flex-col">
                   <h3 className="text-xl font-medium">{service.name}</h3>
@@ -52,7 +52,7 @@ const SubservicePage = () => {
                   onClick={() => {
                     console.log(`Selected service: ${service.name}`);
                     // Navigate to DateTimeSelector with the selected service details
-                    navigate(`/datetimeselector/${service._id}`, { state: { service } });
+                    navigate(`/datetimeselector/${service._subServiceId}`, { state: { service } });
                   }}
                   className="px-10 py-2 text-pink-500 bg-white border border-pink-500 rounded-full hover:bg-pink-50 focus:outline-none"
                 >

@@ -65,7 +65,7 @@ export const editService = async (req, res) => {
     const updatedFields = { name, description, price, duration, mainService };
     if (image) updatedFields.image = image;
 
-    const subService = await SubService.findByIdAndUpdate(req.params.id, updatedFields, { new: true });
+    const subService = await SubService.findByIdAndUpdate(req.params.subServiceId, updatedFields, { new: true });
 
     if (!subService) {
       return res.status(404).json({ message: "Sub-service not found" });
@@ -82,7 +82,7 @@ export const editService = async (req, res) => {
 // Delete a sub-service
 export const deleteService = async (req, res) => {
   try {
-    const subService = await SubService.findByIdAndDelete(req.params.id);
+    const subService = await SubService.findByIdAndDelete(req.params.subServiceId);
 
     if (!subService) {
       return res.status(404).json({ message: "Sub-service not found" });
@@ -113,7 +113,7 @@ export const getAllService = async (req, res) => {
 // Get a specific sub-service by ID
 export const getSingleService = async (req, res) => {
   try {
-    const subService = await SubService.findById(req.params.id);
+    const subService = await SubService.findById(req.params.subServiceId);
 
     if (!subService) {
       return res.status(404).json({ message: "Sub-service not found" });

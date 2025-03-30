@@ -52,7 +52,7 @@ export default function App() {
                     <Route path="/appointment" element={<AppointmentService />} />
                     <Route path="/appointment/subservice/:mainService" element={<SubservicesPage />} />
                     <Route path="/datetimeselector/:subServiceId" element={<DateTimeSelector />} />
-                    <Route path="/confirmation" element={<AppointmentConfirmation />} />
+                    <Route path="/confirmation/:subServiceId" element={<AppointmentConfirmation />} />
                     <Route path="/products" element={<ProductsPage />} />
                     <Route path="/products/product/:id" element={<ProductDetailsPage />} />
                     <Route path="/cart" element={<CartPage />} />
