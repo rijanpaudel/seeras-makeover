@@ -3,14 +3,14 @@ import mongoose from "mongoose";
 
 // Book an appointment
 export const bookAppointment = async (req, res) => {
-  const { userId, subserviceId, appointmentDate, appointmentTime } = req.body;
+  const { userId, subServiceId, appointmentDate, appointmentTime } = req.body;
 
   // Check if all required fields are present
-  if (!userId || !subserviceId || !appointmentDate || !appointmentTime) {
+  if (!userId || !subServiceId || !appointmentDate || !appointmentTime) {
     return res.status(400).json({ message: "Missing required fields" });
   }
 
-  if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(subserviceId)) {
+  if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(subServiceId)) {
     return res.status(400).json({ message: "Invalid user or sub service ID format" });
   }
 
@@ -22,7 +22,7 @@ export const bookAppointment = async (req, res) => {
 
     const newAppointment = new Appointment({
       userId,
-      subserviceId,
+      subServiceId,
       appointmentDate: new Date(appointmentDate),
       appointmentTime: appointmentTimeObj,
     });

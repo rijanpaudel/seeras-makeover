@@ -1,20 +1,32 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 
 const AppointmentConfirmation = () => {
   const location = useLocation();
+  console.log("Location State:", location.state);
   const navigate = useNavigate();
-  const { userId, subServiceId, appointmentDate, appointmentTime } = location.state || {};
-  
+  const { subServiceId } = useParams();
+  const { userId, appointmentDate, appointmentTime } = location.state || {};
+
   const [subService, setSubService] = useState(null);
   const [notes, setNotes] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    // Check if we have all required data
+    if (!location.state || !userId || !appointmentDate || !appointmentTime) {
+      console.log("Missing required appointment data");
+      navigate('/'); // Redirect to home or show an error
+      return;
+    }
+
     const fetchSubServiceDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/sub-services/${subServiceId}`);
-        setSubService(response.data); 
+        const response = await axios.get(`http://localhost:5000/api/sub-services`, {
+          params: { id: subServiceId }
+        });
+        setSubService(response.data);
       } catch (error) {
         console.error("Error fetching subservice details:", error);
       }
@@ -22,10 +34,10 @@ const AppointmentConfirmation = () => {
     if (subServiceId) {
       fetchSubServiceDetails();
     }
-  }, [subServiceId]);
+  }, [subServiceId, location.state, userId, appointmentDate, appointmentTime]);
 
-  if (!subService) {
-    return <div>Loading...</div>;
+  if (!subService || !appointmentDate || !appointmentTime) {
+    return <div>Loading appointment details...</div>;
   }
 
   const handleNotesChange = (e) => {
@@ -33,6 +45,7 @@ const AppointmentConfirmation = () => {
   };
 
   const handleConfirm = async () => {
+    setIsSubmitting(true);
     try {
       const response = await axios.post("http://localhost:5000/api/appointments/book", {
         userId,
@@ -42,9 +55,12 @@ const AppointmentConfirmation = () => {
         notes,
       });
       console.log("Appointment Confirmed: ", response.data);
-      navigate("/home");
+      navigate("/");
     } catch (error) {
       console.error("Error confirming appointment:", error);
+    }
+    finally{
+      setIsSubmitting(false);
     }
   };
 
@@ -70,9 +86,12 @@ const AppointmentConfirmation = () => {
 
       <button
         onClick={handleConfirm}
-        className="bg-pink-500 text-white px-8 py-3 rounded-full text-xl font-medium w-full hover:bg-pink-600"
+        disabled={isSubmitting}
+        className={`bg-pink-500 text-white px-8 py-3 rounded-full text-xl font-medium w-full hover:bg-pink-600 ${
+          isSubmitting ? "opacity-70 cursor-not-allowed" : ""
+        }`}
       >
-        Confirm Appointment
+        {isSubmitting ? "Processing..." : "Confirm Appointment"}
       </button>
     </div>
   );

@@ -104,7 +104,7 @@ const DateTimeSelector = () => {
       const appointmentTime = selectedTime;
 
       // Navigate to confirmation page with selected data
-      navigate('/confirmation', {
+      navigate(`/confirmation/${subServiceId}`, {
         state: {
           userId: user._id,
           subServiceId: subServiceId,

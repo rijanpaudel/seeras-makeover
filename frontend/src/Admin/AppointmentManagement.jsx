@@ -1,15 +1,30 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Calendar, Edit2, X, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const AppointmentManagement = () => {
   const navigate = useNavigate();
-  const [appointments] = useState([
-    { id: 1, customer: 'Ram Thapa', service: 'Bridal Makeup', date: '2024-03-15', time: '10:00 AM', status: 'Confirmed' },
-    { id: 2, customer: 'Bishal Karki', service: 'Hair Styling', date: '2024-03-16', time: '2:30 PM', status: 'Pending' },
-    { id: 3, customer: 'Arbit Bhandari', service: 'Gel Nails', date: '2024-03-16', time: '4:00 PM', status: 'Cancelled' },
-    { id: 4, customer: 'Rijan Paudel', service: 'Hair Coloring', date: '2024-03-17', time: '11:30 AM', status: 'Confirmed' }
-  ]);
+  const [appointments, setAppointments] = useState([]);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchAppointments();
+  }, []);
+
+  const fetchAppointments = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/appointments/all");
+      setAppointments(response.data);
+    } catch (error) {
+      setError("Failed to load appointments.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
@@ -54,7 +69,7 @@ const AppointmentManagement = () => {
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
                 {appointments.map((appointment) => (
-                  <tr key={appointment.id} className="hover:bg-gray-50 transition-colors">
+                  <tr key={appointment._id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="text-sm font-medium text-gray-900">{appointment.customer}</div>
                     </td>
@@ -68,11 +83,10 @@ const AppointmentManagement = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                        appointment.status === 'Confirmed' ? 'bg-green-100 text-green-800' : 
-                        appointment.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
-                      }`}>
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${appointment.status === 'Confirmed' ? 'bg-green-100 text-green-800' :
+                          appointment.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                        }`}>
                         {appointment.status}
                       </span>
                     </td>
