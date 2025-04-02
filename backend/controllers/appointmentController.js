@@ -58,7 +58,7 @@ export const updateAppointmentStatus = async (req, res) => {
       return res.status(404).json({ message: "Appointment not found" });
     }
 
-    res.status(200).json({ message: "Appointment updated successfully", order });
+    res.status(200).json({ message: "Appointment updated successfully", appointment });
   } catch (error) {
     console.error("Error updating appointment:", error);
     res.status(500).json({ message: "Error updating appointment", error });
@@ -82,4 +82,3 @@ export const deleteAppointment = async (req, res) => {
     res.status(500).json({ message: "Error deleting Appointment", error });
   }
 };
-

@@ -23,9 +23,7 @@ const AppointmentConfirmation = () => {
 
     const fetchSubServiceDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/sub-services`, {
-          params: { id: subServiceId }
-        });
+        const response = await axios.get(`http://localhost:5000/api/sub-services/service/${subServiceId}`);
         setSubService(response.data);
       } catch (error) {
         console.error("Error fetching subservice details:", error);
@@ -69,7 +67,7 @@ const AppointmentConfirmation = () => {
       <h1 className="text-4xl font-bold text-center">Confirm Your Appointment</h1>
       <div className="my-8">
         <h2 className="text-2xl">Appointment Details</h2>
-        <p><strong>Service:</strong> {subService.name}</p>
+        <p><strong>Service:</strong> {subService?.name || "Loading..."}</p>
         <p><strong>Date:</strong> {appointmentDate}</p>
         <p><strong>Time:</strong> {appointmentTime}</p>
       </div>
