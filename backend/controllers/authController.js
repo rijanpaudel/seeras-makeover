@@ -1,6 +1,7 @@
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import sendEmail from "../utils/emailService.js";
 
 
 //Register User
@@ -40,6 +41,15 @@ export const registerUser = async (req, res) => {
     console.log("Saving user:", user);
 
     await user.save();
+
+    // Send Welcome Email
+    sendEmail(
+      email,
+      "Welcome to Seeras Makeover!",
+      `Hello ${fullName}, welcome to our Seeras Makeover!`,
+      `<h1>Hello ${fullName}</h1><p>welcome to our Seeras Makeover!</p>`
+    );
+
 
     //Return success response
     res.status(201).json({ message: "User registered successfully." });
@@ -123,3 +133,4 @@ export const updateUserProfile = async (req, res)=> {
     res.status(500).json({ message: 'Error updating user profile', error: error.message });
   }
 };
+
