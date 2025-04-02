@@ -34,31 +34,31 @@ const CheckoutPage = () => {
       return;
     }
 
-
     try {
       let orderData = {
-        userId: user._id,
+        userId: user._id, // Ensure this is the correct user ID from auth context
         fullName: formData.fullName,
         address: formData.address,
         phoneNumber: formData.phoneNumber,
+        items: [],
       };
 
       if (product) {
         // For single product purchase
-        orderData.items = [{ productId: product._id, quantity }];
-      }
-      else if (cartItems.length > 0) {
+        orderData.items.push({ productId: product._id, quantity });
+      } else if (cartItems.length > 0) {
         // For cart checkout (multiple products)
         orderData.items = cartItems.map((item) => ({
           productId: item.product._id,
           quantity: item.quantity,
         }));
-      }
-      else {
+      } else {
         alert("No items to place an order");
         setLoading(false);
         return;
       }
+
+      console.log("Order Data Sent to Backend:", orderData);
 
       const response = await axios.post("http://localhost:5000/api/orders/place", orderData);
 
@@ -74,9 +74,7 @@ const CheckoutPage = () => {
     }
   };
 
-
-  useEffect(() => {
-  }, [user, product]);
+  useEffect(() => {}, [user, product]);
 
   return (
     <div className="container mx-auto px-4 py-16">
@@ -95,7 +93,7 @@ const CheckoutPage = () => {
       {!product && cartItems.length > 0 && (
         <div className="border p-4 rounded-lg mb-6">
           <h3 className="text-xl font-semibold mb-4">Cart Items</h3>
-          {cartItems.map(item => (
+          {cartItems.map((item) => (
             <div key={item.product._id} className="mb-4 border-b pb-2">
               <h4 className="text-lg">{item.product.title}</h4>
               <p>Price: Rs {item.product.price}</p>
