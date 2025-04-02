@@ -1,4 +1,6 @@
 import Appointment from "../models/Appointments.js";
+import User from "../models/User.js";
+import sendEmail from "../utils/emailService.js";
 import mongoose from "mongoose";
 
 // Book an appointment
@@ -28,6 +30,42 @@ export const bookAppointment = async (req, res) => {
     });
 
     await newAppointment.save();
+
+    // Fetch user details for email notification
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Prepare the email content
+    const emailHTML = `
+      <html>
+        <body>
+          <h2>Appointment Confirmation</h2>
+          <p>Dear ${user.fullName},</p>
+          <p>Your appointment has been successfully booked!</p>
+          <h3>Appointment Details:</h3>
+          <ul>
+            <li><strong>Full Name:</strong> ${user.fullName}</li>
+            <li><strong>Email:</strong> ${user.email}</li>
+            <li><strong>Phone:</strong> ${user.phoneNumber}</li>
+            <li><strong>Appointment Date:</strong> ${appointmentDate}</li>
+            <li><strong>Appointment Time:</strong> ${appointmentTime}</li>
+          </ul>
+          <p>We look forward to seeing you at your scheduled appointment time.</p>
+          <p>Best Regards,<br/>Seeras Makeover</p>
+        </body>
+      </html>
+    `;
+
+    // Send the email notification to the user
+    await sendEmail(
+      user.email,
+      "Appointment Confirmation - Seeras Makeover",
+      "Your appointment has been successfully booked!",
+      emailHTML
+    );
+
     res.status(201).json({ message: "Appointment Book Successfully", appointment: newAppointment });
   } catch (error) {
     console.error("Error booking appoointment:", error);
