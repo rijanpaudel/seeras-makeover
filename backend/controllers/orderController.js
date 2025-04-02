@@ -128,6 +128,33 @@ export const updateOrderStatus = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
+    // Fetch the user's email
+    const user = await User.findById(order.userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Prepare the email content
+    const emailHTML = `
+      <html>
+        <body>
+          <h2>Order Status Update</h2>
+          <p>Dear Customer,</p>
+          <p>Your order (Order ID: ${order._id}) status has been updated to: <strong>${status}</strong>.</p>
+          <p>We will notify you once there are any further updates.</p>
+          <p>Regards,<br/>Seeras Makeover</p>
+        </body>
+      </html>
+    `;
+
+    // Send email notification to the user
+    await sendEmail(
+      user.email,
+      `Order Status Update - Seeras Makeover`,
+      `Your order status has been updated to ${status}`,
+      emailHTML
+    );
+
     res.status(200).json({ message: "Order updated successfully", order });
   } catch (error) {
     console.error("Error updating order:", error);
