@@ -38,7 +38,7 @@ export const bookAppointment = async (req, res) => {
 // Get all appointments for Admin
 export const getAllAppointments = async (req, res) => {
   try {
-    const appointments = await Appointment.find().populate("userId", "email").populate("subService");
+    const appointments = await Appointment.find().populate("userId", "fullName email phoneNumber").populate("subServiceId", "name");
     res.status(200).json(appointments);
   } catch (error) {
     console.error("Error fetching appointments:", error);
@@ -49,10 +49,10 @@ export const getAllAppointments = async (req, res) => {
 // Update Appointment Status (Admin Only)
 export const updateAppointmentStatus = async (req, res) => {
   const { appointmentId } = req.params;
-  const { appointmentStatus } = req.body;
+  const { status } = req.body;
 
   try {
-    const appointment = await Appointment.findByIdAndUpdate(appointmentId, { appointmentStatus }, { new: true });
+    const appointment = await Appointment.findByIdAndUpdate(appointmentId, { status }, { new: true });
 
     if (!appointment) {
       return res.status(404).json({ message: "Appointment not found" });
@@ -82,3 +82,26 @@ export const deleteAppointment = async (req, res) => {
     res.status(500).json({ message: "Error deleting Appointment", error });
   }
 };
+
+export const updateAppointment = async (req, res) => {
+  const { appointmentId } = req.params;
+  const { appointmentDate, appointmentTime, subServiceId } = req.body;
+
+  try {
+    const updatedAppointment = await Appointment.findByIdAndUpdate(
+      appointmentId,
+      { appointmentDate, appointmentTime, subServiceId },
+      { new: true }
+    );
+
+    if (!updatedAppointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    res.status(200).json({ message: "Appointment updated", appointment: updatedAppointment });
+  } catch (error) {
+    console.error("Error updating appointment:", error);
+    res.status(500).json({ message: "Error updating appointment", error });
+  }
+};
+

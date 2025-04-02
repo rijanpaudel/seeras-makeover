@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Calendar, Edit2, X, Plus } from "lucide-react";
+import { Calendar, Edit2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -8,6 +8,8 @@ const AppointmentManagement = () => {
   const [appointments, setAppointments] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [editModal, setEditModal] = useState(false);
+  const [editData, setEditData] = useState({});
 
   useEffect(() => {
     fetchAppointments();
@@ -24,7 +26,38 @@ const AppointmentManagement = () => {
     }
   };
 
+  const updateStatus = async (appointmentId, newStatus) => {
+    try {
+      await axios.patch(`http://localhost:5000/api/appointments/status/${appointmentId}`, { status: newStatus });
+      fetchAppointments(); // Refresh the list
+    } catch (error) {
+      console.error("Failed to update status", error);
+    }
+  };
 
+  const editAppointment = (appointment) => {
+    setEditData(appointment);
+    setEditModal(true);
+  };
+
+  const deleteAppointment = async (appointmentId) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/appointments/delete/${appointmentId}`);
+      fetchAppointments();
+    } catch (error) {
+      console.error("Failed to delete appointment", error);
+    }
+  };
+
+  const submitEdit = async () => {
+    try {
+      await axios.patch(`http://localhost:5000/api/appointments/update/${editData._id}`, editData);
+      fetchAppointments();
+      setEditModal(false);
+    } catch (error) {
+      console.error("Failed to update appointment", error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
@@ -35,21 +68,6 @@ const AppointmentManagement = () => {
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Appointment Management</h1>
               <p className="text-gray-600">Manage and track all your salon appointments</p>
-            </div>
-            <div className="flex gap-4">
-              {/* New Blocked Slots Button */}
-              <button
-                onClick={() => navigate("/admin/blockedslots")}
-                className="flex items-center bg-pink-500 text-white px-6 py-3 rounded-lg hover:bg-pink-600 transition-colors font-medium"
-              >
-                <Plus className="w-5 h-5 mr-2" />
-                Add Blocked Slots
-              </button>
-              {/* New Appointment Button */}
-              <button className="flex items-center bg-pink-500 text-white px-6 py-3 rounded-lg hover:bg-pink-600 transition-colors font-medium">
-                <Plus className="w-5 h-5 mr-2" />
-                New Appointment
-              </button>
             </div>
           </div>
         </div>
@@ -71,31 +89,58 @@ const AppointmentManagement = () => {
                 {appointments.map((appointment) => (
                   <tr key={appointment._id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">{appointment.customer}</div>
+                      <div className="text-sm font-medium text-gray-900">{appointment.userId.fullName}</div>
+                      <div className="text-sm text-gray-500">{appointment.userId.email}</div>
+                      <div className="text-sm text-gray-500">{appointment.userId.phoneNumber}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-700">{appointment.service}</div>
+                      <div className="text-sm text-gray-700">{appointment.subServiceId.name}</div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center text-sm text-gray-700">
                         <Calendar className="w-4 h-4 mr-2 text-gray-400" />
-                        {appointment.date} at {appointment.time}
+                        {new Date(appointment.appointmentDate).toLocaleDateString()} at {new Date(appointment.appointmentTime).toLocaleTimeString()}
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${appointment.status === 'Confirmed' ? 'bg-green-100 text-green-800' :
-                          appointment.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-red-100 text-red-800'
-                        }`}>
-                        {appointment.status}
-                      </span>
+                      <select
+                        value={appointment.status}
+                        onChange={(e) => updateStatus(appointment._id, e.target.value)}
+                        className="border rounded px-2 py-1 text-sm"
+                      >
+                        <option value="Pending">Pending</option>
+                        <option value="Confirmed">Confirmed</option>
+                        <option value="Cancelled">Cancelled</option>
+                      </select>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-3">
-                        <button className="flex items-center text-gray-600 hover:text-pink-500 transition-colors">
+                        <button onClick={() => editAppointment(appointment)} className="flex items-center text-gray-600 hover:text-pink-500 transition-colors">
                           <Edit2 className="w-4 h-4" />
                         </button>
-                        <button className="flex items-center text-gray-600 hover:text-pink-500 transition-colors">
+                        {editModal && (
+                          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                            <div className="bg-white p-6 rounded-lg shadow-lg">
+                              <h2 className="text-lg font-bold mb-4">Edit Appointment</h2>
+                              <label>Date:</label>
+                              <input
+                                type="date"
+                                value={editData.appointmentDate}
+                                onChange={(e) => setEditData({ ...editData, appointmentDate: e.target.value })}
+                                className="border px-2 py-1 w-full mb-2"
+                              />
+                              <label>Time:</label>
+                              <input
+                                type="time"
+                                value={editData.appointmentTime}
+                                onChange={(e) => setEditData({ ...editData, appointmentTime: e.target.value })}
+                                className="border px-2 py-1 w-full mb-2"
+                              />
+                              <button onClick={submitEdit} className="bg-pink-500 text-white px-4 py-2 rounded">Save</button>
+                            </div>
+                          </div>
+                        )}
+                        <button onClick={() => deleteAppointment(appointment._id)} className="flex items-center text-gray-600 hover:text-pink-500 transition-colors">
                           <X className="w-4 h-4" />
                         </button>
                       </div>
