@@ -31,7 +31,7 @@ function MyAccount() {
   const fetchPurchases = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:5000/api/purchases/${user._id}`);
+      const response = await axios.get(`http://localhost:5000/api/orders/purchases/${user._id}`);
       setPurchases(response.data);
     } catch (err) {
       setError('Failed to fetch purchase history');

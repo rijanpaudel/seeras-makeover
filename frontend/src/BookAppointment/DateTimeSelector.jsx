@@ -17,7 +17,8 @@ const DateTimeSelector = () => {
     '11:00 AM',
     '12:00 PM',
     '1:00 PM',
-    '2:00 PM'
+    '2:00 PM',
+    '9:00 PM',
   ];
 
   const navigate = useNavigate();
@@ -88,6 +89,11 @@ const DateTimeSelector = () => {
   };
 
   const handleConfirm = async () => {
+    if(!user){
+      navigate("/login");
+      return;
+    }
+    
     if (selectedDate && selectedTime) {
       const selectedDateObj = new Date(
         currentMonth.getFullYear(),

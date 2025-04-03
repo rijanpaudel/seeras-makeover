@@ -179,3 +179,15 @@ export const deleteOrder = async (req, res) => {
     res.status(500).json({ message: "Error deleting order", error });
   }
 };
+
+
+ export const getPurchaseDetails = async (req, res) => {
+  try {
+    const purchases = await Order.find({ userId: req.params.userId }).populate("items.product");
+    res.json(purchases);
+  } catch (error) {
+    console.error("Error fetching purchases", error)
+    res.status(500).json({ message: "Error fetching purchases" });
+  }
+};
+

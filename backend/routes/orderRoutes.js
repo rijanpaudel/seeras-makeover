@@ -1,5 +1,5 @@
 import express from "express";
-import { placeOrder, getAllOrders, updateOrderStatus, deleteOrder } from "../controllers/orderController.js";
+import { placeOrder, getAllOrders, updateOrderStatus, deleteOrder, getPurchaseDetails } from "../controllers/orderController.js";
 
 const router = express.Router();
 
@@ -8,6 +8,9 @@ router.post("/place", placeOrder);
 
 // Get all orders for Admin
 router.get("/all", getAllOrders);
+
+//Get purchase details for user
+router.get("/purchases/:userId", getPurchaseDetails);
 
 // Update Order Status (Admin Only)
 router.put("/update/:orderId", updateOrderStatus);

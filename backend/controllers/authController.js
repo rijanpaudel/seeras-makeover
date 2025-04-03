@@ -50,6 +50,22 @@ export const registerUser = async (req, res) => {
       `<h1>Hello ${fullName}</h1><p>welcome to our Seeras Makeover!</p>`
     );
 
+    // Send admin notification
+    const adminEmailHTML = `
+      <h2>New User Registration</h2>
+      <p>A new user has registered:</p>
+      <ul>
+        <li><strong>Name:</strong> ${fullName}</li>
+        <li><strong>Email:</strong> ${email}</li>
+      </ul>
+    `;
+    
+    await sendEmail(
+      process.env.EMAIL_USER,
+      "New User Registration",
+      "A new user has registered",
+      adminEmailHTML
+    );
 
     //Return success response
     res.status(201).json({ message: "User registered successfully." });
@@ -88,9 +104,11 @@ export const loginUser = async (req, res)=> {
       message: "Login Successful",
       token,
       user: {
-        _id: user._id,  // Add this line
+        _id: user._id,
         fullName: user.fullName,
         email: user.email,
+        address: user.address,
+        phoneNumber: user.phoneNumber,
         role: user.role
       },
     });
@@ -133,4 +151,5 @@ export const updateUserProfile = async (req, res)=> {
     res.status(500).json({ message: 'Error updating user profile', error: error.message });
   }
 };
+
 

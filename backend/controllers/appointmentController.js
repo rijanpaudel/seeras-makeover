@@ -66,6 +66,26 @@ export const bookAppointment = async (req, res) => {
       emailHTML
     );
 
+    // Send admin notification
+    const adminEmailHTML = `
+          <h2>New Appointment Booking</h2>
+          <p>User has booked an appointment:</p>
+          <h3>Appointment Details:</h3>
+          <ul>
+            <li><strong>Full Name:</strong> ${user.fullName}</li>
+            <li><strong>Email:</strong> ${user.email}</li>
+            <li><strong>Phone:</strong> ${user.phoneNumber}</li>
+            <li><strong>Appointment Date:</strong> ${appointmentDate}</li>
+            <li><strong>Appointment Time:</strong> ${appointmentTime}</li>
+          </ul>
+        `;
+
+    await sendEmail(
+      process.env.EMAIL_USER,
+      "New Appointment Booking",
+      "A new booking of appointment",
+      adminEmailHTML
+    );
     res.status(201).json({ message: "Appointment Book Successfully", appointment: newAppointment });
   } catch (error) {
     console.error("Error booking appoointment:", error);

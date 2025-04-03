@@ -11,6 +11,7 @@ import subServiceRoutes from './routes/subServiceRoutes.js'
 import enrollmentRoutes from './routes/enrollmentRoutes.js'
 import appointmentRoutes from './routes/appointmentRoutes.js'
 import blockedSlotRoutes from './routes/blockedSlotRoutes.js'
+import "./utils/appointmentReminder.js"; 
 import User from "./models/User.js";
 import bcrypt from "bcryptjs"
 import path from "path";
