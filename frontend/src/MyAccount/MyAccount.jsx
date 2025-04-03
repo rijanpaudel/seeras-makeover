@@ -7,6 +7,7 @@ function MyAccount() {
   const [activeTab, setActiveTab] = useState('profile');
   const [isEditing, setIsEditing] = useState(false);
   const [purchases, setPurchases] = useState([]);
+  const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
@@ -25,6 +26,7 @@ function MyAccount() {
         phoneNumber: user.phoneNumber || ''
       });
       fetchPurchases();
+      fetchAppointments();
     }
   }, [user]);
 
@@ -40,6 +42,17 @@ function MyAccount() {
       setLoading(false);
     }
   };
+
+  const fetchAppointments = async () => {
+    try {
+      const response = await axios.get(`http://localhost:5000/api/appointments/appointmentHistory/${user._id}`);
+      setAppointments(response.data);
+    } catch (error) {
+      console.error("Error fetching appointments:", error);
+    }
+  };
+
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -183,31 +196,64 @@ function MyAccount() {
     </div>
   );
 
+  const renderAppointments = () => (
+    <div className="bg-white rounded-lg p-6 shadow-md">
+      <h3 className="text-2xl font-semibold mb-6">Appointment History</h3>
+      {loading ? (
+        <div className="text-center py-4">Loading appointments...</div>
+      ) : purchases.length === 0 ? (
+        <div className="text-center py-4 text-gray-600">No appointment history available</div>
+      ) : (
+        <div className="space-y-4">
+          {appointments.map((appointment) => (
+            <div key={appointment._id} className="border border-gray-200 rounded-lg p-4">
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <p className="font-semibold">Appointment #{appointment._id.slice(-6)}</p>
+                  <p className="text-gray-600">{new Date(appointment.date).toLocaleDateString()}</p>
+                </div>
+                <p className="text-black-500 font-semibold">Service {appointment.subServiceId.name}</p>
+              </div>
+              <p className="text-gray-800">Status: {appointment.status}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="container mx-auto px-4 py-56">
       <h1 className="text-4xl font-bold mb-8">My Account</h1>
-      
+
       <div className="mb-8">
         <div className="flex gap-4 border-b border-gray-200">
           <button
             onClick={() => setActiveTab('profile')}
-            className={`px-6 py-3 font-medium ${
-              activeTab === 'profile'
-                ? 'text-pink-500 border-b-2 border-pink-500'
-                : 'text-gray-600 hover:text-pink-500'
-            }`}
+            className={`px-6 py-3 font-medium ${activeTab === 'profile'
+              ? 'text-pink-500 border-b-2 border-pink-500'
+              : 'text-gray-600 hover:text-pink-500'
+              }`}
           >
             Profile
           </button>
           <button
             onClick={() => setActiveTab('purchases')}
-            className={`px-6 py-3 font-medium ${
-              activeTab === 'purchases'
-                ? 'text-pink-500 border-b-2 border-pink-500'
-                : 'text-gray-600 hover:text-pink-500'
-            }`}
+            className={`px-6 py-3 font-medium ${activeTab === 'purchases'
+              ? 'text-pink-500 border-b-2 border-pink-500'
+              : 'text-gray-600 hover:text-pink-500'
+              }`}
           >
             Purchases
+          </button>
+          <button
+            onClick={() => setActiveTab('appointments')}
+            className={`px-6 py-3 font-medium ${activeTab === 'appointments'
+              ? 'text-pink-500 border-b-2 border-pink-500'
+              : 'text-gray-600 hover:text-pink-500'
+              }`}
+          >
+            Appointments
           </button>
         </div>
       </div>
@@ -217,8 +263,7 @@ function MyAccount() {
           {error}
         </div>
       )}
-
-      {activeTab === 'profile' ? renderProfile() : renderPurchases()}
+      {activeTab === 'profile' ? renderProfile() : activeTab === 'purchases' ? renderPurchases() : renderAppointments()}
     </div>
   );
 }

@@ -163,3 +163,14 @@ export const updateAppointment = async (req, res) => {
   }
 };
 
+//Get appointment history for specific user
+export const appointmentHistory = async (req, res) => {
+  try {
+    const appointments = await Appointment.find({ userId: req.params.userId }).sort({ date: -1 });
+    res.json(appointments);
+  }
+  catch (error) {
+    res.status(500).json({ message: 'Error fetching appointments'})
+  }
+} 
+
