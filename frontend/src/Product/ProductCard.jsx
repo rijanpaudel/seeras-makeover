@@ -1,40 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../Context/AuthContext";
 import { useToast } from '../Context/ToastContext';
 import axios from "axios";
-import heartFilled from "../assets/heart-filled.png"
-import heartOutlined from "../assets/heart-outlined.png"
 
-function ProductCard({ _id, image, title, price, brand, category, isWishlisted }) {
+function ProductCard({ _id, image, title, price, brand, category }) {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [wishlist, setWishlist] = useState(isWishlisted || false);
   const [message, setMessage] = useState(""); // State for showing login warning
   const { showToast } = useToast();
-
-  const handleWishListToggle = async () => {
-    if (!user) {
-      setMessage("You must be login to add to wishlist");
-      setTimeout(() => setMessage(""), 3000);
-      return;
-    }
-
-    try {
-      const response = await axios.post("http://localhost:5000/api/products/wishlist", {
-        userId: user._id,
-        productId: _id,
-        action: wishlist ? "remove" : "add"
-      });
-
-      if (response.status === 200) {
-        setWishlist(!wishlist); //Toggle wishlist icon
-      }
-    }
-    catch (error) {
-      console.log("Failed to update wishlist:", error);
-    }
-  };
 
   //Add to cart
   const handleAddToCart = async () => {
@@ -85,22 +59,10 @@ function ProductCard({ _id, image, title, price, brand, category, isWishlisted }
             <div className="flex flex-col w-[81%] max-md:ml-0 max-md:w-full relative">
               {/* Product Image */}
               <img
-                loading="lazy"
                 src={image}
                 alt={title}
                 className="object-contain grow mt-11 w-full aspect-[0.93] max-md:mt-10 max-md:-mr-4"
               />
-              {/* Wishlist icon */}
-              <button
-                onClick={handleWishListToggle}
-                className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md">
-
-                <img
-                  src={wishlist ? heartFilled : heartOutlined}
-                  alt="Wishlist"
-                  className="w-8 h-8"
-                />
-              </button>
             </div>
           </div>
         </div>

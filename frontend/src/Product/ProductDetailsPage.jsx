@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../Context/AuthContext";
 import axios from "axios";
+import heartFilled from "../assets/heart-filled.png"
+import heartOutlined from "../assets/heart-outlined.png"
 
 function ProductDetailsPage() {
   const { id } = useParams();
@@ -10,7 +12,6 @@ function ProductDetailsPage() {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [wishlist, setWishlist] = useState(false);
   const [message, setMessage] = useState("");
   const [quantity, setQuantity] = useState(1); // Quantity state
 
@@ -26,7 +27,6 @@ function ProductDetailsPage() {
         }
 
         setProduct(productData);
-        setWishlist(productData.isWishlisted || false);
       } catch (error) {
         console.error("Error fetching product:", error);
         setError("Failed to load product details.");
@@ -47,29 +47,6 @@ function ProductDetailsPage() {
       console.log("Updated Cart Data:", response.data);
     } catch (error) {
       console.error("Error fetching cart:", error);
-    }
-  };
-
-
-  const handleWishListToggle = async () => {
-    if (!user) {
-      setMessage("You must be logged in to add to wishlist");
-      setTimeout(() => setMessage(""), 3000);
-      return;
-    }
-
-    try {
-      const response = await axios.post("http://localhost:5000/api/products/wishlist", {
-        userId: user._id,
-        productId: id,
-        action: wishlist ? "remove" : "add",
-      });
-
-      if (response.status === 200) {
-        setWishlist(!wishlist);
-      }
-    } catch (error) {
-      console.error("Failed to update wishlist:", error);
     }
   };
 
@@ -161,16 +138,6 @@ function ProductDetailsPage() {
               alt={product.title}
               className="w-full h-auto object-contain"
             />
-            <button
-              onClick={handleWishListToggle}
-              className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-md"
-            >
-              <img
-                src={wishlist ? "/path/to/heart-filled.png" : "/path/to/heart-outlined.png"}
-                alt="Wishlist"
-                className="w-8 h-8"
-              />
-            </button>
           </div>
         </div>
 
