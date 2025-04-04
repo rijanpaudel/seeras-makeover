@@ -1,10 +1,10 @@
-import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../Context/AuthContext';
 
 const DateTimeSelector = () => {
   const { subServiceId } = useParams();
+  
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -18,7 +18,7 @@ const DateTimeSelector = () => {
     '12:00 PM',
     '1:00 PM',
     '2:00 PM',
-    '9:00 PM',
+    '4:15 PM',
   ];
 
   const navigate = useNavigate();
@@ -61,7 +61,7 @@ const DateTimeSelector = () => {
       setSelectedDate(1); // Default to the first day of the month
     }
     
-  }, [currentMonth]);
+  }, [currentMonth, selectedDate]);
 
   const formatMonthYear = () => {
     const options = { month: 'long', year: 'numeric' };
@@ -90,7 +90,7 @@ const DateTimeSelector = () => {
 
   const handleConfirm = async () => {
     if(!user){
-      navigate("/login");
+      navigate("/login", { state: { returnTo: window.location.pathname } });
       return;
     }
     
@@ -100,14 +100,7 @@ const DateTimeSelector = () => {
         currentMonth.getMonth(),
         selectedDate
       );
-      const formattedDate = selectedDateObj.toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
-
-      const appointmentTime = selectedTime;
+      const formattedDate = selectedDateObj.toISOString().split("T")[0];  // "YYYY-MM-DD"
 
       // Navigate to confirmation page with selected data
       navigate(`/confirmation/${subServiceId}`, {
@@ -115,7 +108,7 @@ const DateTimeSelector = () => {
           userId: user._id,
           subServiceId: subServiceId,
           appointmentDate: formattedDate,
-          appointmentTime: appointmentTime,
+          appointmentTime: selectedTime,
         },
       });
     } else {
@@ -210,7 +203,9 @@ const DateTimeSelector = () => {
           
           <button
             onClick={handleConfirm}
-            className="mt-8 py-3 px-8 bg-pink-500 text-white rounded-full text-xl font-medium w-full hover:bg-pink-600 transition-colors"
+            disabled = {!selectedDate || !selectedTime}
+            className={`mt-8 py-3 px-8 bg-pink-500 text-white rounded-full text-xl font-medium w-full hover:bg-pink-600 transition-colors
+            ${(!selectedDate || ! selectedTime) ? `opacity-50 cursor-not-allowed` : `hover:bg-pink-600 transition-colors`}`}
           >
             Confirm
           </button>

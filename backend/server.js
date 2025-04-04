@@ -3,14 +3,15 @@ import dotenv from "dotenv";
 import cors from "cors";
 import mongoose from "mongoose";
 import authRoutes from "./routes/authRoutes.js";
-import productRoutes from "./routes/productRoutes.js"
-import courseRoutes from "./routes/courseRoutes.js"
-import cartRoutes from "./routes/cartRoutes.js"
-import orderRoutes from "./routes/orderRoutes.js"
-import subServiceRoutes from './routes/subServiceRoutes.js'
-import enrollmentRoutes from './routes/enrollmentRoutes.js'
-import appointmentRoutes from './routes/appointmentRoutes.js'
-import blockedSlotRoutes from './routes/blockedSlotRoutes.js'
+import productRoutes from "./routes/productRoutes.js";
+import courseRoutes from "./routes/courseRoutes.js";
+import cartRoutes from "./routes/cartRoutes.js";
+import orderRoutes from "./routes/orderRoutes.js";
+import subServiceRoutes from './routes/subServiceRoutes.js';
+import enrollmentRoutes from './routes/enrollmentRoutes.js';
+import appointmentRoutes from './routes/appointmentRoutes.js';
+import blockedSlotRoutes from './routes/blockedSlotRoutes.js';
+import adminRoutes from "./routes/adminRoutes.js";
 import "./utils/appointmentReminder.js"; 
 import User from "./models/User.js";
 import bcrypt from "bcryptjs"
@@ -54,6 +55,8 @@ app.use("/api/sub-services", subServiceRoutes);
 app.use("/api/appointments", appointmentRoutes)
 
 app.use("/api/blocked-slots", blockedSlotRoutes);
+
+app.use("/api/admin", adminRoutes);
 
 //Function to see the admin user
 const seedAdminUser = async() => {

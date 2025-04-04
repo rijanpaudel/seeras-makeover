@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Clock, DollarSign, Star, CheckCircle } from 'lucide-react';
 
 const ServiceDetails = () => {
@@ -8,6 +8,7 @@ const ServiceDetails = () => {
   const [service, setService] = useState(null);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchService = async () => {
@@ -107,14 +108,19 @@ const ServiceDetails = () => {
               </div>
             </div>
 
-            <button className="w-full bg-pink-500 text-white py-4 rounded-xl font-semibold text-lg hover:bg-pink-600 transition-colors mt-8">
+            <button
+              onClick={() => {
+                // Navigate to DateTimeSelector with the selected service details
+                navigate(`/datetimeselector/${service._id}`, { state: { service } });
+              }}
+              className="w-full bg-pink-500 text-white py-4 rounded-xl font-semibold text-lg hover:bg-pink-600 transition-colors mt-8">
               Book Appointment
             </button>
 
             <div className="bg-pink-50 rounded-xl p-6 mt-6">
               <h3 className="text-lg font-semibold mb-3">Special Note</h3>
               <p className="text-gray-600">
-                Please arrive 10 minutes before your scheduled appointment. For bridal services, 
+                Please arrive 10 minutes before your scheduled appointment. For bridal services,
                 we recommend booking at least 2 weeks in advance.
               </p>
             </div>

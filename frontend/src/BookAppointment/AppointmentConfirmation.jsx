@@ -12,6 +12,7 @@ const AppointmentConfirmation = () => {
   const [subService, setSubService] = useState(null);
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     // Check if we have all required data
@@ -44,6 +45,8 @@ const AppointmentConfirmation = () => {
 
   const handleConfirm = async () => {
     setIsSubmitting(true);
+    setError(null);
+
     try {
       const response = await axios.post("http://localhost:5000/api/appointments/book", {
         userId,
@@ -65,6 +68,13 @@ const AppointmentConfirmation = () => {
   return (
     <div className="container mx-auto px-4 py-44">
       <h1 className="text-4xl font-bold text-center">Confirm Your Appointment</h1>
+      
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded my-4">
+          <p>{error}</p>
+        </div>
+      )}
+      
       <div className="my-8">
         <h2 className="text-2xl">Appointment Details</h2>
         <p><strong>Service:</strong> {subService?.name || "Loading..."}</p>

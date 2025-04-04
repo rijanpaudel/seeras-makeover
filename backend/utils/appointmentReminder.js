@@ -7,18 +7,28 @@ import sendEmail from '../utils/emailService.js';
 const appointmentReminder = async () => {
   try {
     const currentTime = new Date();
+    const oneHourLater = new Date(currentTime.getTime() + 60 * 60 * 1000);
 
     // Find appointments that are 1 hour ahead of the current time
     const upcomingAppointments = await Appointment.find({
-      appointmentTime: {
-        $gte: currentTime,
-        $lte: new Date(currentTime.getTime() + 60 * 60 * 1000), // 1 hour from now
-      },
-      status: { $ne: "Canceled" }, // Ignore canceled appointments
+      appointmentTime: { $gte: currentTime, $lte: oneHourLater },
+      status: { $ne: "Canceled" }
     }).populate("userId", "fullName email phoneNumber").populate("subServiceId", "name");
 
     for (const appointment of upcomingAppointments) {
-      const { userId, appointmentDate, appointmentTime } = appointment;
+      const { userId, appointmentDateTime, subServiceId } = appointment;
+      // Format datetime for email
+      const options = { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric', 
+        hour: 'numeric', 
+        minute: 'numeric', 
+        hour12: true 
+      };
+      const formattedDateTime = appointmentDateTime.toLocaleDateString('en-US', options);
+
 
       const emailHTML = `
         <html>
@@ -31,8 +41,7 @@ const appointmentReminder = async () => {
               <li><strong>Full Name:</strong> ${userId.fullName}</li>
               <li><strong>Email:</strong> ${userId.email}</li>
               <li><strong>Phone:</strong> ${userId.phoneNumber}</li>
-              <li><strong>Appointment Date:</strong> ${appointmentDate.toLocaleDateString()}</li>
-              <li><strong>Appointment Time:</strong> ${appointmentTime.toLocaleTimeString()}</li>
+              <<p><strong>${formattedDateTime}</strong></p>
               <li><strong>Sub Service:</strong> ${appointment.subServiceId.name}</li>
             </ul>
             <p>We look forward to serving you. If you need to reschedule or cancel, please contact us.</p>

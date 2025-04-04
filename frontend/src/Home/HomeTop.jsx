@@ -6,7 +6,7 @@ const HomeTop = () => {
   const navigate = useNavigate();
 
   const goToRoute = () => {
-    navigate("/bookappointment");
+    navigate("/appointment");
   }
   
   return (

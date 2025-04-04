@@ -18,27 +18,51 @@ export const bookAppointment = async (req, res) => {
 
 
   try {
-    const appointmentTimeObj = new Date(appointmentDate);
-    const [hour, minute] = appointmentTime.split(":");
-    appointmentTimeObj.setHours(hour, minute);
+    //Parse date and time to create Date object
+    const [year, month, day] = appointmentDate.split('-');
+    const timeComponents = appointmentTime.split(' ');
+    let [hours, minutes] = timeComponents[0].split(':');
+
+    //Convert 12-hour format to 24-hour format
+    if (timeComponents[1] === 'PM' && hours !== '12') {
+      hours = parseInt(hours) + 12;
+    }
+    else if (timeComponents[1] === 'AM' && hours === '12') {
+      hours = 0;
+    }
+  
+    const appointmentDateTime = new Date(year, month - 1, day, hours, parseInt(minutes));
 
     const newAppointment = new Appointment({
-      userId,
-      subServiceId,
-      appointmentDate: new Date(appointmentDate),
-      appointmentTime: appointmentTimeObj,
-    });
+    userId,
+    subServiceId,
+    appointmentDateTime,
+    status: "Pending",
+  });
 
-    await newAppointment.save();
+  await newAppointment.save();
 
-    // Fetch user details for email notification
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+  // Fetch user details for email notification
+  const user = await User.findById(userId);
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
 
-    // Prepare the email content
-    const emailHTML = `
+  //Format the date for display in the email
+  const options = {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    hour12: true
+  };
+
+  const formattedDateTime = appointmentDateTime.toLocaleDateString('en-US', options);
+
+  // Prepare the email content
+  const emailHTML = `
       <html>
         <body>
           <h2>Appointment Confirmation</h2>
@@ -49,8 +73,7 @@ export const bookAppointment = async (req, res) => {
             <li><strong>Full Name:</strong> ${user.fullName}</li>
             <li><strong>Email:</strong> ${user.email}</li>
             <li><strong>Phone:</strong> ${user.phoneNumber}</li>
-            <li><strong>Appointment Date:</strong> ${appointmentDate}</li>
-            <li><strong>Appointment Time:</strong> ${appointmentTime}</li>
+            <li><strong>Appointment Date & :</strong> ${formattedDateTime}</li>
           </ul>
           <p>We look forward to seeing you at your scheduled appointment time.</p>
           <p>Best Regards,<br/>Seeras Makeover</p>
@@ -58,16 +81,18 @@ export const bookAppointment = async (req, res) => {
       </html>
     `;
 
-    // Send the email notification to the user
-    await sendEmail(
-      user.email,
-      "Appointment Confirmation - Seeras Makeover",
-      "Your appointment has been successfully booked!",
-      emailHTML
-    );
+  // Send the email notification to the user
+  await sendEmail(
+    user.email,
+    "Appointment Confirmation - Seeras Makeover",
+    "Your appointment has been successfully booked!",
+    emailHTML
+  );
 
-    // Send admin notification
-    const adminEmailHTML = `
+  // Send admin notification
+  const adminEmailHTML = `
+    <html>
+        <body>
           <h2>New Appointment Booking</h2>
           <p>User has booked an appointment:</p>
           <h3>Appointment Details:</h3>
@@ -75,22 +100,23 @@ export const bookAppointment = async (req, res) => {
             <li><strong>Full Name:</strong> ${user.fullName}</li>
             <li><strong>Email:</strong> ${user.email}</li>
             <li><strong>Phone:</strong> ${user.phoneNumber}</li>
-            <li><strong>Appointment Date:</strong> ${appointmentDate}</li>
-            <li><strong>Appointment Time:</strong> ${appointmentTime}</li>
+            <li><strong>Appointment Date & Time:</strong> ${formattedDateTime}</li>
           </ul>
-        `;
-
-    await sendEmail(
-      process.env.EMAIL_USER,
-      "New Appointment Booking",
-      "A new booking of appointment",
-      adminEmailHTML
-    );
-    res.status(201).json({ message: "Appointment Book Successfully", appointment: newAppointment });
-  } catch (error) {
-    console.error("Error booking appoointment:", error);
-    res.status(500).json({ message: "Error booking appoointment:", error });
-  }
+        </body>
+      </html>
+    `;
+    
+  await sendEmail(
+    process.env.EMAIL_USER,
+    "New Appointment Booking",
+    "A new booking of appointment",
+    adminEmailHTML
+  );
+  res.status(201).json({ message: "Appointment Book Successfully", appointment: newAppointment });
+} catch (error) {
+  console.error("Error booking appoointment:", error);
+  res.status(500).json({ message: "Error booking appoointment:", error });
+}
 };
 
 // Get all appointments for Admin
@@ -170,7 +196,7 @@ export const appointmentHistory = async (req, res) => {
     res.json(appointments);
   }
   catch (error) {
-    res.status(500).json({ message: 'Error fetching appointments'})
+    res.status(500).json({ message: 'Error fetching appointments' })
   }
-} 
+}
 
