@@ -30,39 +30,57 @@ export const bookAppointment = async (req, res) => {
     else if (timeComponents[1] === 'AM' && hours === '12') {
       hours = 0;
     }
-  
-    const appointmentDateTime = new Date(year, month - 1, day, hours, parseInt(minutes));
+
+    // Convert 12h to 24h format
+    let hoursInt = parseInt(hours);
+    if (timeComponents[1] === 'PM' && hoursInt !== 12) {
+      hoursInt += 12;
+    } else if (timeComponents[1] === 'AM' && hoursInt === 12) {
+      hoursInt = 0;
+    }
+
+    const formattedHours = hoursInt.toString().padStart(2, '0');
+    const formattedMinutes = minutes.padStart(2, '0');
+
+    // Create ISO string with Nepal timezone offset
+    const isoString = `${appointmentDate}T${formattedHours}:${formattedMinutes}:00+05:45`;
+    const appointmentDateTime = new Date(isoString);
+
+    // Validate the date
+    if (isNaN(appointmentDateTime.getTime())) {
+      return res.status(400).json({ message: "Invalid date or time" });
+    }
 
     const newAppointment = new Appointment({
-    userId,
-    subServiceId,
-    appointmentDateTime,
-    status: "Pending",
-  });
+      userId,
+      subServiceId,
+      appointmentDateTime,
+      status: "Pending",
+    });
 
-  await newAppointment.save();
+    await newAppointment.save();
 
-  // Fetch user details for email notification
-  const user = await User.findById(userId);
-  if (!user) {
-    return res.status(404).json({ message: "User not found" });
-  }
+    // Fetch user details for email notification
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-  //Format the date for display in the email
-  const options = {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: 'numeric',
-    hour12: true
-  };
+    //Format the date for display in the email
+    const options = {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true
+    };
 
-  const formattedDateTime = appointmentDateTime.toLocaleDateString('en-US', options);
+    const formattedDateTime = appointmentDateTime.toLocaleDateString('en-US', options);
 
-  // Prepare the email content
-  const emailHTML = `
+    // Prepare the email content
+    const emailHTML = `
       <html>
         <body>
           <h2>Appointment Confirmation</h2>
@@ -81,16 +99,16 @@ export const bookAppointment = async (req, res) => {
       </html>
     `;
 
-  // Send the email notification to the user
-  await sendEmail(
-    user.email,
-    "Appointment Confirmation - Seeras Makeover",
-    "Your appointment has been successfully booked!",
-    emailHTML
-  );
+    // Send the email notification to the user
+    await sendEmail(
+      user.email,
+      "Appointment Confirmation - Seeras Makeover",
+      "Your appointment has been successfully booked!",
+      emailHTML
+    );
 
-  // Send admin notification
-  const adminEmailHTML = `
+    // Send admin notification
+    const adminEmailHTML = `
     <html>
         <body>
           <h2>New Appointment Booking</h2>
@@ -105,18 +123,18 @@ export const bookAppointment = async (req, res) => {
         </body>
       </html>
     `;
-    
-  await sendEmail(
-    process.env.EMAIL_USER,
-    "New Appointment Booking",
-    "A new booking of appointment",
-    adminEmailHTML
-  );
-  res.status(201).json({ message: "Appointment Book Successfully", appointment: newAppointment });
-} catch (error) {
-  console.error("Error booking appoointment:", error);
-  res.status(500).json({ message: "Error booking appoointment:", error });
-}
+
+    await sendEmail(
+      process.env.EMAIL_USER,
+      "New Appointment Booking",
+      "A new booking of appointment",
+      adminEmailHTML
+    );
+    res.status(201).json({ message: "Appointment Book Successfully", appointment: newAppointment });
+  } catch (error) {
+    console.error("Error booking appoointment:", error);
+    res.status(500).json({ message: "Error booking appoointment:", error });
+  }
 };
 
 // Get all appointments for Admin

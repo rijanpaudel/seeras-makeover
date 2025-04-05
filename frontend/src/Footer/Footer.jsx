@@ -2,6 +2,7 @@ import React from "react";
 import facebook from "../assets/facebook.png";
 import instagram from "../assets/instagram.png";
 import logo from "../assets/logo.png";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -22,9 +23,9 @@ const Footer = () => {
         </div>
 
         <div className="mt-8 md:absolute md:top-[117px] md:left-[820px] font-medium text-black text-[20px] md:text-[25px] text-center tracking-[0] leading-[normal] whitespace-nowrap">
-          <a href="#" className="hover:text-pink-500 transition-colors duration-300">
+          <Link to="/services" className="hover:text-pink-500 transition-colors duration-300">
             Services
-          </a>
+          </Link>
         </div>
 
         <div className="mt-8 md:absolute md:w-[226px] md:h-[241px] md:top-[111px] md:left-[1347px] text-center md:text-left">
@@ -53,27 +54,27 @@ const Footer = () => {
         </div>
 
         <div className="mt-8 md:absolute md:top-[165px] md:left-[757px] font-medium text-black text-[20px] md:text-[25px] text-center tracking-[0] leading-[normal] whitespace-nowrap">
-          <a href="#" className="hover:text-pink-500 transition-colors duration-300">
+          <Link to="/appointment" className="hover:text-pink-500 transition-colors duration-300">
             Book Appointment
-          </a>
+          </Link>
         </div>
 
         <div className="mt-8 md:absolute md:top-[213px] md:left-[827px] font-medium text-black text-[20px] md:text-[25px] text-center tracking-[0] leading-[normal] whitespace-nowrap">
-          <a href="#" className="hover:text-pink-500 transition-colors duration-300">
+          <Link to ="/aboutus" className="hover:text-pink-500 transition-colors duration-300">
             About us
-          </a>
+          </Link>
         </div>
 
         <div className="mt-8 md:absolute md:top-[261px] md:left-[828px] font-medium text-black text-[20px] md:text-[25px] text-center tracking-[0] leading-[normal] whitespace-nowrap">
-          <a href="#" className="hover:text-pink-500 transition-colors duration-300">
+          <Link to="/products" className="hover:text-pink-500 transition-colors duration-300">
             Products
-          </a>
+          </Link>
         </div>
 
         <div className="mt-8 md:absolute md:top-[304px] md:left-[820px] font-medium text-black text-[20px] md:text-[25px] text-center tracking-[0] leading-[normal] whitespace-nowrap">
-          <a href="#" className="hover:text-pink-500 transition-colors duration-300">
+          <Link to="/enroll" className="hover:text-pink-500 transition-colors duration-300">
             Enroll now
-          </a>
+          </Link>
         </div>
       </div>
     </div>

@@ -7,25 +7,45 @@ import sendEmail from '../utils/emailService.js';
 const appointmentReminder = async () => {
   try {
     const currentTime = new Date();
-    const oneHourLater = new Date(currentTime.getTime() + 60 * 60 * 1000);
+    let nepalTime = 5 * 60 + 45 // Convert to Nepal Time (GMT+5:45)
 
-    // Find appointments that are 1 hour ahead of the current time
+    //Caculate the current Nepali time and target time
+    const nepalNow = new Date(currentTime.getTime() + nepalTime * 60 * 1000);
+    const targetNepalTime = new Date(nepalNow.getTime() + 60 * 60 * 1000);
+
+    const targetUTC = new Date(targetNepalTime.getTime() - nepalTime * 60 * 1000);
+
+    // Allow 2 minute window arount targetUTC
+    const oneHourMinStart = new Date(targetUTC.getTime() - 1 * 60 * 1000);
+    const oneHourMaxEnd = new Date(targetUTC.getTime() + 1 * 60 * 1000);
+
+    console.log(`Looking for appointments scheduled between:
+    ${oneHourMinStart.toISOString()} and ${oneHourMaxEnd.toISOString()}`);
+
+
+    // Find appointments that are scheduled exactly 1 hour from now
     const upcomingAppointments = await Appointment.find({
-      appointmentTime: { $gte: currentTime, $lte: oneHourLater },
+      appointmentDateTime: {
+        $gte: oneHourMinStart,
+        $lte: oneHourMaxEnd
+      },
       status: { $ne: "Canceled" }
     }).populate("userId", "fullName email phoneNumber").populate("subServiceId", "name");
 
+    console.log(`Found ${upcomingAppointments.length} appointments happening in 1 hour.`);
+
     for (const appointment of upcomingAppointments) {
       const { userId, appointmentDateTime, subServiceId } = appointment;
+
       // Format datetime for email
-      const options = { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric', 
-        hour: 'numeric', 
-        minute: 'numeric', 
-        hour12: true 
+      const options = {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true
       };
       const formattedDateTime = appointmentDateTime.toLocaleDateString('en-US', options);
 
@@ -41,8 +61,8 @@ const appointmentReminder = async () => {
               <li><strong>Full Name:</strong> ${userId.fullName}</li>
               <li><strong>Email:</strong> ${userId.email}</li>
               <li><strong>Phone:</strong> ${userId.phoneNumber}</li>
-              <<p><strong>${formattedDateTime}</strong></p>
-              <li><strong>Sub Service:</strong> ${appointment.subServiceId.name}</li>
+              <li><strong>Date & Time:</strong> ${formattedDateTime}</li>
+              <li><strong>Sub Service:</strong> ${subServiceId.name}</li>
             </ul>
             <p>We look forward to serving you. If you need to reschedule or cancel, please contact us.</p>
             <p>Best Regards,<br/>Seeras Makeover</p>
@@ -56,6 +76,8 @@ const appointmentReminder = async () => {
         "Your appointment is coming up in 1 hour!",
         emailHTML
       );
+
+      console.log(`Reminder email sent to ${userId.email}`);
     }
   } catch (error) {
     console.error("Error sending appointment reminders:", error);
