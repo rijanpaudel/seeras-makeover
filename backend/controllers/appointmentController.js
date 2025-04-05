@@ -5,7 +5,7 @@ import mongoose from "mongoose";
 
 // Book an appointment
 export const bookAppointment = async (req, res) => {
-  const { userId, subServiceId, appointmentDate, appointmentTime } = req.body;
+  const { userId, subServiceId, appointmentDate, appointmentTime, notes } = req.body;
 
   // Check if all required fields are present
   if (!userId || !subServiceId || !appointmentDate || !appointmentTime) {
@@ -16,41 +16,53 @@ export const bookAppointment = async (req, res) => {
     return res.status(400).json({ message: "Invalid user or sub service ID format" });
   }
 
-
   try {
-    //Parse date and time to create Date object
-    const [year, month, day] = appointmentDate.split('-');
-    const timeComponents = appointmentTime.split(' ');
-    let [hours, minutes] = timeComponents[0].split(':');
+    // Log the incoming data for debugging
+    console.log("Appointment request data:", { appointmentDate, appointmentTime });
 
-    //Convert 12-hour format to 24-hour format
-    if (timeComponents[1] === 'PM' && hours !== '12') {
-      hours = parseInt(hours) + 12;
-    }
-    else if (timeComponents[1] === 'AM' && hours === '12') {
-      hours = 0;
-    }
+    // Parse the appointment date (expected format from frontend: MM/DD/YYYY or similar)
+    let dateParts;
 
-    // Convert 12h to 24h format
-    let hoursInt = parseInt(hours);
-    if (timeComponents[1] === 'PM' && hoursInt !== 12) {
-      hoursInt += 12;
-    } else if (timeComponents[1] === 'AM' && hoursInt === 12) {
-      hoursInt = 0;
+    // Handle different possible date formats
+    if (appointmentDate.includes('/')) {
+      dateParts = appointmentDate.split('/');
+    } else if (appointmentDate.includes('-')) {
+      dateParts = appointmentDate.split('-');
+    } else {
+      return res.status(400).json({ message: "Invalid date format" });
     }
 
-    const formattedHours = hoursInt.toString().padStart(2, '0');
-    const formattedMinutes = minutes.padStart(2, '0');
+    // Convert time to 24-hour format
+    const time24 = convertTo24Hour(appointmentTime);
 
-    // Create ISO string with Nepal timezone offset
-    const isoString = `${appointmentDate}T${formattedHours}:${formattedMinutes}:00+05:45`;
-    const appointmentDateTime = new Date(isoString);
+    // Create a valid date object using individual components (safer approach)
+    let year, month, day;
 
-    // Validate the date
+    // Determine date format and extract components
+    if (dateParts[0].length === 4) {
+      // YYYY-MM-DD format
+      [year, month, day] = dateParts;
+    } else if (dateParts[2].length === 4) {
+      // MM/DD/YYYY format
+      [month, day, year] = dateParts;
+    } else {
+      return res.status(400).json({ message: "Unrecognized date format" });
+    }
+
+    // Construct date (month is 0-indexed in JavaScript Date)
+    const appointmentDateTime = new Date(
+      parseInt(year),
+      parseInt(month) - 1,
+      parseInt(day),
+      ...time24.split(':').map(Number)
+    );
+
+    // Validate the date is valid
     if (isNaN(appointmentDateTime.getTime())) {
-      return res.status(400).json({ message: "Invalid date or time" });
+      return res.status(400).json({ message: "Invalid date/time combination" });
     }
 
+    // Create the appointment with the valid date
     const newAppointment = new Appointment({
       userId,
       subServiceId,
@@ -77,7 +89,7 @@ export const bookAppointment = async (req, res) => {
       hour12: true
     };
 
-    const formattedDateTime = appointmentDateTime.toLocaleDateString('en-US', options);
+    const formattedDateTime = appointmentDateTime.toLocaleString('en-US', options);
 
     // Prepare the email content
     const emailHTML = `
@@ -136,6 +148,33 @@ export const bookAppointment = async (req, res) => {
     res.status(500).json({ message: "Error booking appoointment:", error });
   }
 };
+
+function convertTo24Hour(timeStr) {
+  if (!timeStr) return "00:00";
+  
+  // Handle different time formats
+  let hours, minutes, period;
+  
+  // Match patterns
+  const timeMatch = timeStr.match(/(\d{1,2}):(\d{2}) (AM|PM)/i);
+  
+  if (timeMatch) {
+    hours = parseInt(timeMatch[1], 10);
+    minutes = timeMatch[2];
+    period = timeMatch[3].toUpperCase();
+    
+    // Convert to 24-hour format
+    if (period === 'PM' && hours !== 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+    
+    // Format with leading zeros
+    return `${hours.toString().padStart(2, '0')}:${minutes}`;
+  }
+  
+  // If the format doesn't match, log and return a default
+  console.error("Invalid time format:", timeStr);
+  return "12:00"; // Default to noon
+}
 
 // Get all appointments for Admin
 export const getAllAppointments = async (req, res) => {

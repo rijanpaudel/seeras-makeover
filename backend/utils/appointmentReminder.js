@@ -1,54 +1,59 @@
 import cron from 'node-cron';
-import mongoose from 'mongoose';
 import Appointment from '../models/Appointments.js';
 import sendEmail from '../utils/emailService.js';
 
-// Function to send reminder emails
 const appointmentReminder = async () => {
   try {
-    const currentTime = new Date();
-    let nepalTime = 5 * 60 + 45 // Convert to Nepal Time (GMT+5:45)
+    // Get current time in UTC
+    const nowUTC = new Date();
 
-    //Caculate the current Nepali time and target time
-    const nepalNow = new Date(currentTime.getTime() + nepalTime * 60 * 1000);
-    const targetNepalTime = new Date(nepalNow.getTime() + 60 * 60 * 1000);
+    // Calculate target time (1 hour ahead of now in UTC)
+    const targetUTC = new Date(nowUTC.getTime() + 60 * 60 * 1000);
 
-    const targetUTC = new Date(targetNepalTime.getTime() - nepalTime * 60 * 1000);
+    // ±1 minute window
+    const startWindowUTC = new Date(targetUTC.getTime() - 60 * 1000);
+    const endWindowUTC = new Date(targetUTC.getTime() + 60 * 1000);
 
-    // Allow 2 minute window arount targetUTC
-    const oneHourMinStart = new Date(targetUTC.getTime() - 1 * 60 * 1000);
-    const oneHourMaxEnd = new Date(targetUTC.getTime() + 1 * 60 * 1000);
+    const nepalOptions = {
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true,
+      timeZone: 'Asia/Kathmandu'
+    };
 
-    console.log(`Looking for appointments scheduled between:
-    ${oneHourMinStart.toISOString()} and ${oneHourMaxEnd.toISOString()}`);
+    const dateTimeOptions = {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true,
+      timeZone: 'Asia/Kathmandu'
+    };
 
+    const nepalNow = new Intl.DateTimeFormat('en-US', nepalOptions).format(nowUTC);
+    const nepalTarget = new Intl.DateTimeFormat('en-US', nepalOptions).format(targetUTC);
 
-    // Find appointments that are scheduled exactly 1 hour from now
+    console.log("Nepal Time Now:", nepalNow);
+    console.log("Looking for appointments at:", nepalTarget);
+
+    // Find upcoming appointments 1 hour from now
     const upcomingAppointments = await Appointment.find({
       appointmentDateTime: {
-        $gte: oneHourMinStart,
-        $lte: oneHourMaxEnd
+        $gte: startWindowUTC,
+        $lte: endWindowUTC
       },
       status: { $ne: "Canceled" }
-    }).populate("userId", "fullName email phoneNumber").populate("subServiceId", "name");
+    }).populate("userId", "fullName email phoneNumber")
+      .populate("subServiceId", "name");
 
-    console.log(`Found ${upcomingAppointments.length} appointments happening in 1 hour.`);
+    console.log(`Found ${upcomingAppointments.length} appointments.`);
 
     for (const appointment of upcomingAppointments) {
       const { userId, appointmentDateTime, subServiceId } = appointment;
 
-      // Format datetime for email
-      const options = {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        hour12: true
-      };
-      const formattedDateTime = appointmentDateTime.toLocaleDateString('en-US', options);
-
+      const formattedDateTime = new Intl.DateTimeFormat('en-US', dateTimeOptions).format(appointmentDateTime);
 
       const emailHTML = `
         <html>
@@ -79,6 +84,7 @@ const appointmentReminder = async () => {
 
       console.log(`Reminder email sent to ${userId.email}`);
     }
+
   } catch (error) {
     console.error("Error sending appointment reminders:", error);
   }
