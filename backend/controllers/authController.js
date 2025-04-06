@@ -2,78 +2,58 @@ import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import sendEmail from "../utils/emailService.js";
+import generateOTP from '../utils/generateOTP.js';
 
-
+let tempOTPStore = {}
 //Register User
+// Send OTP and temporarily store user info
 export const registerUser = async (req, res) => {
   try {
     const { fullName, email, phoneNumber, address, password, confirmPassword } = req.body;
 
-    //Check if any field is empty
     if (!fullName || !email || !phoneNumber || !address || !password || !confirmPassword) {
       return res.status(400).json({ message: "All fields are required." });
     }
 
-    //Check is user already exists
-    const userExists = await User.findOne({ email })
-    if (userExists) {
-      return res.status(400).json({ message: "The User already exists." });
-    }
-
-    //Check if passwords match
     if (confirmPassword !== password) {
-      return res.status(400).json({ message: "Passwords do no match." })
+      return res.status(400).json({ message: "Passwords do not match." });
     }
 
-    //Hash the password
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists." });
+    }
+
+    // Generate OTP and hash password
+    const otp = generateOTP();
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    //Create and save the user
-    const user = new User({
+    // Store user data temporarily with OTP
+    tempOTPStore[email] = {
       fullName,
       email,
       phoneNumber,
       address,
-      password: hashedPassword,//Save hashed password
-    });
+      password: hashedPassword,
+      otp,
+      createdAt: Date.now(),
+    };
 
-    console.log("Saving user:", user);
-
-    await user.save();
-
-    // Send Welcome Email
-    sendEmail(
-      email,
-      "Welcome to Seeras Makeover!",
-      `Hello ${fullName}, welcome to our Seeras Makeover!`,
-      `<h1>Hello ${fullName}</h1><p>welcome to our Seeras Makeover!</p>`
-    );
-
-    // Send admin notification
-    const adminEmailHTML = `
-      <h2>New User Registration</h2>
-      <p>A new user has registered:</p>
-      <ul>
-        <li><strong>Name:</strong> ${fullName}</li>
-        <li><strong>Email:</strong> ${email}</li>
-      </ul>
-    `;
-    
+    // Send OTP email
     await sendEmail(
-      process.env.EMAIL_USER,
-      "New User Registration",
-      "A new user has registered",
-      adminEmailHTML
+      email,
+      "Your OTP for Seeras Makeover",
+      `Your OTP is ${otp}`,
+      `<h2>Welcome to Seeras Makeover</h2><p>Your OTP is: <strong>${otp}</strong></p>`
     );
 
-    //Return success response
-    res.status(201).json({ message: "User registered successfully." });
-
+    res.status(200).json({ message: "OTP sent to your email. Please verify." });
   } catch (error) {
     res.status(500).json({ message: "Server error. Please try again." });
   }
 };
+
 
 //Login User
 export const loginUser = async (req, res)=> {
@@ -151,5 +131,69 @@ export const updateUserProfile = async (req, res)=> {
     res.status(500).json({ message: 'Error updating user profile', error: error.message });
   }
 };
+
+export const verifyOTP = async (req, res) => {
+  const { email, otp } = req.body;
+
+  const tempUser = tempOTPStore[email];
+  if (!tempUser) {
+    return res.status(400).json({ message: "No registration found for this email." });
+  }
+
+  // Expire OTP after 5 mins
+  const OTP_EXPIRY_MINUTES = 5;
+  const isExpired = Date.now() - tempUser.createdAt > OTP_EXPIRY_MINUTES * 60 * 1000;
+  if (isExpired) {
+    delete tempOTPStore[email];
+    return res.status(400).json({ message: "OTP has expired. Please register again." });
+  }
+
+  if (tempUser.otp !== otp) {
+    return res.status(400).json({ message: "Invalid OTP." });
+  }
+
+  try {
+    const user = new User({
+      fullName: tempUser.fullName,
+      email: tempUser.email,
+      phoneNumber: tempUser.phoneNumber,
+      address: tempUser.address,
+      password: tempUser.password,
+    });
+
+    await user.save();
+
+    // Cleanup temp store
+    delete tempOTPStore[email];
+
+    // Send welcome + admin email
+    await sendEmail(
+      email,
+      "Welcome to Seeras Makeover!",
+      `Hello ${tempUser.fullName}, welcome to Seeras Makeover!`,
+      `<h1>Hello ${tempUser.fullName}</h1><p>Welcome to Seeras Makeover!</p>`
+    );
+
+    await sendEmail(
+      process.env.EMAIL_USER,
+      "New User Registration",
+      "A new user has registered",
+      `
+        <h2>New User Registration</h2>
+        <ul>
+          <li>Name: ${tempUser.fullName}</li>
+          <li>Email: ${tempUser.email}</li>
+        </ul>
+      `
+    );
+
+    res.status(201).json({ message: "Registration complete. You can now login." });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error. Please try again." });
+  }
+};
+
 
 
