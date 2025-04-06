@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../Context/AuthContext';
+import { useToast } from '../Context/ToastContext';
 
 const Enroll = () => {
   const { user } = useAuth();
@@ -10,6 +11,7 @@ const Enroll = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   // Fetch courses from backend
   useEffect(() => {
@@ -52,13 +54,13 @@ const Enroll = () => {
 
     if (!user) {
       console.log("No user object found");
-      alert("You must be logged in to enroll.");
+      showToast("You must be logged in to enroll.");
       return;
     }
 
     if (!user?._id) {
       console.log("User object found but no _id:", user);
-      alert("User session is invalid. Please try logging in again.");
+      showToast("User session is invalid. Please try logging in again.");
       return;
     }
 

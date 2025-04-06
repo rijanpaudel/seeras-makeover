@@ -5,6 +5,7 @@ import { FaUserCircle } from "react-icons/fa";
 import { FaShoppingCart } from "react-icons/fa";
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../Context/AuthContext';
+import { useToast } from '../Context/ToastContext';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -13,6 +14,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [cartCount, setCartCount] = useState(0);
+  const { showToast } = useToast();
 
   useEffect(() => {
     const fetchCartCount = async () => {
@@ -37,6 +39,7 @@ const Navbar = () => {
   const handleLogout = () => {
     logout();
     navigate('/');
+    showToast("Logout successful!");
   };
 
   return (

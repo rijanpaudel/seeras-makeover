@@ -54,6 +54,8 @@ const Register = () => {
         confirmPassword: ""
       });
 
+      showToast("Registration successful! Please login to continue.");
+
     } catch (error) {
       showToast(error.response?.data?.message || "Registration failed. Please try again");
     }

@@ -91,7 +91,7 @@ const appointmentReminder = async () => {
 };
 
 // Run the cron job every minute
-cron.schedule('*/1 * * * *', () => {
+cron.schedule('*/9 * * * *', () => {
   console.log("Running appointment reminder job...");
   appointmentReminder();
 });

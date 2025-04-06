@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useToast } from '../Context/ToastContext';
 import axios from "axios";
 
 const AppointmentConfirmation = () => {
@@ -8,6 +9,7 @@ const AppointmentConfirmation = () => {
   const navigate = useNavigate();
   const { subServiceId } = useParams();
   const { userId, appointmentDate, appointmentTime } = location.state || {};
+  const { showToast } = useToast();
 
   const [subService, setSubService] = useState(null);
   const [notes, setNotes] = useState("");
@@ -18,7 +20,7 @@ const AppointmentConfirmation = () => {
     // Check if we have all required data
     if (!location.state || !userId || !appointmentDate || !appointmentTime) {
       console.log("Missing required appointment data");
-      navigate('/'); // Redirect to home or show an error
+      navigate('/');
       return;
     }
 
@@ -56,7 +58,8 @@ const AppointmentConfirmation = () => {
         notes,
       });
       console.log("Appointment Confirmed: ", response.data);
-      navigate("/");
+      showToast("Appointment confirmed successfully!");
+      navigate("/"); // Redirect to home page
     } catch (error) {
       console.error("Error confirming appointment:", error);
     }

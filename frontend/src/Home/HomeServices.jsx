@@ -48,10 +48,9 @@ const HomeServices = () => {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 lg:gap-16 mb-10 md:mb-16">
           {services.map((service, index) => (
-            <a
+            <div
               key={index}
-              href={service.link}
-              className="flex flex-col items-center group hover:transform hover:scale-105 transition-transform duration-300"
+              className="flex flex-col items-center group transition-transform duration-300"
             >
               <div className="w-32 md:w-44 mb-4">
                 <img
@@ -63,9 +62,11 @@ const HomeServices = () => {
               <p className="text-xl md:text-2xl lg:text-3xl group-hover:text-pink-500 transition-colors duration-300">
                 {service.name}
               </p>
-            </a>
+            </div>
           ))}
         </div>
+
+
 
         <div className="flex justify-center">
           <button className="px-6 py-2 bg-pink-500 text-white font-medium rounded shadow"
