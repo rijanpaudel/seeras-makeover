@@ -63,14 +63,21 @@ const AppointmentManagement = () => {
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
         {/* Header Section */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Appointment Management</h1>
-              <p className="text-gray-600">Manage and track all your salon appointments</p>
-            </div>
-          </div>
-        </div>
+<div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+  <div className="flex justify-between items-center flex-wrap gap-4">
+    <div>
+      <h1 className="text-3xl font-bold text-gray-900 mb-2">Appointment Management</h1>
+      <p className="text-gray-600">Manage and track all your salon appointments</p>
+    </div>
+    <button
+      onClick={() => navigate("/admin/blockedslots")}
+      className="bg-pink-500 hover:bg-pink-600 text-white px-6 py-2 rounded-full text-sm font-semibold transition-colors"
+    >
+      Manage Blocked Slots
+    </button>
+  </div>
+</div>
+
 
         {/* Appointments Table */}
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">

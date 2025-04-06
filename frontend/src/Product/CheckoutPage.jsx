@@ -2,12 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../Context/AuthContext";
 import axios from "axios";
+import { useToast } from "../Context/ToastContext";
 
 const CheckoutPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { product, quantity, cartItems } = location.state || {}; // Get product & quantity from Buy Now button
+  const { showToast } = useToast();
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -53,7 +55,7 @@ const CheckoutPage = () => {
           quantity: item.quantity,
         }));
       } else {
-        alert("No items to place an order");
+        showToast("No items to place an order");
         setLoading(false);
         return;
       }
@@ -63,7 +65,7 @@ const CheckoutPage = () => {
       const response = await axios.post("http://localhost:5000/api/orders/place", orderData);
 
       if (response.status === 201) {
-        alert("Order placed successfully!");
+        showToast("Order placed successfully!");
         navigate("/");
       }
     } catch (error) {

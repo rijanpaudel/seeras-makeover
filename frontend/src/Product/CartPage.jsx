@@ -21,12 +21,12 @@ const CartPage = () => {
       }
 
       try {
-        console.log(`📡 Fetching cart for user: ${user._id}`);
+        console.log(`Fetching cart for user: ${user._id}`);
         const response = await axios.get(`http://localhost:5000/api/cart/${user._id}`);
         console.log("Cart Data:", response.data);
 
         if (!response.data.items || response.data.items.length === 0) {
-          console.log("⚠️ Cart is empty.");
+          console.log("Cart is empty.");
         }
 
         setCart(response.data);
@@ -173,7 +173,7 @@ const CartPage = () => {
                 <div className="w-16 h-16 bg-gray-100 rounded-md flex-shrink-0 flex items-center justify-center">
                   {item.product?.image ? (
                     <img
-                      src={item.product.image}
+                      src={`http://localhost:5000${item.product.image}`}
                       alt={item.product?.title || "Product"}
                       className="w-full h-full object-cover rounded-md"
                     />

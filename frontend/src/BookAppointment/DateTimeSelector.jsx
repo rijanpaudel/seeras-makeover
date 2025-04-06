@@ -9,6 +9,7 @@ const DateTimeSelector = () => {
   const [selectedTime, setSelectedTime] = useState(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [calendarDays, setCalendarDays] = useState([]);
+  const [blockedTimes, setBlockedTimes] = useState([]);
   const { user } = useAuth();
 
   const weekdays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
@@ -125,6 +126,34 @@ const DateTimeSelector = () => {
     return selectedDate < today;
   };
 
+  useEffect(() => {
+    const fetchBlockedTimes = async () => {
+      if (!selectedDate) return;
+
+      const selectedDateObj = new Date(
+        currentMonth.getFullYear(),
+        currentMonth.getMonth(),
+        selectedDate
+      );
+
+      const formattedDate = `${selectedDateObj.getFullYear()}-${String(
+        selectedDateObj.getMonth() + 1
+      ).padStart(2, "0")}-${String(selectedDateObj.getDate()).padStart(2, "0")}`;
+
+      try {
+        const res = await fetch(`/api/blocked-slots/blocked-times?date=${formattedDate}&subServiceId=${subServiceId}`);
+        const data = await res.json();
+        setBlockedTimes(data.blockedTimes || []);
+      } catch (err) {
+        console.error("Failed to fetch blocked times:", err);
+        setBlockedTimes([]);
+      }
+    };
+
+    fetchBlockedTimes();
+  }, [selectedDate, subServiceId, currentMonth]);
+
+
   return (
     <div className="container mx-auto px-4">
       <h1 className="text-4xl font-bold text-center my-8">Book your appointment now</h1>
@@ -188,18 +217,25 @@ const DateTimeSelector = () => {
         <div className="md:w-64">
           <h3 className="text-2xl font-medium mb-4">Available Time Slots</h3>
           <div className="flex flex-col gap-4">
-            {timeSlots.map((time) => (
-              <button
-                key={time}
-                onClick={() => handleTimeSelect(time)}
-                className={`py-4 px-6 border rounded-lg text-xl text-center ${selectedTime === time
-                  ? 'bg-blue-100 text-blue-500 border-blue-200'
-                  : 'hover:bg-gray-50 border-gray-300'
-                  }`}
-              >
-                {time}
-              </button>
-            ))}
+            {timeSlots.map((time) => {
+              const isBlocked = blockedTimes.includes(time);
+              return (
+                <button
+                  key={time}
+                  onClick={() => !isBlocked && handleTimeSelect(time)}
+                  disabled={isBlocked}
+                  className={`py-4 px-6 border rounded-lg text-xl text-center
+        ${selectedTime === time ? 'bg-blue-100 text-blue-500 border-blue-200' : ''}
+        ${isBlocked
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'hover:bg-gray-50 border-gray-300'}
+      `}
+                >
+                  {time} {isBlocked && <span className="text-sm text-red-400 ml-1">(Blocked)</span>}
+                </button>
+              );
+            })}
+
           </div>
 
           <button

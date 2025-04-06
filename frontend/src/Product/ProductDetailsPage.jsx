@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../Context/AuthContext";
 import axios from "axios";
-import heartFilled from "../assets/heart-filled.png"
-import heartOutlined from "../assets/heart-outlined.png"
 
 function ProductDetailsPage() {
   const { id } = useParams();
