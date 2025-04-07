@@ -54,6 +54,11 @@ const CourseProgress = () => {
   // Destructure enrollment data (assuming courseId is populated with course data)
   const { courseId, progress, completedModules } = enrollment;
 
+const moduleCount = courseId?.modules?.length || 0;
+const completedCount = completedModules?.filter(Boolean).length || 0;
+const actualProgress = typeof progress === "number" ? progress : Math.round((completedCount / moduleCount) * 100);
+
+
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="bg-white shadow-md rounded-lg p-8">
@@ -63,12 +68,12 @@ const CourseProgress = () => {
         <div className="mb-6">
           <div className="flex justify-between items-center mb-1">
             <span className="text-sm font-medium text-gray-700">Overall Progress</span>
-            <span className="text-sm font-medium text-gray-700">{progress}%</span>
+            <span className="text-sm font-medium text-gray-700">{actualProgress}%</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-4">
             <div 
               className="bg-green-500 h-4 rounded-full" 
-              style={{ width: `${progress}%` }}
+              style={{ width: `${actualProgress}%` }}
             ></div>
           </div>
         </div>

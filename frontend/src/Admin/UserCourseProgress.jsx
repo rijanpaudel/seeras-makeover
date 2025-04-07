@@ -18,7 +18,10 @@ const UserCourseProgress = ({ editable = false }) => {
       const fetched = response.data;
       const moduleCount = fetched.courseId?.modules?.length || 0;
       if (!Array.isArray(fetched.completedModules) || fetched.completedModules.length !== moduleCount) {
-        fetched.completedModules = Array(moduleCount).fill(false);
+        fetched = {
+          ...fetched,
+          completedModules: Array(moduleCount).fill(false),
+        };
       }
       setEnrollment(fetched);
     } catch (err) {
@@ -45,7 +48,7 @@ const UserCourseProgress = ({ editable = false }) => {
     if (currentCompleted.length !== moduleCount) {
       currentCompleted = Array(moduleCount).fill(false);
     }
-    const newCompleted = currentCompleted.map((comp, idx) =>
+    const newCompleted = [...currentCompleted].map((comp, idx) =>
       idx === index ? !comp : comp
     );
     const progress = moduleCount
@@ -57,8 +60,12 @@ const UserCourseProgress = ({ editable = false }) => {
         `http://localhost:5000/api/enrollments/progress/${enrollment._id}`,
         { progress, completedModules: newCompleted }
       );
-      // Re-fetch the enrollment to ensure modules are still populated
-      await fetchEnrollment();
+      // Update local state
+      setEnrollment((prev) => ({
+        ...prev,
+        completedModules: newCompleted,
+        progress,
+      }));
     } catch (err) {
       console.error("Error updating progress", err);
     }

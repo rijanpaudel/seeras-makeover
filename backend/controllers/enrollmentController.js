@@ -56,17 +56,25 @@ export const singleEnrollment = async (req, res) => {
 
 // Update progress for an enrollment (populated with course data)
 export const updateProgress = async (req, res) => {
-  const { enrollmentId } = req.params;
-  const { progress, completedModules } = req.body;
-
   try {
-    const enrollment = await Enrollment.findByIdAndUpdate(
+    const { enrollmentId } = req.params;
+    const { progress, completedModules } = req.body;
+
+    if (typeof progress !== 'number' || !Array.isArray(completedModules)) {
+      return res.status(400).json({ message: 'Invalid input' });
+    }
+
+    const updatedEnrollment = await Enrollment.findByIdAndUpdate(
       enrollmentId,
       { progress, completedModules },
       { new: true }
     ).populate("courseId");
 
-    res.status(200).json(enrollment);
+    if(!updatedEnrollment) {
+      return res.status(404).json({ message: "Enrollment not found." });
+    }
+
+    res.status(200).json(updatedEnrollment);
   } catch (error) {
     res.status(500).json({ message: "Error updating progress", error });
   }
