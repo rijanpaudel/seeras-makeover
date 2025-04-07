@@ -1,7 +1,7 @@
+import axios from "axios";
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
 import sendEmail from "../utils/emailService.js";
-import mongoose from "mongoose";
 import User from "../models/User.js"; // Assuming you have a User model to get email
 
 // Place an order
@@ -95,14 +95,45 @@ export const placeOrder = async (req, res) => {
       emailHTML
     );
 
-    // Respond to the client with order details
-    res.status(201).json({ message: "Order placed successfully!", order: newOrder });
-  } catch (error) {
+    //Initiate paymment
+    const orderId = newOrder._id.toString();
+    const paymentRequestData = {
+      amount: totalAmount,
+      purchase_order_id: orderId,
+      purchase_order_name: `Order-${orderId}`,
+      customer_info: {
+        fullName,
+        email: user.email,
+        phoneNumber,
+      },
+      return_url: "http://localhost:5173/"
+    };
+
+    try {
+      console.log("Initating payment request:", paymentRequestData);
+
+      const paymentResponse = await axios.post("http://localhost:5000/api/payment/initiate", paymentRequestData);
+
+      console.log("Payment gateway response:", paymentResponse.data);
+
+      if (paymentResponse.status === 200) {
+        console.log("Payment initiated successfully:", paymentResponse.data);
+        res.status(201).json({ message: "Order placed successfully!", order: newOrder });
+      } else {
+        console.error("Payment initiation failed:", paymentResponse.data);
+        return res.status(400).json({ message: "Payment initiation failed." });
+      }
+    }
+    catch (error) {
+      console.error("Error during payment initiation:", error);
+      res.status(500).json({ message: "Error during payment initiation", error });
+    }
+  }
+  catch (error) {
     console.error("Error placing order:", error);
     res.status(500).json({ message: "Error placing order", error });
   }
 };
-
 
 
 // Get all orders for Admin
@@ -181,7 +212,7 @@ export const deleteOrder = async (req, res) => {
 };
 
 
- export const getPurchaseDetails = async (req, res) => {
+export const getPurchaseDetails = async (req, res) => {
   try {
     const purchases = await Order.find({ userId: req.params.userId }).populate("items.product");
     res.json(purchases);

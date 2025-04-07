@@ -36,6 +36,15 @@ const CheckoutPage = () => {
       return;
     }
 
+    let totalAmount = 0;
+
+    if (product) {
+      totalAmount = product.price * quantity;
+    } else if (cartItems.length > 0) {
+      totalAmount = cartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+    }
+
+
     try {
       let orderData = {
         userId: user._id, // Ensure this is the correct user ID from auth context
@@ -62,11 +71,25 @@ const CheckoutPage = () => {
 
       console.log("Order Data Sent to Backend:", orderData);
 
-      const response = await axios.post("http://localhost:5000/api/orders/place", orderData);
+      const paymentInitRes = await axios.post("http://localhost:5000/api/payment/initiate", {
+        amount: totalAmount * 100, // in paisa
+        purchase_order_id: `ORD-${Date.now()}`,
+        purchase_order_name: product ? product.title : "Cart Checkout",
+        return_url: "http://localhost:5173/",
+        customer_info: {
+          name: formData.fullName,
+          email: user.email,
+          phone: formData.phoneNumber,
+        },
+        extra: {
+          orderData, // send this to identify what to save after payment success
+        }
+      });
 
-      if (response.status === 201) {
-        showToast("Order placed successfully!");
-        navigate("/");
+      if (paymentInitRes.data.payment_url) {
+        window.location.href = paymentInitRes.data.payment_url;
+      } else {
+        throw new Error("Failed to initiate payment.");
       }
     } catch (error) {
       console.error("Order error:", error);
@@ -76,7 +99,7 @@ const CheckoutPage = () => {
     }
   };
 
-  useEffect(() => {}, [user, product]);
+  useEffect(() => { }, [user, product]);
 
   return (
     <div className="container mx-auto px-4 py-16">
