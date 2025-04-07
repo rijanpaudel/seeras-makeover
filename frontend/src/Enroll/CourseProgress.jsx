@@ -83,7 +83,7 @@ const CourseProgress = () => {
                   ) : (
                     <Circle className="w-6 h-6 text-gray-400 mr-3" />
                   )}
-                  <span className={completedModules && completedModules[index] ? "text-gray-500 line-through" : "text-gray-800"}>
+                  <span className={completedModules && completedModules[index] ? "text-gray-500" : "text-gray-800"}>
                     {module.title || module.name || `Module ${index + 1}`}
                   </span>
                 </div>

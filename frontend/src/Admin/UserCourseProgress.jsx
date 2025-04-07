@@ -15,7 +15,12 @@ const UserCourseProgress = ({ editable = false }) => {
       const response = await axios.get(
         `http://localhost:5000/api/enrollments/single/${enrollmentId}`
       );
-      setEnrollment(response.data);
+      const fetched = response.data;
+      const moduleCount = fetched.courseId?.modules?.length || 0;
+      if (!Array.isArray(fetched.completedModules) || fetched.completedModules.length !== moduleCount) {
+        fetched.completedModules = Array(moduleCount).fill(false);
+      }
+      setEnrollment(fetched);
     } catch (err) {
       console.error("Error fetching enrollment:", err);
       setError("Failed to load course progress.");
@@ -23,6 +28,7 @@ const UserCourseProgress = ({ editable = false }) => {
       setLoading(false);
     }
   };
+
 
   useEffect(() => {
     if (enrollmentId) {
@@ -113,7 +119,7 @@ const UserCourseProgress = ({ editable = false }) => {
                   className="flex items-center p-4 border border-gray-100 rounded-lg shadow-sm bg-gray-50"
                 >
                   {enrollment.completedModules &&
-                  enrollment.completedModules[index] ? (
+                    enrollment.completedModules[index] ? (
                     <CheckCircle className="w-6 h-6 text-green-500 mr-3" />
                   ) : (
                     <Circle className="w-6 h-6 text-gray-400 mr-3" />
@@ -122,9 +128,9 @@ const UserCourseProgress = ({ editable = false }) => {
                   {editable && (
                     <button
                       onClick={() => toggleModule(index)}
-                      className="ml-auto text-blue-500 hover:text-blue-600"
+                      className="ml-auto px-2 py-1 text-sm border rounded text-blue-500 hover:text-white hover:bg-blue-500"
                     >
-                      Toggle
+                      {enrollment.completedModules[index] ? "Mark Incomplete" : "Mark Complete"}
                     </button>
                   )}
                 </div>

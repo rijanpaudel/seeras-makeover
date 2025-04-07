@@ -36,7 +36,7 @@ export default function AdminApp() {
             <Route path="/services" element={<PrivateAdminRoute><ServiceManagement /></PrivateAdminRoute>} />
             <Route path="/adminProducts" element={<PrivateAdminRoute><AdminProducts /></PrivateAdminRoute>} />
             <Route path="/customer/:userId" element={<PrivateAdminRoute><CustomerDetails /></PrivateAdminRoute>} />
-            <Route path="/course-progress/:enrollmentId" element={<PrivateAdminRoute><UserCourseProgress /></PrivateAdminRoute>} />
+            <Route path="/course-progress/:enrollmentId" element={<PrivateAdminRoute><UserCourseProgress editable={true}/></PrivateAdminRoute>} />
             <Route path="/orders" element={<PrivateAdminRoute><OrderManagement /></PrivateAdminRoute>} />
             <Route path="/blockedslots" element={<PrivateAdminRoute><AdminBlockedSlots /></PrivateAdminRoute>} />
             <Route path="*" element={<Navigate to="/admin" />} />
