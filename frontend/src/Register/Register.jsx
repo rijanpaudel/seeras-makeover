@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from '../Context/ToastContext';
 import axios from "axios";
-import { set } from 'mongoose';
 
 const Register = () => {
   const [formData, setFormData] = useState({

@@ -4,6 +4,8 @@ import ProductCard from "./ProductCard.jsx";
 import CategoryFilter from "./CategoryFilter";
 import axios from "axios";
 import BrandFilter from "./BrandFilter.jsx";
+import RecommendedCard from "../Recommendation/RecommendedCard.jsx";
+import { useAuth } from "../Context/AuthContext.jsx";
 
 function ProductsPage() {
   const categories = ["Skincare", "Haircare", "Nailcare"];
@@ -16,6 +18,8 @@ function ProductsPage() {
   const [sortOrder, setSortOrder] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedBrand, setSelectedBrand] = useState("");
+  const [recommendedProducts, setRecommendedProducts] = useState([]);
+  const { user } = useAuth(); //Get user from context
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -75,6 +79,21 @@ function ProductsPage() {
 
     setFilteredProducts(updatedList);
   }, [searchTerm, products, sortOrder, selectedCategory, selectedBrand]);
+
+  useEffect(() => {
+    if (!user?._id) return;
+  
+    const fetchRecommendations = async () => {
+      try {
+        const res = await axios.get(`http://localhost:5000/api/recommendations/${user._id}`);
+        setRecommendedProducts(res.data.recommendedProducts);
+      } catch (error) {
+        console.log("No recommendations yet.");
+      }
+    };
+  
+    fetchRecommendations();
+  }, [  user?._id]);
 
 
   if (loading) {
@@ -153,6 +172,17 @@ function ProductsPage() {
           </div>
         ))}
       </div>
+
+      {recommendedProducts.length > 0 && (
+        <div className="w-full mt-10">
+          <h2 className="text-3xl font-bold mb-4 text-gray-800">Recommended for You</h2>
+          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
+            {recommendedProducts.map((product) => (
+              <RecommendedCard key={product._id} item={product} type="product" />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

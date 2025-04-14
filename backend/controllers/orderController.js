@@ -1,11 +1,14 @@
 import axios from "axios";
-import Order from "../models/Order.js";
 import Product from "../models/Product.js";
-import sendEmail from "../utils/emailService.js";
+import Order from "../models/Order.js";
 import User from "../models/User.js"; // Assuming you have a User model to get email
 
 // Place an order
 export const placeOrder = async (req, res) => {
+
+  // Check if the order data is nested in req.body.extra.orderData
+  const orderData = req.body.extra && req.body.extra.orderData ? req.body.extra.orderData : req.body;
+
   const { userId, items, fullName, address, phoneNumber } = req.body;
 
   // Validate that all required fields are provided
@@ -21,8 +24,6 @@ export const placeOrder = async (req, res) => {
   }
 
   try {
-    console.log("Order data received:", req.body);
-
     // Fetch the product details for each item (Ensure products are returned correctly with name and price)
     const productIds = items.map(item => item.productId);
     const products = await Product.find({ '_id': { $in: productIds } });
@@ -35,103 +36,59 @@ export const placeOrder = async (req, res) => {
     let totalAmount = 0;
     const orderItems = items.map((item) => {
       const product = products.find((p) => p._id.toString() === item.productId.toString());
-      if (!product) {
-        throw new Error(`Product not found: ${item.productId}`);
-      }
-      totalAmount += product.price * item.quantity; // Add price calculation
+      totalAmount += product.price * item.quantity;
       return {
         product: product._id,
-        name: product.name,   // Ensure you include the name here
+        name: product.name,
         quantity: item.quantity,
         price: product.price,
       };
     });
 
-    // Create the new order document
-    const newOrder = new Order({
-      userId,
-      items: orderItems.map(item => ({
-        product: item.product,
-        quantity: item.quantity
-      })),
-      deliveryDetails: { fullName, address, phoneNumber },
-      status: "Pending",
-    });
-
-    // Save the order to the database
-    await newOrder.save();
-
     // Fetch the user email
-    const user = await User.findById(userId); // Assuming you have a User model
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
 
-    // Prepare Order Email Content
-    let productListHTML = orderItems.map(
-      (item) => `<li>${item.name} - Quantity: ${item.quantity} - Price: $${item.price}</li>`
-    ).join("");
+    const orderData = {
+      userId,
+      fullName,
+      address,
+      phoneNumber,
+      items,
+    };
 
-    const emailHTML = `
-      <html>
-        <body>
-          <h2>Order Confirmation</h2>
-          <p>Dear Customer,</p>
-          <p>Thank you for your order! Your order has been successfully placed.</p>
-          <h3>Order Details:</h3>
-          <ul>${productListHTML}</ul>
-          <p><strong>Total Amount: $${totalAmount}</strong></p>
-          <p>We will notify you once your order is shipped.</p>
-          <p>Regards,<br/>Seeras Makeover</p>
-        </body>
-      </html>
-    `;
-
-    // Send confirmation email to the user
-    await sendEmail(
-      user.email,
-      "Order Confirmation - Seeras Makeover",
-      "Your order has been placed successfully!",
-      emailHTML
-    );
-
-    //Initiate paymment
-    const orderId = newOrder._id.toString();
     const paymentRequestData = {
       amount: totalAmount,
-      purchase_order_id: orderId,
-      purchase_order_name: `Order-${orderId}`,
+      purchase_order_id: `ORD-${Date.now()}`,
+      purchase_order_name: `Order-${Date.now()}`,
       customer_info: {
         fullName,
         email: user.email,
-        phoneNumber,
+        phone: phoneNumber,
       },
-      return_url: "http://localhost:5173/"
+      return_url: "http://localhost:5173/payment/verify",
+      extra: {
+        orderData,
+      }
     };
 
-    try {
-      console.log("Initating payment request:", paymentRequestData);
+    console.log("Initiating payment with data:", paymentInitData);
 
-      const paymentResponse = await axios.post("http://localhost:5000/api/payment/initiate", paymentRequestData);
-
-      console.log("Payment gateway response:", paymentResponse.data);
-
-      if (paymentResponse.status === 200) {
-        console.log("Payment initiated successfully:", paymentResponse.data);
-        res.status(201).json({ message: "Order placed successfully!", order: newOrder });
-      } else {
-        console.error("Payment initiation failed:", paymentResponse.data);
-        return res.status(400).json({ message: "Payment initiation failed." });
-      }
+    // Call your payment initiation endpoint
+    const paymentResponse = await axios.post("http://localhost:5000/api/payment/initiate", paymentInitData);
+    if (paymentResponse.data.payment_url) {
+      return res.status(200).json({
+        message: "Payment initiated",
+        payment_url: paymentResponse.data.payment_url,
+      });
+    } else {
+      return res.status(400).json({ message: "Payment initiation failed." });
     }
-    catch (error) {
-      console.error("Error during payment initiation:", error);
-      res.status(500).json({ message: "Error during payment initiation", error });
-    }
-  }
-  catch (error) {
+  } catch (error) {
     console.error("Error placing order:", error);
-    res.status(500).json({ message: "Error placing order", error });
+    return res.status(500).json({ message: "Error placing order", error });
   }
 };
 
@@ -221,4 +178,3 @@ export const getPurchaseDetails = async (req, res) => {
     res.status(500).json({ message: "Error fetching purchases" });
   }
 };
-

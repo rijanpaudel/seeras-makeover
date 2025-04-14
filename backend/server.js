@@ -13,6 +13,7 @@ import appointmentRoutes from './routes/appointmentRoutes.js';
 import blockedSlotRoutes from './routes/blockedSlotRoutes.js';
 import adminRoutes from "./routes/adminRoutes.js";
 import khaltiPaymentRoutes from "./routes/khaltiPaymentRoutes.js";
+import recommendationRoutes from "./routes/recommendationRoutes.js";
 import "./utils/appointmentReminder.js"; 
 import User from "./models/User.js";
 import bcrypt from "bcryptjs"
@@ -47,7 +48,7 @@ app.use("/api/courses", courseRoutes);
 
 app.use("/api/cart", cartRoutes);
 
-app.use("/api/orders", orderRoutes);
+app.use("/api/order", orderRoutes);
 
 app.use("/api/enrollments", enrollmentRoutes);
 
@@ -60,6 +61,8 @@ app.use("/api/blocked-slots", blockedSlotRoutes);
 app.use("/api/admin", adminRoutes);
 
 app.use("/api/payment", khaltiPaymentRoutes);
+
+app.use("/api/recommendations", recommendationRoutes);
 
 //Function to see the admin user
 const seedAdminUser = async() => {

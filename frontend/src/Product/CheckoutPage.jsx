@@ -46,12 +46,15 @@ const CheckoutPage = () => {
 
 
     try {
-      let orderData = {
-        userId: user._id, // Ensure this is the correct user ID from auth context
+      const orderData = {
+        userId: user._id,
         fullName: formData.fullName,
         address: formData.address,
         phoneNumber: formData.phoneNumber,
-        items: [],
+        items: product ? [{ productId: product._id, quantity }] : cartItems.map(item => ({
+          productId: item.product._id,
+          quantity: item.quantity,
+        })),
       };
 
       if (product) {
@@ -69,31 +72,54 @@ const CheckoutPage = () => {
         return;
       }
 
-      console.log("Order Data Sent to Backend:", orderData);
+      console.log("Order Data For Payment:", orderData);
 
-      const paymentInitRes = await axios.post("http://localhost:5000/api/payment/initiate", {
-        amount: totalAmount * 100, // in paisa
+      console.log("Total Amount:", totalAmount);
+
+      const amountInPaisa = Math.round(totalAmount * 100);
+      console.log("Amount in Paisa:", amountInPaisa);
+
+      const paymentInitData = {
+        ...orderData,
+        amount: amountInPaisa,
         purchase_order_id: `ORD-${Date.now()}`,
         purchase_order_name: product ? product.title : "Cart Checkout",
-        return_url: "http://localhost:5173/",
+        return_url: "http://localhost:5173/payment/verify", // Update this to point to your KhaltiPayment component
         customer_info: {
           name: formData.fullName,
           email: user.email,
           phone: formData.phoneNumber,
         },
-        extra: {
-          orderData, // send this to identify what to save after payment success
-        }
-      });
+      };
+
+      console.log("Payment Init Request:", paymentInitData);
+
+      const paymentInitRes = await axios.post(
+        "http://localhost:5000/api/order/place",
+        paymentInitData
+      );
+
+      console.log("Payment Init Response:", paymentInitRes.data);
 
       if (paymentInitRes.data.payment_url) {
         window.location.href = paymentInitRes.data.payment_url;
       } else {
-        throw new Error("Failed to initiate payment.");
+        throw new Error("Failed to initiate payment: No payment URL returned");
       }
     } catch (error) {
-      console.error("Order error:", error);
-      setError(error.response ? error.response.data.message : "Something went wrong");
+      console.error("Order error details:", error);
+      if (error.response) {
+        console.error("Error response data:", error.response.data);
+        console.error("Error response status:", error.response.status);
+        setError(error.response.data.message || "Error from payment service");
+      } else if (error.request) {
+        console.error("No response received:", error.request);
+        setError("No response from payment service. Please try again.");
+      } else {
+        console.error("Error message:", error.message);
+        setError(error.message || "Something went wrong with payment");
+      }
+      showToast("Payment initiation failed. Please try again.");
     } finally {
       setLoading(false);
     }

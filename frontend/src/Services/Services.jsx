@@ -3,12 +3,17 @@ import axios from "axios";
 import ServiceHeader from "./ServiceHeader";
 import { ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../Context/AuthContext.jsx";
+import RecommendedCard from "../Recommendation/RecommendedCard";
 
 const Services = () => {
   const [categorizedServices, setCategorizedServices] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const [recommendedServices, setRecommendedServices] = useState([]);
+  const { user } = useAuth();
+
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -53,6 +58,23 @@ const Services = () => {
     fetchServices();
   }, []);
 
+  useEffect(() => {
+    if (!user?._id) return;
+
+    const fetchRecommendations = async () => {
+      try {
+        const res = await axios.get(`http://localhost:5000/api/recommendations/${user._id}`);
+        console.log("Service recommendations:", res.data); // log to debug
+        setRecommendedServices(res.data?.recommendedServices || []);
+      } catch (err) {
+        console.error("Error fetching service recommendations:", err);
+      }
+    };
+
+    fetchRecommendations();
+  }, [user]);
+
+
   if (loading) return <div className="text-center py-8">Loading services...</div>;
   if (error) return <div className="text-center text-red-500 py-8">{error}</div>;
 
@@ -95,6 +117,19 @@ const Services = () => {
           </div>
         ))}
       </div>
+      {recommendedServices.length > 0 && (
+        <div className="mb-12">
+          <h2 className="text-3xl font-semibold text-gray-800 mb-6">
+            Recommended Services for You
+          </h2>
+          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
+            {recommendedServices.map((service) => (
+              <RecommendedCard key={service._id} item={service} type="service" />
+            ))}
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
