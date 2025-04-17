@@ -1,10 +1,12 @@
 import express from "express";
-import { placeOrder, getAllOrders, updateOrderStatus, deleteOrder, getPurchaseDetails } from "../controllers/orderController.js";
+import { placeOrder, getAllOrders, updateOrderStatus, deleteOrder, getPurchaseDetails, placeCodOrder } from "../controllers/orderController.js";
 
 const router = express.Router();
 
 // Place an order
 router.post("/place", placeOrder);
+
+router.post("/place-cod", placeCodOrder);
 
 // Get all orders for Admin
 router.get("/all", getAllOrders);

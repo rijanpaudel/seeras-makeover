@@ -14,6 +14,8 @@ const orderSchema = new mongoose.Schema({
     phoneNumber: { type: String, required: true },
   },
   status: { type: String, default: "Pending" },
+  paymentMethod: { type: String, enum: ["khalti", "COD"], default: "khalti" },
+  paymentStatus: { type: String, enum: ["Pending", "Completed", "Failed"], default: "Pending" },
   createdAt: { type: Date, default: Date.now }
 });
 

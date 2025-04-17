@@ -14,10 +14,14 @@ const OrderManagement = () => {
 
   const fetchOrders = async () => {
     try {
+      setLoading(true);
       const response = await axios.get("http://localhost:5000/api/orders/all");
+      console.log("Orders response:", response.data);
       setOrders(response.data);
     } catch (error) {
+      console.error("Error fetching orders:", error);
       setError("Failed to load orders.");
+      setOrders([]);
     } finally {
       setLoading(false);
     }

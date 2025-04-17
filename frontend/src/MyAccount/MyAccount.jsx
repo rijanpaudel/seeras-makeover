@@ -18,7 +18,7 @@ function MyAccount() {
   });
 
   useEffect(() => {
-    if (user) {
+    if (user && user._id) {
       setFormData({
         fullName: user.fullName || '',
         email: user.email || '',
@@ -30,18 +30,21 @@ function MyAccount() {
     }
   }, [user]);
 
+
   const fetchPurchases = async () => {
     try {
       setLoading(true);
       const response = await axios.get(`http://localhost:5000/api/orders/purchases/${user._id}`);
       setPurchases(response.data);
     } catch (err) {
-      setError('Failed to fetch purchase history');
       console.error('Error fetching purchases:', err);
+      setError('Failed to fetch purchase history');
+      setPurchases([]);
     } finally {
       setLoading(false);
     }
   };
+
 
   const fetchAppointments = async () => {
     try {

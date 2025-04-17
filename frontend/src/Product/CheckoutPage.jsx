@@ -17,6 +17,7 @@ const CheckoutPage = () => {
     phoneNumber: "",
   });
 
+  const [paymentMethod, setPaymentMethod] = useState("khalti"); // Default to Khalti
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -24,12 +25,15 @@ const CheckoutPage = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handlePaymentMethodChange = (e) => {
+    setPaymentMethod(e.target.value);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
-    // Ensure all required fields are populated
     if (!formData.fullName || !formData.address || !formData.phoneNumber) {
       setError("Please provide all the required fields");
       setLoading(false);
@@ -38,88 +42,89 @@ const CheckoutPage = () => {
 
     let totalAmount = 0;
 
-    if (product) {
-      totalAmount = product.price * quantity;
-    } else if (cartItems.length > 0) {
-      totalAmount = cartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-    }
-
-
     try {
-      const orderData = {
-        userId: user._id,
-        fullName: formData.fullName,
-        address: formData.address,
-        phoneNumber: formData.phoneNumber,
-        items: product ? [{ productId: product._id, quantity }] : cartItems.map(item => ({
-          productId: item.product._id,
-          quantity: item.quantity,
-        })),
-      };
+      let items = [];
 
       if (product) {
-        // For single product purchase
-        orderData.items.push({ productId: product._id, quantity });
-      } else if (cartItems.length > 0) {
-        // For cart checkout (multiple products)
-        orderData.items = cartItems.map((item) => ({
+        items = [{ productId: product._id, quantity }];
+        totalAmount = product.price * quantity;
+      } else if (cartItems && cartItems.length > 0) {
+        items = cartItems.map((item) => ({
           productId: item.product._id,
           quantity: item.quantity,
         }));
+        totalAmount = cartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
       } else {
         showToast("No items to place an order");
         setLoading(false);
         return;
       }
 
-      console.log("Order Data For Payment:", orderData);
-
-      console.log("Total Amount:", totalAmount);
-
-      const amountInPaisa = Math.round(totalAmount * 100);
-      console.log("Amount in Paisa:", amountInPaisa);
-
-      const paymentInitData = {
-        ...orderData,
-        amount: amountInPaisa,
-        purchase_order_id: `ORD-${Date.now()}`,
-        purchase_order_name: product ? product.title : "Cart Checkout",
-        return_url: "http://localhost:5173/payment/verify", // Update this to point to your KhaltiPayment component
-        customer_info: {
-          name: formData.fullName,
-          email: user.email,
-          phone: formData.phoneNumber,
-        },
+      const orderData = {
+        userId: user._id,
+        fullName: formData.fullName,
+        address: formData.address,
+        phoneNumber: formData.phoneNumber,
+        items: items,
+        paymentMethod: paymentMethod
       };
 
-      console.log("Payment Init Request:", paymentInitData);
+      console.log("Order Data:", orderData);
+      console.log("Total Amount:", totalAmount);
+      
+      // For Cash on Delivery, directly place the order without payment gateway
+      if (paymentMethod === "cod") {
+        const orderRes = await axios.post(
+          "http://localhost:5000/api/orders/place-cod",
+          orderData
+        );
+        
+        if (orderRes.data.success) {
+          showToast("Order placed successfully!");
+          navigate("/orders"); // Redirect to orders page
+        } else {
+          throw new Error("Failed to place order");
+        }
+      } 
+      // For Khalti payment
+      else {
+        const amountInPaisa = Math.round(totalAmount * 100);
+        console.log("Amount in Paisa:", amountInPaisa);
 
-      const paymentInitRes = await axios.post(
-        "http://localhost:5000/api/order/place",
-        paymentInitData
-      );
+        const paymentInitData = {
+          amount: amountInPaisa,
+          purchase_order_id: `ORD-${Date.now()}`,
+          purchase_order_name: product ? product.title : "Cart Checkout",
+          return_url: "http://localhost:5173/payment/verify",
+          customer_info: {
+            name: formData.fullName,
+            email: user.email,
+            phone: formData.phoneNumber,
+          },
+          extra: {
+            orderData,
+          },
+          paymentMethod: paymentMethod
+        };
 
-      console.log("Payment Init Response:", paymentInitRes.data);
+        console.log("Payment Init Request:", paymentInitData);
 
-      if (paymentInitRes.data.payment_url) {
-        window.location.href = paymentInitRes.data.payment_url;
-      } else {
-        throw new Error("Failed to initiate payment: No payment URL returned");
+        const paymentInitRes = await axios.post(
+          "http://localhost:5000/api/orders/place",
+          paymentInitData
+        );
+
+        console.log("Payment Init Response:", paymentInitRes.data);
+
+        if (paymentInitRes.data.payment_url) {
+          window.location.href = paymentInitRes.data.payment_url;
+        } else {
+          throw new Error("Failed to initiate payment: No payment URL returned");
+        }
       }
     } catch (error) {
       console.error("Order error details:", error);
-      if (error.response) {
-        console.error("Error response data:", error.response.data);
-        console.error("Error response status:", error.response.status);
-        setError(error.response.data.message || "Error from payment service");
-      } else if (error.request) {
-        console.error("No response received:", error.request);
-        setError("No response from payment service. Please try again.");
-      } else {
-        console.error("Error message:", error.message);
-        setError(error.message || "Something went wrong with payment");
-      }
-      showToast("Payment initiation failed. Please try again.");
+      setError(error.message || "Failed to process your order. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -137,11 +142,12 @@ const CheckoutPage = () => {
           <h3 className="text-xl font-semibold">{product.title}</h3>
           <p>Price: Rs {product.price}</p>
           <p>Quantity: {quantity}</p>
+          <p className="font-semibold mt-2">Total: Rs {product.price * quantity}</p>
         </div>
       )}
 
       {/* Show Cart Items */}
-      {!product && cartItems.length > 0 && (
+      {!product && cartItems && cartItems.length > 0 && (
         <div className="border p-4 rounded-lg mb-6">
           <h3 className="text-xl font-semibold mb-4">Cart Items</h3>
           {cartItems.map((item) => (
@@ -149,8 +155,12 @@ const CheckoutPage = () => {
               <h4 className="text-lg">{item.product.title}</h4>
               <p>Price: Rs {item.product.price}</p>
               <p>Quantity: {item.quantity}</p>
+              <p>Subtotal: Rs {item.product.price * item.quantity}</p>
             </div>
           ))}
+          <p className="font-semibold mt-2">
+            Total: Rs {cartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0)}
+          </p>
         </div>
       )}
 
@@ -191,10 +201,50 @@ const CheckoutPage = () => {
           />
         </div>
 
+        {/* Payment Method Selection */}
+        <div className="mt-6">
+          <h3 className="text-lg font-semibold mb-2">Payment Method</h3>
+          <div className="space-y-2">
+            <div className="flex items-center">
+              <input
+                type="radio"
+                id="khalti"
+                name="paymentMethod"
+                value="khalti"
+                checked={paymentMethod === "khalti"}
+                onChange={handlePaymentMethodChange}
+                className="mr-2"
+              />
+              <label htmlFor="khalti" className="flex items-center">
+                <span className="mr-2">Khalti</span>
+                <span className="text-purple-600 font-semibold">(Online Payment)</span>
+              </label>
+            </div>
+            <div className="flex items-center">
+              <input
+                type="radio"
+                id="cod"
+                name="paymentMethod"
+                value="cod"
+                checked={paymentMethod === "cod"}
+                onChange={handlePaymentMethodChange}
+                className="mr-2"
+              />
+              <label htmlFor="cod" className="flex items-center">
+                <span className="mr-2">Cash on Delivery</span>
+                <span className="text-green-600 font-semibold">(Pay when you receive)</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
         {error && <p className="text-red-500">{error}</p>}
 
-        <button type="submit" className="bg-pink-500 text-white px-6 py-3 rounded hover:bg-pink-600">
-          {loading ? "Placing Order..." : "Place Order"}
+        <button 
+          type="submit" 
+          className="bg-pink-500 text-white px-6 py-3 rounded hover:bg-pink-600"
+        >
+          {loading ? "Processing..." : paymentMethod === "khalti" ? "Pay with Khalti" : "Place Order (COD)"}
         </button>
       </form>
     </div>
