@@ -12,7 +12,8 @@ import enrollmentRoutes from './routes/enrollmentRoutes.js';
 import appointmentRoutes from './routes/appointmentRoutes.js';
 import blockedSlotRoutes from './routes/blockedSlotRoutes.js';
 import adminRoutes from "./routes/adminRoutes.js";
-import khaltiPaymentRoutes from "./routes/khaltiPaymentRoutes.js";
+import orderPaymentRoutes from "./routes/orderPaymentRoutes.js";
+import coursePaymentRoutes from "./routes/coursePaymentRoutes.js";
 import recommendationRoutes from "./routes/recommendationRoutes.js";
 import "./utils/appointmentReminder.js"; 
 import User from "./models/User.js";
@@ -60,7 +61,9 @@ app.use("/api/blocked-slots", blockedSlotRoutes);
 
 app.use("/api/admin", adminRoutes);
 
-app.use("/api/payment", khaltiPaymentRoutes);
+app.use("/api/payment", orderPaymentRoutes);
+
+app.use("/api/course-payment", coursePaymentRoutes);
 
 app.use("/api/recommendations", recommendationRoutes);
 

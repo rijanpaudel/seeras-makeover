@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useToast } from "../Context/ToastContext";
+import Order from "../../../backend/models/Order";
 
-const KhaltiPayment = () => {
+const OrderPaymentConfirmation = () => {
   const [params] = useSearchParams();
   const [status, setStatus] = useState("Verifying your payment...");
   const [isComplete, setIsComplete] = useState(false);
@@ -95,4 +96,4 @@ const KhaltiPayment = () => {
   );
 };
 
-export default KhaltiPayment;
+export default OrderPaymentConfirmation;

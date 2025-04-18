@@ -23,7 +23,8 @@ import AdminApp from "./Admin/AdminApp";
 import CartPage from "./Product/CartPage";
 import { ToastProvider } from "./Context/ToastContext";
 import AppointmentConfirmation from "./BookAppointment/AppointmentConfirmation";
-import KhaltiPayment from "./Product/KhaltiPayment";
+import KhaltiPayment from "./Product/OrderPaymentConfirmation";
+import PaymentVerification from "./Enroll/PaymentVerification";
 
 export default function App() {
   // Scroll to top component
@@ -59,6 +60,7 @@ export default function App() {
                     <Route path="/cart" element={<CartPage />} />
                     <Route path="/checkout" element={<CheckoutPage />} />
                     <Route path="/payment/verify" element={<KhaltiPayment />} />
+                    <Route path="/course-payment/verify" element={<PaymentVerification />} />
                     <Route path="/services" element={<Services />} />
                     <Route path="/services/:id" element={<ServiceDetails />} />
                     <Route path="/aboutus" element={<AboutUs />} />
