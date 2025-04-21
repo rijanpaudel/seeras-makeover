@@ -4,7 +4,7 @@ import ServiceHeader from "./ServiceHeader";
 import { ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../Context/AuthContext.jsx";
-import RecommendedCard from "../Recommendation/RecommendedCard";
+
 
 const Services = () => {
   const [categorizedServices, setCategorizedServices] = useState({});
@@ -101,7 +101,7 @@ const Services = () => {
                       {service.description}
                     </p>
                     <div className="flex flex-wrap gap-2 text-gray-500 text-sm">
-                      <span>Duration: {service.duration}</span>
+                      <span>Duration: {service.duration} hours</span>
                       <span>Price: Rs {service.price}</span>
                     </div>
                   </div>
@@ -117,19 +117,6 @@ const Services = () => {
           </div>
         ))}
       </div>
-      {recommendedServices.length > 0 && (
-        <div className="mb-12">
-          <h2 className="text-3xl font-semibold text-gray-800 mb-6">
-            Recommended Services for You
-          </h2>
-          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
-            {recommendedServices.map((service) => (
-              <RecommendedCard key={service._id} item={service} type="service" />
-            ))}
-          </div>
-        </div>
-      )}
-
     </div>
   );
 };

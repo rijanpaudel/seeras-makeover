@@ -3,7 +3,7 @@ import Product from "../models/Product.js";
 import Order from "../models/Order.js";
 import User from "../models/User.js";
 import sendEmail from "../utils/emailService.js";
-import mongoose from "mongoose";
+import Cart from "../models/Cart.js"; 
 
 // Place an order with online payment
 export const placeOrder = async (req, res) => {
@@ -48,7 +48,7 @@ export const placeOrder = async (req, res) => {
 
     console.log("Initiating payment with data:", paymentInitData);
 
-    // Call your payment initiation endpoint
+    // Call the payment initiation endpoint
     const paymentResponse = await axios.post("http://localhost:5000/api/payment/initiate", paymentInitData);
 
     if (paymentResponse.data.payment_url) {
@@ -116,6 +116,17 @@ export const placeCodOrder = async (req, res) => {
     // Save the order
     const savedOrder = await newOrder.save();
     console.log("Order saved successfully with ID:", savedOrder._id);
+    const userCart = await Cart.findOne({ userId });
+    if (userCart) {
+      userCart.items = [];  // Reset the cart items
+      await userCart.save(); // Save the empty cart
+    }
+
+    res.status(200).json({
+      message: "Order placed successfully and cart cleared",
+      order: newOrder,
+    });
+    
 
     // Send confirmation email
     const user = await User.findById(userId);
@@ -126,7 +137,7 @@ export const placeCodOrder = async (req, res) => {
           <ul>
             ${orderItems.map((i) => `<li>${i.name} - Qty: ${i.quantity} - Rs ${i.price}</li>`).join("")}
           </ul>
-          <p>Total: Rs ${totalAmount}</p>
+          <p>Total: Rs {totalAmount}</p>
           <p>Thank you for your order!</p>
         `;
       try {

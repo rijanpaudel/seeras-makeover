@@ -6,159 +6,181 @@ import axios from "axios";
 const AppointmentManagement = () => {
   const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]);
-  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // ---- for edit modal ----
   const [editModal, setEditModal] = useState(false);
-  const [editData, setEditData] = useState({});
+  const [editId, setEditId] = useState(null);
+  const [editDate, setEditDate] = useState("");
+  const [editTime, setEditTime] = useState("");
 
   useEffect(() => {
     fetchAppointments();
   }, []);
 
   const fetchAppointments = async () => {
+    setLoading(true);
     try {
-      const response = await axios.get("http://localhost:5000/api/appointments/all");
-      setAppointments(response.data);
-    } catch (error) {
+      const { data } = await axios.get("http://localhost:5000/api/appointments/all");
+      setAppointments(data);
+      setError(null);
+    } catch {
       setError("Failed to load appointments.");
     } finally {
       setLoading(false);
     }
   };
 
-  const updateStatus = async (appointmentId, newStatus) => {
+  const updateStatus = async (id, newStatus) => {
     try {
-      await axios.patch(`http://localhost:5000/api/appointments/status/${appointmentId}`, { status: newStatus });
-      fetchAppointments(); // Refresh the list
-    } catch (error) {
-      console.error("Failed to update status", error);
-    }
-  };
-
-  const editAppointment = (appointment) => {
-    setEditData(appointment);
-    setEditModal(true);
-  };
-
-  const deleteAppointment = async (appointmentId) => {
-    try {
-      await axios.delete(`http://localhost:5000/api/appointments/delete/${appointmentId}`);
+      await axios.put(
+        `http://localhost:5000/api/appointments/update/${id}`,
+        { status: newStatus }
+      );
       fetchAppointments();
-    } catch (error) {
-      console.error("Failed to delete appointment", error);
+    } catch (err) {
+      console.error("Failed to update status", err);
     }
+  };
+
+  const openEdit = (appt) => {
+    const dt = new Date(appt.appointmentDateTime);
+    setEditId(appt._id);
+    setEditDate(dt.toISOString().slice(0,10));        // YYYY-MM-DD
+    setEditTime(dt.toISOString().slice(11,16));       // HH:MM
+    setEditModal(true);
   };
 
   const submitEdit = async () => {
     try {
-      await axios.patch(`http://localhost:5000/api/appointments/update/${editData._id}`, editData);
-      fetchAppointments();
+      await axios.put(
+        `http://localhost:5000/api/appointments/update/${editId}`,
+        { 
+          appointmentDate: editDate, 
+          appointmentTime: `${editTime} ${( +editTime.slice(0,2) >= 12 ? 'PM' : 'AM' )}`
+        }
+      );
       setEditModal(false);
-    } catch (error) {
-      console.error("Failed to update appointment", error);
+      fetchAppointments();
+    } catch (err) {
+      console.error("Failed to update appointment", err);
     }
   };
 
+  const deleteAppointment = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this appointment?")) return;
+    try {
+      await axios.delete(`http://localhost:5000/api/appointments/delete/${id}`);
+      fetchAppointments();
+    } catch (err) {
+      console.error("Failed to delete appointment", err);
+    }
+  };
+
+  if (loading) return <p className="p-8 text-center">Loading…</p>;
+  if (error)   return <p className="p-8 text-center text-red-500">{error}</p>;
+
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-6xl mx-auto">
-        {/* Header Section */}
-<div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-  <div className="flex justify-between items-center flex-wrap gap-4">
-    <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-2">Appointment Management</h1>
-      <p className="text-gray-600">Manage and track all your salon appointments</p>
-    </div>
-    <button
-      onClick={() => navigate("/admin/blockedslots")}
-      className="bg-pink-500 hover:bg-pink-600 text-white px-6 py-2 rounded-full text-sm font-semibold transition-colors"
-    >
-      Manage Blocked Slots
-    </button>
-  </div>
-</div>
+        {/* Header */}
+        <div className="bg-white p-6 rounded-lg shadow mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold">Appointment Management</h1>
+            <p className="text-gray-600">Track and edit all appointments</p>
+          </div>
+          <button
+            onClick={() => navigate("/admin/blockedslots")}
+            className="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-full"
+          >Manage Blocked Slots</button>
+        </div>
 
-
-        {/* Appointments Table */}
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead>
-                <tr className="bg-gray-50">
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Customer</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Service</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Date & Time</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Status</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 bg-white">
-                {appointments.map((appointment) => (
-                  <tr key={appointment._id} className="hover:bg-gray-50 transition-colors">
+        {/* Table */}
+        <div className="bg-white rounded shadow">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-sm font-semibold">Customer</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold">Service</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold">Date &amp; Time</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold">Status</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {appointments.map((appt) => {
+                const dt = new Date(appt.appointmentDateTime);
+                return (
+                  <tr key={appt._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">{appointment.userId.fullName}</div>
-                      <div className="text-sm text-gray-500">{appointment.userId.email}</div>
-                      <div className="text-sm text-gray-500">{appointment.userId.phoneNumber}</div>
+                      <div className="font-medium">{appt.userId.fullName}</div>
+                      <div className="text-gray-500 text-sm">{appt.userId.email}</div>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-700">{appointment.subServiceId.name}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center text-sm text-gray-700">
-                        <Calendar className="w-4 h-4 mr-2 text-gray-400" />
-                        {new Date(appointment.appointmentDate).toLocaleDateString()} at {new Date(appointment.appointmentTime).toLocaleTimeString()}
-                      </div>
+                    <td className="px-6 py-4">{appt.subServiceId.name}</td>
+                    <td className="px-6 py-4 flex items-center text-sm text-gray-700">
+                      <Calendar className="w-4 h-4 mr-1 text-gray-400" />
+                      {dt.toLocaleDateString()} at {dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}
                     </td>
                     <td className="px-6 py-4">
                       <select
-                        value={appointment.status}
-                        onChange={(e) => updateStatus(appointment._id, e.target.value)}
+                        value={appt.status}
+                        onChange={(e) => updateStatus(appt._id, e.target.value)}
                         className="border rounded px-2 py-1 text-sm"
                       >
-                        <option value="Pending">Pending</option>
-                        <option value="Confirmed">Confirmed</option>
-                        <option value="Cancelled">Cancelled</option>
+                        <option>Pending</option>
+                        <option>Confirmed</option>
+                        <option>Cancelled</option>
                       </select>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center space-x-3">
-                        <button onClick={() => editAppointment(appointment)} className="flex items-center text-gray-600 hover:text-pink-500 transition-colors">
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        {editModal && (
-                          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                            <div className="bg-white p-6 rounded-lg shadow-lg">
-                              <h2 className="text-lg font-bold mb-4">Edit Appointment</h2>
-                              <label>Date:</label>
-                              <input
-                                type="date"
-                                value={editData.appointmentDate}
-                                onChange={(e) => setEditData({ ...editData, appointmentDate: e.target.value })}
-                                className="border px-2 py-1 w-full mb-2"
-                              />
-                              <label>Time:</label>
-                              <input
-                                type="time"
-                                value={editData.appointmentTime}
-                                onChange={(e) => setEditData({ ...editData, appointmentTime: e.target.value })}
-                                className="border px-2 py-1 w-full mb-2"
-                              />
-                              <button onClick={submitEdit} className="bg-pink-500 text-white px-4 py-2 rounded">Save</button>
-                            </div>
-                          </div>
-                        )}
-                        <button onClick={() => deleteAppointment(appointment._id)} className="flex items-center text-gray-600 hover:text-pink-500 transition-colors">
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
+                    <td className="px-6 py-4 space-x-3 flex">
+                      <button onClick={() => openEdit(appt)} className="text-gray-600 hover:text-pink-500">
+                        <Edit2 className="w-5 h-5" />
+                      </button>
+                      <button onClick={() => deleteAppointment(appt._id)} className="text-gray-600 hover:text-red-500">
+                        <X className="w-5 h-5" />
+                      </button>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
+
+      {/* Edit Modal */}
+      {editModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <h2 className="text-xl font-semibold mb-4">Edit Appointment</h2>
+            <label className="block mb-2">Date</label>
+            <input
+              type="date"
+              value={editDate}
+              onChange={e => setEditDate(e.target.value)}
+              className="border p-2 w-full mb-4 rounded"
+            />
+            <label className="block mb-2">Time</label>
+            <input
+              type="time"
+              value={editTime}
+              onChange={e => setEditTime(e.target.value)}
+              className="border p-2 w-full mb-4 rounded"
+            />
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setEditModal(false)}
+                className="px-4 py-2 border rounded hover:bg-gray-100"
+              >Cancel</button>
+              <button
+                onClick={submitEdit}
+                className="px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600"
+              >Save</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

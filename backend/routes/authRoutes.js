@@ -1,5 +1,5 @@
 import express from 'express';
-import { registerUser, loginUser, getAllUsers, updateUserProfile, verifyOTP } from '../controllers/authController.js';
+import { registerUser, loginUser, getAllUsers, updateUserProfile, verifyOTP, getUserById } from '../controllers/authController.js';
 
 const router = express.Router();
 
@@ -14,7 +14,11 @@ router.post('/login', loginUser);
 // Get all users (admin only)
 router.get('/all-users', getAllUsers);
 
+router.get('/user/:userId', getUserById);
+
 // Update user profile
 router.put('/:userId', updateUserProfile);
+
+
 
 export default router;

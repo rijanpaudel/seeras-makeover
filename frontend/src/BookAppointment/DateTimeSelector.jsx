@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../Context/AuthContext';
+import axios from 'axios';
 
 const DateTimeSelector = () => {
   const { subServiceId } = useParams();
-
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [calendarDays, setCalendarDays] = useState([]);
   const [blockedTimes, setBlockedTimes] = useState([]);
+  const [bookedTimes, setBookedTimes] = useState([]);
+  const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
   const weekdays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
@@ -19,7 +21,7 @@ const DateTimeSelector = () => {
     '12:00 PM',
     '1:00 PM',
     '2:00 PM',
-    '8:15 PM',
+    '3:00 PM',
   ];
 
   const navigate = useNavigate();
@@ -50,16 +52,51 @@ const DateTimeSelector = () => {
     // Add actual days of the month
     for (let day = 1; day <= daysInMonth; day++) {
       const fullDate = new Date(year, month, day);
+      const isPastDate = fullDate < today;
+
       days.push({
         date: day,
         fullDate: fullDate,
-        isDisabled: fullDate < today
+        isDisabled: isPastDate
       });
     }
 
     setCalendarDays(days);
 
   }, [currentMonth]);
+
+  // Fetch blocked and booked times when date changes
+  useEffect(() => {
+    if (!selectedDate) return;
+
+    const fetchTimeSlots = async () => {
+      setLoading(true);
+      try {
+        const year = currentMonth.getFullYear();
+        const month = String(currentMonth.getMonth() + 1).padStart(2, '0');
+        const day = String(selectedDate).padStart(2, '0');
+        const formattedDate = `${year}-${month}-${day}`;
+
+        // Fetch both blocked and booked times in parallel
+        const [blockedRes, bookedRes] = await Promise.all([
+          axios.get(`/api/blocked-slots/blocked-times?date=${formattedDate}&subServiceId=${subServiceId}`),
+          axios.get(`/api/appointments/booked-times?date=${formattedDate}&subServiceId=${subServiceId}`)
+        ]);
+
+        console.log('Blocked times:', blockedRes.data.blockedTimes);
+        console.log('Booked times:', bookedRes.data.bookedTimes);
+
+        setBlockedTimes(blockedRes.data.blockedTimes || []);
+        setBookedTimes(bookedRes.data.bookedTimes || []);
+      } catch (error) {
+        console.error('Error fetching time slots:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTimeSlots();
+  }, [selectedDate, subServiceId, currentMonth]);
 
   const formatMonthYear = () => {
     const options = { month: 'long', year: 'numeric' };
@@ -82,10 +119,57 @@ const DateTimeSelector = () => {
     const dayObj = calendarDays.find(d => d.date === date);
     if (dayObj && !dayObj.isDisabled) {
       setSelectedDate(date);
-    };
+      // Reset selected time when date changes
+      setSelectedTime(null);
+    }
   };
+
   const handleTimeSelect = (time) => {
     setSelectedTime(time);
+  };
+
+  const convertTo24Hour = (timeStr) => {
+    const [time, period] = timeStr.split(' ');
+    let [hours, minutes] = time.split(':').map(Number);
+    if (period === 'PM' && hours !== 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  };
+
+  const isTimeDisabled = (time) => {
+    // First check quick disqualifiers
+    if (blockedTimes.includes(time)) {
+      return true;
+    }
+
+    if (bookedTimes.includes(time)) {
+      return true;
+    }
+
+    // Then check time-based constraints
+    if (selectedDate) {
+      const [hours, minutes] = convertTo24Hour(time).split(':').map(Number);
+      const selectedDateTime = new Date(
+        currentMonth.getFullYear(),
+        currentMonth.getMonth(),
+        selectedDate,
+        hours,
+        minutes
+      );
+
+      const now = new Date();
+      const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000);
+
+      // Only apply 1-hour rule for the current day
+      if (
+        selectedDateTime.toDateString() === now.toDateString() &&
+        selectedDateTime < oneHourFromNow
+      ) {
+        return true;
+      }
+    }
+
+    return false;
   };
 
   const handleConfirm = async () => {
@@ -100,7 +184,6 @@ const DateTimeSelector = () => {
         currentMonth.getMonth(),
         selectedDate
       );
-
 
       const formattedDate = `${selectedDateObj.getFullYear()}-${String(selectedDateObj.getMonth() + 1).padStart(2, '0')}-${String(selectedDateObj.getDate()).padStart(2, '0')}`;
 
@@ -118,40 +201,6 @@ const DateTimeSelector = () => {
     }
   };
 
-  const isDisabledDate = (date) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const selectedDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), date);
-    return selectedDate < today;
-  };
-
-  useEffect(() => {
-    const fetchBlockedTimes = async () => {
-      if (!selectedDate) return;
-
-      const selectedDateObj = new Date(
-        currentMonth.getFullYear(),
-        currentMonth.getMonth(),
-        selectedDate
-      );
-
-      const formattedDate = `${selectedDateObj.getFullYear()}-${String(
-        selectedDateObj.getMonth() + 1
-      ).padStart(2, "0")}-${String(selectedDateObj.getDate()).padStart(2, "0")}`;
-
-      try {
-        const res = await fetch(`/api/blocked-slots/blocked-times?date=${formattedDate}&subServiceId=${subServiceId}`);
-        const data = await res.json();
-        setBlockedTimes(data.blockedTimes || []);
-      } catch (err) {
-        console.error("Failed to fetch blocked times:", err);
-        setBlockedTimes([]);
-      }
-    };
-
-    fetchBlockedTimes();
-  }, [selectedDate, subServiceId, currentMonth]);
 
 
   return (
@@ -213,36 +262,39 @@ const DateTimeSelector = () => {
           </div>
         </div>
 
-        {/* Time Slots Section */}
         <div className="md:w-64">
           <h3 className="text-2xl font-medium mb-4">Available Time Slots</h3>
-          <div className="flex flex-col gap-4">
-            {timeSlots.map((time) => {
-              const isBlocked = blockedTimes.includes(time);
-              return (
-                <button
-                  key={time}
-                  onClick={() => !isBlocked && handleTimeSelect(time)}
-                  disabled={isBlocked}
-                  className={`py-4 px-6 border rounded-lg text-xl text-center
-        ${selectedTime === time ? 'bg-blue-100 text-blue-500 border-blue-200' : ''}
-        ${isBlocked
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'hover:bg-gray-50 border-gray-300'}
-      `}
-                >
-                  {time} {isBlocked && <span className="text-sm text-red-400 ml-1">(Blocked)</span>}
-                </button>
-              );
-            })}
-
-          </div>
+          {loading ? (
+            <div className="text-center py-4">Loading available times...</div>
+          ) : selectedDate ? (
+            <div className="flex flex-col gap-4">
+              {timeSlots.map(time => {
+                const isDisabled = isTimeDisabled(time);
+                return (
+                  <button
+                    key={time}
+                    onClick={() => !isDisabled && handleTimeSelect(time)}
+                    disabled={isDisabled}
+                    className={`py-4 px-6 border rounded-lg text-xl text-center ${selectedTime === time ? 'bg-blue-100 text-blue-500 border-blue-200' : ''
+                      } ${isDisabled
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : 'hover:bg-gray-50 border-gray-300'
+                      }`}
+                  >
+                    {time} {isDisabled && <span className="text-sm text-red-400 ml-1">(Unavailable)</span>}
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-4 text-gray-500">Please select a date first</div>
+          )}
 
           <button
             onClick={handleConfirm}
             disabled={!selectedDate || !selectedTime}
-            className={`mt-8 py-3 px-8 bg-pink-500 text-white rounded-full text-xl font-medium w-full hover:bg-pink-600 transition-colors
-            ${(!selectedDate || !selectedTime) ? `opacity-50 cursor-not-allowed` : `hover:bg-pink-600 transition-colors`}`}
+            className={`mt-8 py-3 px-8 bg-pink-500 text-white rounded-full text-xl font-medium w-full ${(!selectedDate || !selectedTime) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-pink-600 transition-colors'
+              }`}
           >
             Confirm
           </button>

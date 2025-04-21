@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Clock, DollarSign, Star, CheckCircle } from 'lucide-react';
+import { Clock, Star, CheckCircle } from 'lucide-react';
 
 const ServiceDetails = () => {
   const { id } = useParams();
@@ -81,10 +81,9 @@ const ServiceDetails = () => {
             <div className="flex items-center gap-8">
               <div className="flex items-center text-gray-700">
                 <Clock className="w-5 h-5 mr-2" />
-                <span>{service.duration}</span>
+                <span>{service.duration} hours  </span>
               </div>
               <div className="flex items-center text-gray-900 font-bold text-2xl">
-                <DollarSign className="w-6 h-6 mr-1" />
                 <span>Rs {service.price.toLocaleString()}</span>
               </div>
             </div>

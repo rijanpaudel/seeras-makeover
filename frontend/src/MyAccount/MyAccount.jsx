@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../Context/AuthContext';
+import { useToast } from '../Context/ToastContext';
 import axios from 'axios';
 
 function MyAccount() {
-  const { user } = useAuth();
+  const { user, login } = useAuth();
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState('profile');
   const [isEditing, setIsEditing] = useState(false);
   const [purchases, setPurchases] = useState([]);
@@ -30,7 +32,6 @@ function MyAccount() {
     }
   }, [user]);
 
-
   const fetchPurchases = async () => {
     try {
       setLoading(true);
@@ -45,7 +46,6 @@ function MyAccount() {
     }
   };
 
-
   const fetchAppointments = async () => {
     try {
       const response = await axios.get(`http://localhost:5000/api/appointments/appointmentHistory/${user._id}`);
@@ -54,8 +54,6 @@ function MyAccount() {
       console.error("Error fetching appointments:", error);
     }
   };
-
-
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -69,16 +67,56 @@ function MyAccount() {
     e.preventDefault();
     try {
       setLoading(true);
-      const response = await axios.put(`http://localhost:5000/api/users/${user._id}`, formData);
+      setError('');
+
+      // Create request payload excluding the email field
+      const updatePayload = {
+        fullName: formData.fullName,
+        address: formData.address,
+        phoneNumber: formData.phoneNumber
+      };
+
+      const response = await axios.put(`http://localhost:5000/api/auth/${user._id}`, updatePayload);
       if (response.status === 200) {
+        showToast('Profile updated successfully');
+        login(response.data);
         setIsEditing(false);
-        // Update user context if needed
+        setFormData({
+          fullName: response.data.fullName || '',
+          email: response.data.email || '',
+          address: response.data.address || '',
+          phoneNumber: response.data.phoneNumber || ''
+        });
       }
     } catch (err) {
       setError('Failed to update profile');
+      showToast('Failed to update profile');
       console.error('Error updating profile:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Helper function to format dates safely
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+
+    try {
+      const date = new Date(dateString);
+
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        return 'Invalid date';
+      }
+
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch (error) {
+      console.error("Date formatting error:", error);
+      return 'Invalid date';
     }
   };
 
@@ -112,9 +150,10 @@ function MyAccount() {
               type="email"
               name="email"
               value={formData.email}
-              onChange={handleInputChange}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-pink-500"
+              disabled={true}
+              className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-600"
             />
+            <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
           </div>
           <div>
             <label className="block text-gray-700 mb-2">Address</label>
@@ -138,9 +177,10 @@ function MyAccount() {
           </div>
           <button
             type="submit"
-            className="w-full py-3 text-white bg-pink-500 rounded-full hover:bg-pink-600 transition-colors"
+            disabled={loading}
+            className="w-full py-3 text-white bg-pink-500 rounded-full hover:bg-pink-600 transition-colors disabled:bg-pink-300"
           >
-            Save Changes
+            {loading ? 'Saving...' : 'Save Changes'}
           </button>
         </form>
       ) : (
@@ -179,16 +219,21 @@ function MyAccount() {
             <div key={purchase._id} className="border border-gray-200 rounded-lg p-4">
               <div className="flex justify-between items-start mb-2">
                 <div>
-                  <p className="font-semibold">Order #{purchase._id.slice(-6)}</p>
-                  <p className="text-gray-600">{new Date(purchase.date).toLocaleDateString()}</p>
+                  <p className="font-semibold">Order #{purchase._id ? purchase._id.slice(-6) : 'N/A'}</p>
+                  <p className="text-gray-600">{formatDate(purchase.createdAt)}</p>
+                  <p className="text-gray-600">Status: {purchase.status}</p>
                 </div>
                 <p className="text-pink-500 font-semibold">Rs {purchase.totalAmount}</p>
               </div>
               <div className="space-y-2">
-                {purchase.items.map((item) => (
-                  <div key={item._id} className="flex justify-between items-center">
-                    <p className="text-gray-800">{item.product.title} × {item.quantity}</p>
-                    <p className="text-gray-600">Rs {item.product.price * item.quantity}</p>
+                {purchase.items && purchase.items.map((item, index) => (
+                  <div key={item._id || index} className="flex justify-between items-center">
+                    <p className="text-gray-800">
+                      {item.product && item.product.title ? item.product.title : 'Product'} × {item.quantity}
+                    </p>
+                    <p className="text-gray-600">
+                      Rs {item.product && item.product.price ? item.product.price * item.quantity : 'N/A'}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -204,7 +249,7 @@ function MyAccount() {
       <h3 className="text-2xl font-semibold mb-6">Appointment History</h3>
       {loading ? (
         <div className="text-center py-4">Loading appointments...</div>
-      ) : purchases.length === 0 ? (
+      ) : appointments.length === 0 ? (
         <div className="text-center py-4 text-gray-600">No appointment history available</div>
       ) : (
         <div className="space-y-4">
@@ -212,12 +257,16 @@ function MyAccount() {
             <div key={appointment._id} className="border border-gray-200 rounded-lg p-4">
               <div className="flex justify-between items-start mb-2">
                 <div>
-                  <p className="font-semibold">Appointment #{appointment._id.slice(-6)}</p>
-                  <p className="text-gray-600">{new Date(appointment.date).toLocaleDateString()}</p>
+                  <p className="font-semibold">Appointment #{appointment._id ? appointment._id.slice(-6) : 'N/A'}</p>
+                  <p className="text-gray-600">{formatDate(appointment.appointmentDateTime)}</p>
                 </div>
-                <p className="text-black-500 font-semibold">Service {appointment.subServiceId.name}</p>
+                <p className="text-black-500 font-semibold">
+                  {appointment.subServiceId && appointment.subServiceId.name
+                    ? `Service: ${appointment.subServiceId.name}`
+                    : 'Service details not available'}
+                </p>
               </div>
-              <p className="text-gray-800">Status: {appointment.status}</p>
+              <p className="text-gray-800">Status: {appointment.status || 'Processing'}</p>
             </div>
           ))}
         </div>

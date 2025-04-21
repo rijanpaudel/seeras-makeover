@@ -110,14 +110,14 @@ export const getAllUsers = async (req, res)=> {
 };
 
 // Update user profile
-export const updateUserProfile = async (req, res)=> {
+export const updateUserProfile = async (req, res) => {
   const { userId } = req.params;
-  const { fullName, email, address, phoneNumber } = req.body;
+  const { fullName, address, phoneNumber } = req.body;
 
   try {
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { fullName, email, address, phoneNumber },
+      { fullName, address, phoneNumber },
       { new: true, runValidators: true }
     );
 
@@ -131,6 +131,9 @@ export const updateUserProfile = async (req, res)=> {
     res.status(500).json({ message: 'Error updating user profile', error: error.message });
   }
 };
+
+
+
 
 export const verifyOTP = async (req, res) => {
   const { email, otp } = req.body;
@@ -192,6 +195,17 @@ export const verifyOTP = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error. Please try again." });
+  }
+};
+
+export const getUserById = async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const user = await User.findById(userId).select('-password');
+    if (!user) return res.status(404).json({ message: 'Not found' });
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 

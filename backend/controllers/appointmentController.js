@@ -1,6 +1,7 @@
 import Appointment from "../models/Appointments.js";
 import User from "../models/User.js";
 import sendEmail from "../utils/emailService.js";
+import BlockedSlot from "../models/BlockedSlot.js";
 import mongoose from "mongoose";
 
 // Book an appointment
@@ -17,49 +18,72 @@ export const bookAppointment = async (req, res) => {
   }
 
   try {
-    // Log the incoming data for debugging
-    console.log("Appointment request data:", { appointmentDate, appointmentTime });
-
-    // Parse the appointment date (expected format from frontend: MM/DD/YYYY or similar)
-    let dateParts;
-
-    // Handle different possible date formats
-    if (appointmentDate.includes('/')) {
-      dateParts = appointmentDate.split('/');
-    } else if (appointmentDate.includes('-')) {
-      dateParts = appointmentDate.split('-');
-    } else {
-      return res.status(400).json({ message: "Invalid date format" });
+    let appointmentDateTime;
+    
+    try {
+      // Convert time to 24-hour format
+      const time24 = convertTo24Hour(appointmentTime);
+      const [hours, minutes] = time24.split(':').map(Number);
+      
+      // Create Date object from parts
+      const [year, month, day] = appointmentDate.split('-').map((part, index) => {
+        // Month is 0-indexed in JavaScript Date
+        return index === 1 ? parseInt(part) - 1 : parseInt(part);
+      });
+      
+      appointmentDateTime = new Date(year, month, day, hours, minutes);
+      
+      if (isNaN(appointmentDateTime.getTime())) {
+        throw new Error("Invalid date");
+      }
+    } catch (err) {
+      console.error("Date parsing error:", err);
+      return res.status(400).json({ message: "Invalid date or time format" });
     }
-
-    // Convert time to 24-hour format
-    const time24 = convertTo24Hour(appointmentTime);
-
-    // Create a valid date object using individual components (safer approach)
-    let year, month, day;
-
-    // Determine date format and extract components
-    if (dateParts[0].length === 4) {
-      // YYYY-MM-DD format
-      [year, month, day] = dateParts;
-    } else if (dateParts[2].length === 4) {
-      // MM/DD/YYYY format
-      [month, day, year] = dateParts;
-    } else {
-      return res.status(400).json({ message: "Unrecognized date format" });
+    
+    // Check if time slot is already booked
+    const startOfDay = new Date(appointmentDateTime);
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    const endOfDay = new Date(appointmentDateTime);
+    endOfDay.setHours(23, 59, 59, 999);
+    
+    const existingAppointment = await Appointment.findOne({
+      subServiceId,
+      appointmentDateTime: {
+        $gte: startOfDay,
+        $lte: endOfDay
+      }
+    });
+    
+    if (existingAppointment) {
+      const existingTime = existingAppointment.appointmentDateTime.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit', 
+        hour12: true 
+      });
+      
+      if (existingTime === appointmentTime) {
+        return res.status(400).json({ 
+          message: "This time slot is already booked. Please select a different time." 
+        });
+      }
     }
-
-    // Construct date (month is 0-indexed in JavaScript Date)
-    const appointmentDateTime = new Date(
-      parseInt(year),
-      parseInt(month) - 1,
-      parseInt(day),
-      ...time24.split(':').map(Number)
-    );
-
-    // Validate the date is valid
-    if (isNaN(appointmentDateTime.getTime())) {
-      return res.status(400).json({ message: "Invalid date/time combination" });
+    
+    // Check if the time slot is blocked by admin
+    const blockedSlot = await BlockedSlot.findOne({
+      subServiceId,
+      date: {
+        $gte: startOfDay,
+        $lte: endOfDay
+      },
+      startTime: appointmentTime
+    });
+    
+    if (blockedSlot) {
+      return res.status(400).json({ 
+        message: "This time slot is not available for booking. Please select a different time." 
+      });
     }
 
     // Create the appointment with the valid date
@@ -68,6 +92,7 @@ export const bookAppointment = async (req, res) => {
       subServiceId,
       appointmentDateTime,
       status: "Pending",
+      notes: notes || ""
     });
 
     await newAppointment.save();
@@ -151,26 +176,26 @@ export const bookAppointment = async (req, res) => {
 
 function convertTo24Hour(timeStr) {
   if (!timeStr) return "00:00";
-  
+
   // Handle different time formats
   let hours, minutes, period;
-  
+
   // Match patterns
   const timeMatch = timeStr.match(/(\d{1,2}):(\d{2}) (AM|PM)/i);
-  
+
   if (timeMatch) {
     hours = parseInt(timeMatch[1], 10);
     minutes = timeMatch[2];
     period = timeMatch[3].toUpperCase();
-    
+
     // Convert to 24-hour format
     if (period === 'PM' && hours !== 12) hours += 12;
     if (period === 'AM' && hours === 12) hours = 0;
-    
+
     // Format with leading zeros
     return `${hours.toString().padStart(2, '0')}:${minutes}`;
   }
-  
+
   // If the format doesn't match, log and return a default
   console.error("Invalid time format:", timeStr);
   return "12:00"; // Default to noon
@@ -249,11 +274,195 @@ export const updateAppointment = async (req, res) => {
 //Get appointment history for specific user
 export const appointmentHistory = async (req, res) => {
   try {
-    const appointments = await Appointment.find({ userId: req.params.userId }).sort({ date: -1 });
+    const appointments = await Appointment.find({ userId: req.params.userId })
+      .sort({ appointmentDateTime: -1 })
+      .populate("subServiceId", "name");
     res.json(appointments);
   }
   catch (error) {
     res.status(500).json({ message: 'Error fetching appointments' })
   }
 }
+
+export const getBookedTimes = async (req, res) => {
+  try {
+    const { date, subServiceId } = req.query;
+    
+    if (!date || !subServiceId) {
+      return res.status(400).json({ message: "Date and subServiceId query params are required" });
+    }
+    
+    // Create date range for the selected day
+    const start = new Date(date);
+    start.setHours(0, 0, 0, 0);
+    
+    const end = new Date(date);
+    end.setHours(23, 59, 59, 999);
+    
+    // Find appointments for the selected date and service
+    // Only include appointments that are not cancelled
+    const appointments = await Appointment.find({
+      subServiceId,
+      appointmentDateTime: { $gte: start, $lte: end },
+      status: { $ne: "Cancelled" } // Exclude cancelled appointments
+    });
+    
+    // Format times exactly as they appear in the UI
+    const bookedTimes = appointments.map(app => 
+      app.appointmentDateTime.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit', 
+        hour12: true 
+      })
+    );
+    
+    console.log("Returning booked times:", bookedTimes);
+    res.json({ bookedTimes });
+  } catch (error) {
+    console.error("Error fetching booked times:", error);
+    res.status(500).json({ message: "Error fetching booked times", error: error.message });
+  }
+};
+
+export const getRecentAppointments = async (req, res) => {
+  try {
+    // Fetch the most recent 10 appointments
+    const appointments = await Appointment.find()
+      .sort({ appointmentDateTime: -1 }) // Sort by date, newest first
+      .limit(10) // Limit to 10 results
+      .populate("userId", "fullName email phoneNumber") // Include user details
+      .populate("subServiceId", "name"); // Include service details
+    
+    // Send the appointments directly without wrapping in another object
+    res.status(200).json(appointments);
+  } catch (error) {
+    console.error("Error fetching recent appointments:", error);
+    res.status(500).json({ message: "Error fetching recent appointments", error: error.message });
+  }
+};
+
+export const getMonthlyAppointments = async (req, res) => {
+  try {
+    const currentYear = new Date().getFullYear();
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    // Get the current month (0-indexed)
+    const currentMonth = new Date().getMonth();
+    
+    // We'll get data for the last 6 months
+    const startMonth = currentMonth - 5 >= 0 ? currentMonth - 5 : 0;
+    
+    // Initialize results array with all months having 0 appointments
+    const monthlyData = [];
+    for (let i = startMonth; i <= currentMonth; i++) {
+      monthlyData.push({
+        name: months[i],
+        appointments: 0
+      });
+    }
+    
+    // Aggregate appointments by month
+    const appointments = await Appointment.aggregate([
+      {
+        $match: {
+          // Filter appointments for the current year and relevant months
+          appointmentDateTime: {
+            $gte: new Date(currentYear, startMonth, 1),
+            $lte: new Date(currentYear, currentMonth + 1, 0)
+          }
+        }
+      },
+      {
+        $group: {
+          _id: { $month: "$appointmentDateTime" },
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { "_id": 1 }
+      }
+    ]);
+    
+    // Update the results with actual appointment counts
+    appointments.forEach(item => {
+      // MongoDB months are 1-indexed, so subtract 1 to match our array
+      const monthIndex = item._id - 1;
+      // Find the corresponding month in our data array
+      const dataIndex = monthlyData.findIndex(m => months.indexOf(m.name) === monthIndex);
+      if (dataIndex !== -1) {
+        monthlyData[dataIndex].appointments = item.count;
+      }
+    });
+    
+    res.json(monthlyData);
+  } catch (error) {
+    console.error('Error fetching monthly appointments:', error);
+    res.status(500).json({ error: 'Failed to fetch monthly appointment data' });
+  }
+};
+
+export const getServiceDistribution = async (req, res) => {
+  try {
+    // Aggregate appointments by service type
+    const serviceDistribution = await Appointment.aggregate([
+      {
+        $lookup: {
+          from: 'subservices',
+          localField: 'subServiceId',
+          foreignField: '_id',
+          as: 'service'
+        }
+      },
+      {
+        $unwind: '$service'
+      },
+      {
+        $group: {
+          _id: '$service.name',
+          value: { $sum: 1 }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          name: '$_id',
+          value: 1
+        }
+      },
+      {
+        $sort: { value: -1 }
+      },
+      {
+        $limit: 5  // Top 5 services
+      }
+    ]);
+    
+    // Check if we have data
+    if (serviceDistribution.length === 0) {
+      return res.json([
+        { name: 'No Data', value: 1 }
+      ]);
+    }
+    
+    // Calculate the total count for all services
+    const totalServices = serviceDistribution.reduce((sum, service) => sum + service.value, 0);
+    
+    // If we have less than 5 services but we have additional services not in the top 5
+    const otherServicesCount = await Appointment.countDocuments() - totalServices;
+    
+    // If there are other services not in our top categories, add an "Other" category
+    if (otherServicesCount > 0) {
+      serviceDistribution.push({
+        name: 'Other',
+        value: otherServicesCount
+      });
+    }
+    
+    res.json(serviceDistribution);
+  } catch (error) {
+    console.error('Error fetching service distribution:', error);
+    res.status(500).json({ error: 'Failed to fetch service distribution data' });
+  }
+};
+
 

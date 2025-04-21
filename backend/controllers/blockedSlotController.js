@@ -62,33 +62,44 @@ export const deleteBlockedSlot = async (req, res) => {
   }
 };
 
-export const getBlockedTimes =  async (req, res) => {
+export const getBlockedTimes = async (req, res) => {
   try {
-    const { date } = req.query;
+    const { date, subServiceId } = req.query;
 
     if (!date) {
       return res.status(400).json({ message: "Date query param is required" });
     }
 
+    // Parse date string to Date object
     const startOfDay = new Date(date);
     startOfDay.setHours(0, 0, 0, 0);
 
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
 
-    const blocked = await BlockedSlot.find({
+    // Build the query for finding blocked slots
+    const query = {
       date: {
         $gte: startOfDay,
         $lte: endOfDay,
-      },
-    });
+      }
+    };
+    
+    // Only add subServiceId to query if it exists
+    if (subServiceId) {
+      query.subServiceId = subServiceId;
+    }
 
-    // You can adjust this depending on if you want to return range or just start times
-    const blockedTimes = blocked.map(slot => slot.startTime);
+    const blocked = await BlockedSlot.find(query);
+
+    // Format times to match what's displayed in the UI
+    const blockedTimes = blocked.map(slot => {
+      return slot.startTime;
+    });
 
     res.status(200).json({ blockedTimes });
   } catch (error) {
+    console.error("Error fetching blocked times:", error);
     res.status(500).json({ message: "Error fetching blocked times", error: error.message });
   }
 };
-

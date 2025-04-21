@@ -1,5 +1,7 @@
 import express from "express";
-import { bookAppointment, deleteAppointment, getAllAppointments, updateAppointmentStatus, appointmentHistory } from "../controllers/appointmentController.js";
+import { bookAppointment, deleteAppointment, getAllAppointments, updateAppointmentStatus, appointmentHistory, getBookedTimes, getRecentAppointments, getMonthlyAppointments, getServiceDistribution } from "../controllers/appointmentController.js";
+import { get } from "mongoose";
+import { getService } from "../controllers/subServiceController.js";
 
 
 const router = express.Router();
@@ -18,5 +20,13 @@ router.put("/update/:appointmentId", updateAppointmentStatus);
 
 // Delete Appointment (Admin Only)
 router.delete("/delete/:appointmentId", deleteAppointment);
+
+router.get("/booked-times", getBookedTimes);
+
+router.get('/recent', getRecentAppointments);
+
+router.get('/monthly', getMonthlyAppointments);
+
+router.get('/services-distribution', getServiceDistribution)
 
 export default router;
