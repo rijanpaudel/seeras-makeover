@@ -81,7 +81,7 @@ const CheckoutPage = () => {
         
         if (orderRes.data.success) {
           showToast("Order placed successfully!");
-          navigate("/orders"); // Redirect to orders page
+          navigate("/"); // Redirect to home
         } else {
           throw new Error("Failed to place order");
         }

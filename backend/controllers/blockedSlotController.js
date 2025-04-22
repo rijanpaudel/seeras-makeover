@@ -84,7 +84,7 @@ export const getBlockedTimes = async (req, res) => {
         $lte: endOfDay,
       }
     };
-    
+
     // Only add subServiceId to query if it exists
     if (subServiceId) {
       query.subServiceId = subServiceId;
@@ -94,7 +94,14 @@ export const getBlockedTimes = async (req, res) => {
 
     // Format times to match what's displayed in the UI
     const blockedTimes = blocked.map(slot => {
-      return slot.startTime;
+      const [h, m] = slot.startTime.split(':').map(Number);
+      const d = new Date();
+      d.setHours(h, m, 0, 0);
+      return d.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
     });
 
     res.status(200).json({ blockedTimes });

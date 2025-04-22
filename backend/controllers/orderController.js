@@ -122,12 +122,6 @@ export const placeCodOrder = async (req, res) => {
       await userCart.save(); // Save the empty cart
     }
 
-    res.status(200).json({
-      message: "Order placed successfully and cart cleared",
-      order: newOrder,
-    });
-    
-
     // Send confirmation email
     const user = await User.findById(userId);
 

@@ -19,10 +19,11 @@ export const bookAppointment = async (req, res) => {
 
   try {
     let appointmentDateTime;
+    let time24;
     
     try {
       // Convert time to 24-hour format
-      const time24 = convertTo24Hour(appointmentTime);
+      time24 = convertTo24Hour(appointmentTime);
       const [hours, minutes] = time24.split(':').map(Number);
       
       // Create Date object from parts
@@ -50,25 +51,14 @@ export const bookAppointment = async (req, res) => {
     
     const existingAppointment = await Appointment.findOne({
       subServiceId,
-      appointmentDateTime: {
-        $gte: startOfDay,
-        $lte: endOfDay
-      }
+      appointmentDateTime: appointmentDateTime
     });
-    
-    if (existingAppointment) {
-      const existingTime = existingAppointment.appointmentDateTime.toLocaleTimeString('en-US', { 
-        hour: 'numeric', 
-        minute: '2-digit', 
-        hour12: true 
-      });
       
-      if (existingTime === appointmentTime) {
+      if (existingAppointment) {
         return res.status(400).json({ 
           message: "This time slot is already booked. Please select a different time." 
         });
       }
-    }
     
     // Check if the time slot is blocked by admin
     const blockedSlot = await BlockedSlot.findOne({
@@ -77,7 +67,7 @@ export const bookAppointment = async (req, res) => {
         $gte: startOfDay,
         $lte: endOfDay
       },
-      startTime: appointmentTime
+      startTime: time24
     });
     
     if (blockedSlot) {
