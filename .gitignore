@@ -1,0 +1,28 @@
+# Node.js dependencies
+node_modules/
+
+# Environment files
+.env
+
+# Logs
+logs/
+*.log
+
+# OS/Editor-specific files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Uploads or compiled assets
+uploads/
+dist/
+build/
+
+# Cache
+.npm/
+.cache/
+coverage/
+
+# Debug
+*.tgz
