@@ -36,7 +36,7 @@ const Register = () => {
       showToast("Please fill in all the fields.");
     }// This checks if any of the field is empty
 
-    else if (formData.password < 6) {
+    else if (formData.password.length < 6) {
       showToast('Password must have greater than 6 digits');
       return;
     }
@@ -48,7 +48,6 @@ const Register = () => {
 
     try {
       //Send form data to backend API
-      const [isCreating, setIsCreating] = useState(false);
       await axios.post("http://localhost:5000/api/auth/register", formData);
       setRegisteredEmail(formData.email);
       showToast("OTP sent to your email");
