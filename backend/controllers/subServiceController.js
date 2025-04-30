@@ -17,35 +17,32 @@ const upload = multer({ storage });
 // Add a new sub-service to a main service
 export const addNewService = async (req, res) => {
   try {
-    upload.single("image")(req, res, async (err) => {
-      if (err) {
-        return res.status(500).json({ message: "Error uploading image", error: err });
-      }
+    const { name, description, price, duration, mainService } = req.body;
+    const image = req.file ? `/uploads/${req.file.filename}` : null;
 
-      const { name, description, price, duration, mainService } = req.body;
-      const image = req.file ? `/uploads/${req.file.filename}` : null;
+    if (!["Makeup", "Hair", "Nails", "Skin"].includes(mainService)) {
+      return res.status(400).json({ message: "Invalid main service" });
+    }
 
-      // Validate that main service is one of the predefined ones
-      if (!["Makeup", "Hair", "Nails", "Skin"].includes(mainService)) {
-        return res.status(400).json({ message: "Invalid main service" });
-      }
+    const newSubService = new SubService({
+      name,
+      description,
+      price,
+      duration,
+      image,
+      mainService,
+    });
 
-      const newSubService = new SubService({
-        name,
-        description,
-        price,
-        duration,
-        image,
-        mainService,
-      });
-
-      await newSubService.save();
-      res.status(201).json({ message: "Sub-service added successfully", subService: newSubService });
+    await newSubService.save();
+    res.status(201).json({
+      message: "Sub-service added successfully",
+      subService: newSubService,
     });
   } catch (error) {
     res.status(500).json({ message: "Error adding sub-service", error });
   }
 };
+
 
 // Edit an existing sub-service
 export const editService = async (req, res) => {
@@ -141,4 +138,3 @@ export const getService = async (req, res) => {
     res.status(500).json({ message: "Error fetching sub-services", error });
   }
 };
-

@@ -3,32 +3,51 @@ import Product from "../models/Product.js";
 import Order from "../models/Order.js";
 import User from "../models/User.js";
 import sendEmail from "../utils/emailService.js";
-import Cart from "../models/Cart.js"; 
+import Cart from "../models/Cart.js";
 
 // Place an order with online payment
 export const placeOrder = async (req, res) => {
   // Extract the orderData from the request
-  const { amount, purchase_order_id, purchase_order_name, return_url, customer_info, extra } = req.body;
+  const {
+    amount,
+    purchase_order_id,
+    purchase_order_name,
+    return_url,
+    customer_info,
+    extra,
+  } = req.body;
 
   if (!extra || !extra.orderData) {
     return res.status(400).json({ message: "Missing order data" });
   }
 
   const orderData = extra.orderData;
-  const { userId, items, fullName, address, phoneNumber, paymentMethod } = orderData;
+  const { userId, items, fullName, address, phoneNumber, paymentMethod } =
+    orderData;
 
   // Validate required fields
-  if (!userId || !fullName || !address || !phoneNumber || !Array.isArray(items) || items.length === 0) {
-    return res.status(400).json({ message: "Missing required fields. Please check the data." });
+  if (
+    !userId ||
+    !fullName ||
+    !address ||
+    !phoneNumber ||
+    !Array.isArray(items) ||
+    items.length === 0
+  ) {
+    return res
+      .status(400)
+      .json({ message: "Missing required fields. Please check the data." });
   }
 
   try {
     // Fetch product details
-    const productIds = items.map(item => item.productId);
-    const products = await Product.find({ '_id': { $in: productIds } });
+    const productIds = items.map((item) => item.productId);
+    const products = await Product.find({ _id: { $in: productIds } });
 
     if (products.length !== items.length) {
-      return res.status(404).json({ message: "One or more products not found." });
+      return res
+        .status(404)
+        .json({ message: "One or more products not found." });
     }
 
     // Create the payment initiation data
@@ -41,15 +60,18 @@ export const placeOrder = async (req, res) => {
       extra: {
         orderData: {
           ...orderData,
-          paymentMethod: paymentMethod || "Khalti" // Ensure payment method is passed
+          paymentMethod: paymentMethod || "Khalti", // Ensure payment method is passed
         },
-      }
+      },
     };
 
     console.log("Initiating payment with data:", paymentInitData);
 
     // Call the payment initiation endpoint
-    const paymentResponse = await axios.post("http://localhost:5000/api/payment/initiate", paymentInitData);
+    const paymentResponse = await axios.post(
+      "http://localhost:5000/api/payment/initiate",
+      paymentInitData
+    );
 
     if (paymentResponse.data.payment_url) {
       return res.status(200).json({
@@ -61,10 +83,11 @@ export const placeOrder = async (req, res) => {
     }
   } catch (error) {
     console.error("Error placing order:", error);
-    return res.status(500).json({ message: "Error placing order", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Error placing order", error: error.message });
   }
 };
-
 
 export const placeCodOrder = async (req, res) => {
   try {
@@ -72,30 +95,37 @@ export const placeCodOrder = async (req, res) => {
     const { userId, fullName, address, phoneNumber, items } = req.body;
 
     // Validate required fields
-    if (!userId || !fullName || !address || !phoneNumber || !Array.isArray(items) || items.length === 0) {
+    if (
+      !userId ||
+      !fullName ||
+      !address ||
+      !phoneNumber ||
+      !Array.isArray(items) ||
+      items.length === 0
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Missing required fields. Please check the data."
+        message: "Missing required fields. Please check the data.",
       });
     }
 
     // Fetch product details and verify they exist
-    const productIds = items.map(item => item.productId);
-    const products = await Product.find({ '_id': { $in: productIds } });
+    const productIds = items.map((item) => item.productId);
+    const products = await Product.find({ _id: { $in: productIds } });
 
     if (products.length !== items.length) {
       return res.status(404).json({
         success: false,
-        message: "One or more products not found."
+        message: "One or more products not found.",
       });
     }
 
     // Create the order items array in the correct format for the Order schema
-    const orderItems = items.map(item => {
-      const product = products.find(p => p._id.toString() === item.productId);
+    const orderItems = items.map((item) => {
+      const product = products.find((p) => p._id.toString() === item.productId);
       return {
         product: product._id,
-        quantity: parseInt(item.quantity)
+        quantity: parseInt(item.quantity),
       };
     });
 
@@ -106,11 +136,11 @@ export const placeCodOrder = async (req, res) => {
       deliveryDetails: {
         fullName,
         address,
-        phoneNumber
+        phoneNumber,
       },
       status: "Processing",
       paymentMethod: "COD",
-      paymentStatus: "Pending" // For COD, set as pending until delivery
+      paymentStatus: "Pending", // For COD, set as pending until delivery
     });
 
     // Save the order
@@ -118,7 +148,7 @@ export const placeCodOrder = async (req, res) => {
     console.log("Order saved successfully with ID:", savedOrder._id);
     const userCart = await Cart.findOne({ userId });
     if (userCart) {
-      userCart.items = [];  // Reset the cart items
+      userCart.items = []; // Reset the cart items
       await userCart.save(); // Save the empty cart
     }
 
@@ -129,7 +159,11 @@ export const placeCodOrder = async (req, res) => {
       const emailHTML = `
           <h2>Order Confirmed</h2>
           <ul>
-            ${orderItems.map((i) => `<li>${i.name} - Qty: ${i.quantity} - Rs ${i.price}</li>`).join("")}
+            ${orderItems
+              .map(
+                (i) => `<li>${i.name} - Qty: ${i.quantity} - Rs ${i.price}</li>`
+              )
+              .join("")}
           </ul>
           <p>Total: Rs {totalAmount}</p>
           <p>Thank you for your order!</p>
@@ -149,24 +183,24 @@ export const placeCodOrder = async (req, res) => {
     res.status(201).json({
       success: true,
       message: "Order placed successfully!",
-      order: savedOrder
+      order: savedOrder,
     });
   } catch (error) {
     console.error("Error placing COD order:", error);
     res.status(500).json({
       success: false,
       message: "Error placing order",
-      error: error.message
+      error: error.message,
     });
   }
 };
 
-
-
 // Get all orders for Admin
 export const getAllOrders = async (req, res) => {
   try {
-    const orders = await Order.find().populate("userId", "email").populate("items.product");
+    const orders = await Order.find()
+      .populate("userId", "email")
+      .populate("items.product");
     res.status(200).json(orders);
   } catch (error) {
     console.error("Error fetching orders:", error);
@@ -180,7 +214,11 @@ export const updateOrderStatus = async (req, res) => {
   const { status } = req.body;
 
   try {
-    const order = await Order.findByIdAndUpdate(orderId, { status }, { new: true });
+    const order = await Order.findByIdAndUpdate(
+      orderId,
+      { status },
+      { new: true }
+    );
 
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
@@ -237,7 +275,6 @@ export const deleteOrder = async (req, res) => {
     res.status(500).json({ message: "Error deleting order", error });
   }
 };
-
 
 export const getPurchaseDetails = async (req, res) => {
   const { userId } = req.params;

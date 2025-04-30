@@ -28,7 +28,6 @@ export const bookAppointment = async (req, res) => {
       
       // Create Date object from parts
       const [year, month, day] = appointmentDate.split('-').map((part, index) => {
-        // Month is 0-indexed in JavaScript Date
         return index === 1 ? parseInt(part) - 1 : parseInt(part);
       });
       

@@ -1,11 +1,19 @@
 import express from "express";
+import multer from "multer";
+import path from "path";
 import { addNewService, deleteService, editService, getAllService, getService, getSingleService } from "../controllers/subServiceController.js";
 
 const router = express.Router();
 
-// Add a new sub-service to a main service
-router.post("/add", addNewService);
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, "uploads/"),
+  filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname)),
+});
 
+const upload = multer({ storage });
+
+// Add a new sub-service to a main service
+router.post("/add", upload.single("image"), addNewService);
 
 // Edit an existing sub-service
 router.put("/edit/:subServiceId", editService);

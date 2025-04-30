@@ -2,14 +2,15 @@ import Appointment from "../models/Appointments.js";
 import User from "../models/User.js";
 import Course from "../models/Course.js";
 
-
 // Get total appointment count
 export const totalAppointment = async (req, res) => {
   try {
     const count = await Appointment.countDocuments();
     res.json({ count });
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching appointment count', error });
+    res
+      .status(500)
+      .json({ message: "Error fetching appointment count", error });
   }
 };
 
@@ -20,7 +21,7 @@ export const totalUsers = async (req, res) => {
     const growthRate = await calculateCustomerGrowth();
     res.json({ count, growthRate });
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching active customers', error });
+    res.status(500).json({ message: "Error fetching active customers", error });
   }
 };
 
@@ -31,7 +32,7 @@ export const totalCourses = async (req, res) => {
     const completionRate = await calculateCourseCompletionRate();
     res.json({ count, completionRate });
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching ongoing courses', error });
+    res.status(500).json({ message: "Error fetching ongoing courses", error });
   }
 };
 
@@ -46,7 +47,9 @@ export const recentAppointments = async (req, res) => {
 
     res.json({ appointments: recentAppointments });
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching recent appointments', error });
+    res
+      .status(500)
+      .json({ message: "Error fetching recent appointments", error });
   }
 };
 
@@ -58,7 +61,6 @@ async function calculateCustomerGrowth() {
 // Helper function to calculate course completion rate
 async function calculateCourseCompletionRate() {
   const totalCourses = await Course.countDocuments();
-  const completedCourses = await Course.countDocuments({ status: 'completed' });
+  const completedCourses = await Course.countDocuments({ status: "completed" });
   return totalCourses > 0 ? (completedCourses / totalCourses) * 100 : 0;
 }
-
