@@ -16,8 +16,14 @@ const orderSchema = new mongoose.Schema({
   status: { type: String, default: "Pending" },
   paymentMethod: { type: String, enum: ["khalti", "COD"], default: "khalti" },
   paymentStatus: { type: String, enum: ["Pending", "Completed", "Failed"], default: "Pending" },
+  pidx: {
+    type: String,
+    unique: true,
+    sparse: true,
+  },
   createdAt: { type: Date, default: Date.now }
 });
+
 
 const Order = mongoose.model("Order", orderSchema);
 export default Order;

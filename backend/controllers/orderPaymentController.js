@@ -88,24 +88,24 @@ export const verifyPayment = async (req, res) => {
   }
 
   try {
-    // Find the payment record using pidx
+    // Find the payment record
     const paymentRecord = await Payment.findOne({ pidx });
 
     if (!paymentRecord) {
       return res.status(404).json({ message: "Payment record not found." });
     }
 
-    // If the payment has already been processed, return the existing order
-    if (paymentRecord.processed) {
+    // If already processed, return the existing linked order
+    if (paymentRecord.processed && paymentRecord.orderId) {
       const existingOrder = await Order.findById(paymentRecord.orderId);
       return res.status(200).json({
         message: "Payment already processed",
         order: existingOrder,
-        status: paymentRecord.status,
+        status: "Completed",
       });
     }
 
-    // Proceed with Khalti payment verification only if payment is not processed
+    // Check with Khalti API for payment status
     const response = await fetch(`${KHALTI_API_URL}/epayment/lookup/`, {
       method: "POST",
       headers: {
@@ -118,97 +118,117 @@ export const verifyPayment = async (req, res) => {
     const data = await response.json();
     console.log("Khalti verification response:", data);
 
-    if (data.status === "Completed") {
-      // Proceed with creating the order after payment verification
-      const orderData = paymentRecord.orderData;
+    // If payment is not completed, reject
+    if (data.status !== "Completed") {
+      return res.status(400).json({ message: "Payment not completed", status: data.status });
+    }
 
-      if (!orderData) {
-        return res.status(400).json({ message: "Order data not found in payment record" });
-      }
-
-      const { userId, fullName, address, phoneNumber, items } = orderData;
-
-      // Get products for the order
-      const productIds = items.map(item => item.productId);
-      const products = await Product.find({ _id: { $in: productIds } });
-
-      if (products.length !== items.length) {
-        return res.status(404).json({ message: "Some products not found" });
-      }
-
-      // Calculate total amount and create order items
-      let totalAmount = 0;
-      const orderItems = items.map(item => {
-        const product = products.find(p => p._id.toString() === item.productId);
-        totalAmount += product.price * item.quantity;
-        return {
-          product: product._id,
-          name: product.name,
-          quantity: item.quantity,
-          price: product.price,
-        };
-      });
-
-      // **Check if the order is already created** (prevents duplicate orders)
-      const existingOrder = await Order.findOne({ paymentMethod: "Khalti", paymentStatus: "Pending", userId });
-
-      if (existingOrder) {
-        return res.status(400).json({
-          message: "An order is already created and is in pending status.",
-          order: existingOrder,
-        });
-      }
-
-      // **Create the order** only after successful payment verification
-      const newOrder = new Order({
-        userId,
-        items: orderItems.map(i => ({ product: i.product, quantity: i.quantity })),
-        deliveryDetails: { fullName, address, phoneNumber },
-        status: "Pending", // Pending until fully processed
-        paymentMethod: orderData.paymentMethod || "Khalti",
-        paymentStatus: "Completed", // Payment is complete
-      });
-
-      await newOrder.save();
-
-      // Send confirmation email
-      const user = await User.findById(userId);
-
-      if (user) {
-        const emailHTML = `
-            <h2>Order Confirmed</h2>
-            <ul>
-              ${orderItems.map((i) => `<li>${i.name} - Qty: ${i.quantity} - Rs ${i.price}</li>`).join("")}
-            </ul>
-            <p>Total: Rs ${totalAmount}</p>
-            <p>Thank you for your order!</p>
-          `;
-        try {
-          await sendEmail(
-            user.email,
-            "Seeras Makeover - Order Confirmed",
-            "Your order has been placed successfully",
-            emailHTML
-          );
-        } catch (emailError) {
-          console.error("Error sending confirmation email:", emailError);
-        }
-      }
-
-      // Update payment status to completed and link the order
+    // Check again if order with this pidx already exists (race condition prevention)
+    let existingOrder = await Order.findOne({ pidx });
+    if (existingOrder) {
+      // Update payment record accordingly
       paymentRecord.processed = true;
-      paymentRecord.orderId = newOrder._id;
+      paymentRecord.orderId = existingOrder._id;
       paymentRecord.status = "Completed";
       await paymentRecord.save();
 
       return res.status(200).json({
-        message: "Payment verified and order placed!",
+        message: "Payment verified and order already exists",
         status: "Completed",
-        order: newOrder,
+        order: existingOrder,
       });
-    } else {
-      return res.status(400).json({ message: "Payment not completed", status: data.status });
     }
+
+    // Step 6: Create new order
+    const orderData = paymentRecord.orderData;
+    if (!orderData) {
+      return res.status(400).json({ message: "Order data not found in payment record" });
+    }
+
+    const { userId, fullName, address, phoneNumber, items } = orderData;
+
+    const productIds = items.map(item => item.productId);
+    const products = await Product.find({ _id: { $in: productIds } });
+
+    if (products.length !== items.length) {
+      return res.status(404).json({ message: "Some products not found" });
+    }
+
+    let totalAmount = 0;
+    const orderItems = items.map(item => {
+      const product = products.find(p => p._id.toString() === item.productId);
+      totalAmount += product.price * item.quantity;
+      return {
+        product: product._id,
+        name: product.name,
+        quantity: item.quantity,
+        price: product.price,
+      };
+    });
+
+    let newOrder;
+    try {
+      newOrder = await Order.create({
+        userId,
+        items: orderItems.map(i => ({ product: i.product, quantity: i.quantity })),
+        deliveryDetails: { fullName, address, phoneNumber },
+        status: "Pending",
+        paymentMethod: orderData.paymentMethod || "khalti",
+        paymentStatus: "Completed",
+        pidx,
+      });
+    } catch (err) {
+      // If duplicate error due to pidx, handle gracefully
+      if (err.code === 11000 && err.keyPattern?.pidx) {
+        existingOrder = await Order.findOne({ pidx });
+        paymentRecord.processed = true;
+        paymentRecord.orderId = existingOrder._id;
+        paymentRecord.status = "Completed";
+        await paymentRecord.save();
+        return res.status(200).json({
+          message: "Payment verified and order already exists",
+          status: "Completed",
+          order: existingOrder,
+        });
+      } else {
+        throw err;
+      }
+    }
+
+    // Step 7: Send email confirmation
+    const user = await User.findById(userId);
+    if (user) {
+      const emailHTML = `
+        <h2>Order Confirmed</h2>
+        <ul>
+          ${orderItems.map(i => `<li>${i.name} - Qty: ${i.quantity} - Rs ${i.price}</li>`).join("")}
+        </ul>
+        <p>Total: Rs ${totalAmount}</p>
+        <p>Thank you for your order!</p>
+      `;
+      try {
+        await sendEmail(
+          user.email,
+          "Seeras Makeover - Order Confirmed",
+          "Your order has been placed successfully",
+          emailHTML
+        );
+      } catch (emailError) {
+        console.error("Error sending confirmation email:", emailError);
+      }
+    }
+
+    // Step 8: Mark payment as completed and link to new order
+    paymentRecord.processed = true;
+    paymentRecord.orderId = newOrder._id;
+    paymentRecord.status = "Completed";
+    await paymentRecord.save();
+
+    return res.status(200).json({
+      message: "Payment verified and order placed!",
+      status: "Completed",
+      order: newOrder,
+    });
   } catch (error) {
     console.error("Error verifying Khalti payment:", error);
     return res.status(500).json({ message: "Error verifying payment" });
