@@ -14,7 +14,7 @@ const CustomerDetails = () => {
     const fetchCustomerDetails = async () => {
       try {
         const response = await axios.get(`http://localhost:5000/api/auth/user/${userId}`);
-        setCustomer(response.data);
+        setCustomer(response.data)
       } catch (error) {
         console.error("Error fetching customer details:", error);
         setError("Failed to load customer details.");

@@ -48,20 +48,21 @@ export const bookAppointment = async (req, res) => {
     const endOfDay = new Date(appointmentDateTime);
     endOfDay.setHours(23, 59, 59, 999);
     
+    // More precise check - look for exact datetime match
     const existingAppointment = await Appointment.findOne({
-      subServiceId,
-      appointmentDateTime: appointmentDateTime
+      subServiceId: subServiceId,
+      appointmentDateTime: appointmentDateTime,
+      status: { $ne: "Cancelled" } // Don't count cancelled appointments
     });
       
-      if (existingAppointment) {
-        return res.status(400).json({ 
-          message: "This time slot is already booked. Please select a different time." 
-        });
-      }
+    if (existingAppointment) {
+      return res.status(400).json({ 
+        message: "This time slot is already booked. Please select a different time." 
+      });
+    }
     
     // Check if the time slot is blocked by admin
     const blockedSlot = await BlockedSlot.findOne({
-      subServiceId,
       date: {
         $gte: startOfDay,
         $lte: endOfDay
@@ -117,7 +118,7 @@ export const bookAppointment = async (req, res) => {
             <li><strong>Full Name:</strong> ${user.fullName}</li>
             <li><strong>Email:</strong> ${user.email}</li>
             <li><strong>Phone:</strong> ${user.phoneNumber}</li>
-            <li><strong>Appointment Date & :</strong> ${formattedDateTime}</li>
+            <li><strong>Appointment Date & Time:</strong> ${formattedDateTime}</li>
           </ul>
           <p>We look forward to seeing you at your scheduled appointment time.</p>
           <p>Best Regards,<br/>Seeras Makeover</p>
@@ -156,10 +157,11 @@ export const bookAppointment = async (req, res) => {
       "A new booking of appointment",
       adminEmailHTML
     );
+    
     res.status(201).json({ message: "Appointment Book Successfully", appointment: newAppointment });
   } catch (error) {
-    console.error("Error booking appoointment:", error);
-    res.status(500).json({ message: "Error booking appoointment:", error });
+    console.error("Error booking appointment:", error);
+    res.status(500).json({ message: "Error booking appointment:", error });
   }
 };
 
@@ -169,8 +171,8 @@ function convertTo24Hour(timeStr) {
   // Handle different time formats
   let hours, minutes, period;
 
-  // Match patterns
-  const timeMatch = timeStr.match(/(\d{1,2}):(\d{2}) (AM|PM)/i);
+  // Match patterns like "11:00 AM" or "1:00 PM"
+  const timeMatch = timeStr.trim().match(/(\d{1,2}):(\d{2})\s+(AM|PM)/i);
 
   if (timeMatch) {
     hours = parseInt(timeMatch[1], 10);
@@ -276,18 +278,21 @@ export const appointmentHistory = async (req, res) => {
 export const getBookedTimes = async (req, res) => {
   try {
     const { date, subServiceId } = req.query;
-    
+
     if (!date || !subServiceId) {
       return res.status(400).json({ message: "Date and subServiceId query params are required" });
     }
-    
+
     // Create date range for the selected day
     const start = new Date(date);
     start.setHours(0, 0, 0, 0);
-    
+
     const end = new Date(date);
     end.setHours(23, 59, 59, 999);
-    
+
+    console.log('Searching for appointments between:', start, 'and', end);
+    console.log('For subServiceId:', subServiceId);
+
     // Find appointments for the selected date and service
     // Only include appointments that are not cancelled
     const appointments = await Appointment.find({
@@ -295,16 +300,20 @@ export const getBookedTimes = async (req, res) => {
       appointmentDateTime: { $gte: start, $lte: end },
       status: { $ne: "Cancelled" } // Exclude cancelled appointments
     });
-    
+
+    console.log('Found appointments:', appointments.length);
+
     // Format times exactly as they appear in the UI
-    const bookedTimes = appointments.map(app => 
-      app.appointmentDateTime.toLocaleTimeString('en-US', { 
-        hour: 'numeric', 
-        minute: '2-digit', 
-        hour12: true 
-      })
-    );
-    
+    const bookedTimes = appointments.map(app => {
+      const timeStr = app.appointmentDateTime.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+      console.log('Formatted appointment time:', timeStr);
+      return timeStr;
+    });
+
     console.log("Returning booked times:", bookedTimes);
     res.json({ bookedTimes });
   } catch (error) {
@@ -321,7 +330,7 @@ export const getRecentAppointments = async (req, res) => {
       .limit(10) // Limit to 10 results
       .populate("userId", "fullName email phoneNumber") // Include user details
       .populate("subServiceId", "name"); // Include service details
-    
+
     // Send the appointments directly without wrapping in another object
     res.status(200).json(appointments);
   } catch (error) {
@@ -334,13 +343,13 @@ export const getMonthlyAppointments = async (req, res) => {
   try {
     const currentYear = new Date().getFullYear();
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    
+
     // Get the current month (0-indexed)
     const currentMonth = new Date().getMonth();
-    
+
     // We'll get data for the last 6 months
     const startMonth = currentMonth - 5 >= 0 ? currentMonth - 5 : 0;
-    
+
     // Initialize results array with all months having 0 appointments
     const monthlyData = [];
     for (let i = startMonth; i <= currentMonth; i++) {
@@ -349,7 +358,7 @@ export const getMonthlyAppointments = async (req, res) => {
         appointments: 0
       });
     }
-    
+
     // Aggregate appointments by month
     const appointments = await Appointment.aggregate([
       {
@@ -371,7 +380,7 @@ export const getMonthlyAppointments = async (req, res) => {
         $sort: { "_id": 1 }
       }
     ]);
-    
+
     // Update the results with actual appointment counts
     appointments.forEach(item => {
       // MongoDB months are 1-indexed, so subtract 1 to match our array
@@ -382,7 +391,7 @@ export const getMonthlyAppointments = async (req, res) => {
         monthlyData[dataIndex].appointments = item.count;
       }
     });
-    
+
     res.json(monthlyData);
   } catch (error) {
     console.error('Error fetching monthly appointments:', error);
@@ -425,20 +434,20 @@ export const getServiceDistribution = async (req, res) => {
         $limit: 5  // Top 5 services
       }
     ]);
-    
+
     // Check if we have data
     if (serviceDistribution.length === 0) {
       return res.json([
         { name: 'No Data', value: 1 }
       ]);
     }
-    
+
     // Calculate the total count for all services
     const totalServices = serviceDistribution.reduce((sum, service) => sum + service.value, 0);
-    
+
     // If we have less than 5 services but we have additional services not in the top 5
     const otherServicesCount = await Appointment.countDocuments() - totalServices;
-    
+
     // If there are other services not in our top categories, add an "Other" category
     if (otherServicesCount > 0) {
       serviceDistribution.push({
@@ -446,7 +455,7 @@ export const getServiceDistribution = async (req, res) => {
         value: otherServicesCount
       });
     }
-    
+
     res.json(serviceDistribution);
   } catch (error) {
     console.error('Error fetching service distribution:', error);

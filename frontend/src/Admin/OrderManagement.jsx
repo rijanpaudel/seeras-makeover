@@ -113,12 +113,18 @@ const OrderManagement = () => {
 
                   {/* Loop through products in the order */}
                   <div className="space-y-2 mt-4">
-                    {order.items.map((item, index) => (
-                      <div key={index} className="flex justify-between">
-                        <span className="font-semibold">{item.product.title}</span>
-                        <span>Quantity: {item.quantity}</span>
-                      </div>
-                    ))}
+                    {order.items.map((item, index) => {
+                      const productName = item.product
+                        ? item.product.title || item.product.name || "Unnamed Product"
+                        : "(Product Removed)";
+
+                      return (
+                        <div key={index} className="flex justify-between">
+                          <span className="font-semibold">{productName}</span>
+                          <span>Quantity: {item.quantity}</span>
+                        </div>
+                      );
+                    })}
                   </div>
 
                   {/* Button to expand order details */}

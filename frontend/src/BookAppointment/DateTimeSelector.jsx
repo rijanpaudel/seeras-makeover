@@ -77,26 +77,49 @@ const DateTimeSelector = () => {
         const day = String(selectedDate).padStart(2, '0');
         const formattedDate = `${year}-${month}-${day}`;
 
-        // Fetch both blocked and booked times in parallel
-        const [blockedRes, bookedRes] = await Promise.all([
-          axios.get(`/api/blocked-slots/blocked-times?date=${formattedDate}&subServiceId=${subServiceId}`),
-          axios.get(`/api/appointments/booked-times?date=${formattedDate}&subServiceId=${subServiceId}`)
-        ]);
+        // Fetch blocked and booked times from backend
+        const blockedRes = await axios.get(
+          `http://localhost:5000/api/blocked-slots/blocked-times?date=${formattedDate}`
+        );
+        const blockedRaw = blockedRes.data.blockedTimes || [];
 
-        console.log('Blocked times:', blockedRes.data.blockedTimes);
-        console.log('Booked times:', bookedRes.data.bookedTimes);
+        const bookedRes = await axios.get(
+          `http://localhost:5000/api/appointments/booked-times?date=${formattedDate}&subServiceId=${subServiceId}`
+        );
+        const bookedRaw = bookedRes.data.bookedTimes || [];
 
-        setBlockedTimes(blockedRes.data.blockedTimes || []);
-        setBookedTimes(bookedRes.data.bookedTimes || []);
+
+        // Normalize time formats
+        const normalizeTime = (t) => t.trim().replace(/\s+/g, " ");
+        const blocked = blockedRaw.map(normalizeTime);
+        const booked = bookedRaw.map(normalizeTime);
+
+        setBlockedTimes(blocked);
+        setBookedTimes(booked);
+
+
+        console.log('Processed blocked times:', blocked);
+        console.log('Processed booked times:', booked);
+
+        // Clear selected time if it becomes unavailable
+        if (selectedTime) {
+          const normalizedSelectedTime = normalizeTime(selectedTime);
+          if (blocked.includes(normalizedSelectedTime) || booked.includes(normalizedSelectedTime)) {
+            setSelectedTime(null);
+          }
+        }
+
       } catch (error) {
         console.error('Error fetching time slots:', error);
+        setBlockedTimes([]);
+        setBookedTimes([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchTimeSlots();
-  }, [selectedDate, subServiceId, currentMonth]);
+  }, [selectedDate, subServiceId, currentMonth, selectedTime]);
 
   const formatMonthYear = () => {
     const options = { month: 'long', year: 'numeric' };
@@ -137,16 +160,22 @@ const DateTimeSelector = () => {
   };
 
   const isTimeDisabled = (time) => {
-    // First check quick disqualifiers
-    if (blockedTimes.includes(time)) {
+    const normalizedTime = time.trim().replace(/\s+/g, ' ');
+
+    console.log('Checking time:', normalizedTime);
+    console.log('Against blocked:', blockedTimes);
+    console.log('Against booked:', bookedTimes);
+
+    // Check if time is blocked or booked
+    const isBlocked = blockedTimes.includes(normalizedTime);
+    const isBooked = bookedTimes.includes(normalizedTime);
+
+    if (isBlocked || isBooked) {
+      console.log(`Time ${normalizedTime} is ${isBlocked ? 'blocked' : 'booked'}`);
       return true;
     }
 
-    if (bookedTimes.includes(time)) {
-      return true;
-    }
-
-    // Then check time-based constraints
+    // Check time-based constraints (1 hour from now for current day)
     if (selectedDate) {
       const [hours, minutes] = convertTo24Hour(time).split(':').map(Number);
       const selectedDateTime = new Date(
@@ -165,6 +194,7 @@ const DateTimeSelector = () => {
         selectedDateTime.toDateString() === now.toDateString() &&
         selectedDateTime < oneHourFromNow
       ) {
+        console.log(`Time ${normalizedTime} is too soon (less than 1 hour from now)`);
         return true;
       }
     }
@@ -200,8 +230,6 @@ const DateTimeSelector = () => {
       console.log("Please select both date and time.");
     }
   };
-
-
 
   return (
     <div className="container mx-auto px-4">
