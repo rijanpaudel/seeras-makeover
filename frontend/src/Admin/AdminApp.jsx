@@ -26,10 +26,8 @@ export default function AdminApp() {
     <AuthProvider>
       <div className="admin-container flex">
 
-        {/* ✅ Sidebar stays fixed */}
         <Sidebar />
 
-        {/* ✅ Content area with left margin so it doesn't overlap */}
         <div className="admin-content flex-grow p-8 ml-64">
           <Routes>
             <Route path="/" element={<PrivateAdminRoute><AdminDashboard /></PrivateAdminRoute>} />
@@ -45,7 +43,7 @@ export default function AdminApp() {
             <Route path="/customer/:userId/appointments" element={<PrivateAdminRoute><CustomerAppointments /></PrivateAdminRoute>}/>
             <Route path="/customer/:userId/enrollments" element={<PrivateAdminRoute><CustomerEnrollments /></PrivateAdminRoute>}/>
             <Route path="/customer/:userId/orders" element={<PrivateAdminRoute><CustomerOrders /></PrivateAdminRoute>}/>
-            <Route path="*" element={<Navigate to="/admin" />} />
+            <Route path="*" element={<Navigate to="/admin" replace />} />
           </Routes>
         </div>
       </div>

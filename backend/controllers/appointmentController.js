@@ -48,7 +48,6 @@ export const bookAppointment = async (req, res) => {
     const endOfDay = new Date(appointmentDateTime);
     endOfDay.setHours(23, 59, 59, 999);
     
-    // More precise check - look for exact datetime match
     const existingAppointment = await Appointment.findOne({
       subServiceId: subServiceId,
       appointmentDateTime: appointmentDateTime,
