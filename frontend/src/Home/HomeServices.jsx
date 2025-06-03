@@ -1,4 +1,5 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom';
 import SquareButton from '../Buttons/SquareButton';
 import makeup from '../assets/makeup.png'
 import hair from '../assets/hair.png'
@@ -33,19 +34,23 @@ const services = [
 ];
 
 const HomeServices = () => {
+  const navigate = useNavigate();
+
+  const goToRoute = () => {
+    navigate("/services");
+  }
   return (
     <div className="bg-white px-4 py-10">
       <div className="max-w-7xl mx-auto text-center">
         <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold mb-10 md:mb-20">
           Services at Seeras Makeover
         </h1>
-        
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 lg:gap-16 mb-10 md:mb-16">
           {services.map((service, index) => (
-            <a 
-              key={index} 
-              href={service.link}
-              className="flex flex-col items-center group hover:transform hover:scale-105 transition-transform duration-300"
+            <div
+              key={index}
+              className="flex flex-col items-center group transition-transform duration-300"
             >
               <div className="w-32 md:w-44 mb-4">
                 <img
@@ -57,12 +62,17 @@ const HomeServices = () => {
               <p className="text-xl md:text-2xl lg:text-3xl group-hover:text-pink-500 transition-colors duration-300">
                 {service.name}
               </p>
-            </a>
+            </div>
           ))}
         </div>
 
+
+
         <div className="flex justify-center">
-          <SquareButton text="Explore More" onClick={() => alert("Explore more clicked!")} />
+          <button className="px-6 py-2 bg-pink-500 text-white font-medium rounded shadow"
+            onClick={goToRoute}>
+            Explore More
+          </button>
         </div>
       </div>
     </div>

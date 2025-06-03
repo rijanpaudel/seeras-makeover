@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from 'react-router-dom';
 
 const HomePink = ({
   firstTitle, 
@@ -11,6 +12,19 @@ const HomePink = ({
   classes = []
 }) => {
   const displayItems = services.length > 0 ? services : classes;
+  const navigate = useNavigate();
+  
+  if(buttonName === "Book Appointment"){
+    var goToRoute = () => {
+      navigate("/appointment");
+    }
+  }
+  else if(buttonName === "Enroll Now"){
+    var goToRoute = () => {
+      navigate("/enroll");
+    }
+  }
+    
 
   return (
     <div className="bg-pink-100 py-10 px-36">
@@ -55,9 +69,10 @@ const HomePink = ({
 
       {/* Button Section */}
       <div className="mt-10 text-center">
-        <button className="bg-pink-500 text-white px-6 py-3 rounded-md text-lg font-medium hover:bg-pink-600 transition duration-300">
-          {buttonName}
-        </button>
+      <button className="px-6 py-2 bg-pink-500 text-white font-medium rounded shadow"
+          onClick={goToRoute}>
+            {buttonName}
+          </button>
       </div>
     </div>
   );

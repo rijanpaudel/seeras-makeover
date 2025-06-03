@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import brillare from '../assets/brillare.jpg'
 import lotus from '../assets/lotus.webp'
 import dermaco from '../assets/dermaco.webp'
@@ -6,6 +7,10 @@ import kerabon from '../assets/kerabon.jpeg'
 import biobalance from '../assets/biobalance.png'
 
 const HomeProducts = () => {
+  const navigate = useNavigate();
+  const goToRoute = () => {
+    navigate("/products")
+  }
   return (
     <div className="w-full px-4 py-12 md:py-16 max-w-7xl mx-auto">
       <div className="text-center space-y-6 mb-12">
@@ -62,7 +67,8 @@ const HomeProducts = () => {
 
       {/* CTA Button */}
       <div className="flex justify-center">
-        <button className="bg-pink-500 text-white px-8 py-4 rounded-lg text-xl md:text-2xl hover:bg-pink-600 transition-colors">
+        <button className="bg-pink-500 text-white px-8 py-4 rounded-lg text-xl md:text-2xl hover:bg-pink-600 transition-colors"
+        onClick={goToRoute}>
           Explore All Products
         </button>
       </div>

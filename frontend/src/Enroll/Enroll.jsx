@@ -1,148 +1,213 @@
-import React, { useState } from 'react';
-
-// Mock data for courses
-const initialCourses = [
-  {
-    id: 1,
-    title: 'Professional Makeup Course',
-    duration: '6 Weeks',
-    modules: [
-      'Basic Skin Preparation',
-      'Color Theory & Correction',
-      'Day & Evening Makeup',
-      'Bridal Makeup Techniques'
-    ],
-    description: 'Master professional makeup techniques for various occasions',
-    progress: 0
-  },
-  {
-    id: 2,
-    title: 'Advanced Hair Styling',
-    duration: '4 Weeks',
-    modules: [
-      'Hair Cutting Techniques',
-      'Coloring & Highlighting',
-      'Modern Styling Methods',
-      'Hair Care Treatments'
-    ],
-    description: 'Comprehensive training in modern hair styling methods',
-    progress: 0
-  }
-];
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { useAuth } from '../Context/AuthContext';
+import { useToast } from '../Context/ToastContext';
 
 const Enroll = () => {
-  const [courses, setCourses] = useState(initialCourses);
+  const { user } = useAuth();
+  const [courses, setCourses] = useState([]);
   const [enrolledCourses, setEnrolledCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showPaymentConfirmation, setShowPaymentConfirmation] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [processingPayment, setProcessingPayment] = useState(false);
+  const navigate = useNavigate();
+  const { showToast } = useToast();
 
-  const handleEnroll = (courseId) => {
-    const courseToEnroll = courses.find(course => course.id === courseId);
-    setEnrolledCourses([...enrolledCourses, { ...courseToEnroll, enrolledDate: new Date().toLocaleDateString() }]);
-    setCourses(courses.filter(course => course.id !== courseId));
-  };
+  // Fetch courses from backend
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/courses/all-course");
+        setCourses(response.data);
+      } catch (error) {
+        setError("Failed to load courses.");
+        console.error("Error fetching courses:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCourses();
+  }, []);
 
-  const updateProgress = (courseId, moduleIndex) => {
-    setEnrolledCourses(prevCourses => 
-      prevCourses.map(course => {
-        if (course.id === courseId) {
-          const updatedModules = [...course.modules];
-          updatedModules[moduleIndex] = {
-            ...updatedModules[moduleIndex],
-            completed: !updatedModules[moduleIndex]?.completed
-          };
-          
-          const completedCount = updatedModules.filter(module => module.completed).length;
-          const progress = Math.round((completedCount / updatedModules.length) * 100);
-          
-          return { ...course, modules: updatedModules, progress };
+  // Fetch enrolled courses
+  useEffect(() => {
+    if (user?._id) {
+      const fetchEnrolledCourses = async () => {
+        try {
+          const response = await axios.get(`http://localhost:5000/api/enrollments/user/${user._id}`);
+          setEnrolledCourses(response.data);
+        } catch (error) {
+          console.error("Error fetching enrolled courses:", error);
+          setError("Failed to fetch enrolled courses.");
         }
-        return course;
-      })
-    );
+      };
+
+      fetchEnrolledCourses();
+    } else {
+      console.log("User is not logged in.");
+    }
+  }, [user]);
+
+  // Handle course enrollment button click - Now shows payment confirmation
+  const handleEnrollClick = (course) => {
+    if (!user) {
+      showToast("You must be logged in to enroll.");
+      return;
+    }
+
+    if (!user?._id) {
+      showToast("User session is invalid. Please try logging in again.");
+      return;
+    }
+
+    setSelectedCourse(course);
+    setShowPaymentConfirmation(true);
   };
+
+  // Handle payment confirmation
+  const handlePaymentConfirm = async () => {
+    if (!selectedCourse || !user?._id) return;
+    
+    setProcessingPayment(true);
+    
+    try {
+      // Prepare data for Khalti payment
+      const paymentData = {
+        amount: selectedCourse.coursePrice * 100, // Convert to paisa (Khalti's smallest unit)
+        purchase_order_id: `course-${selectedCourse._id}-${Date.now()}`,
+        purchase_order_name: `Enrollment: ${selectedCourse.courseTitle}`,
+        return_url: `${window.location.origin}/course-payment/verify`,
+        website_url: window.location.origin,
+        customer_info: {
+          name: `${user.firstName} ${user.lastName || ''}`,
+          email: user.email,
+          phone: user.phoneNumber || ""
+        },
+        extra: {
+          orderData: {
+            userId: user._id,
+            courseId: selectedCourse._id,
+          }
+        },
+        type: "course-enrollment",
+      };
+
+      // Initiate payment with Khalti
+      const response = await axios.post(
+        "http://localhost:5000/api/course-payment/initiate", 
+        paymentData
+      );
+
+      // Redirect to Khalti payment page
+      if (response.data.payment_url) {
+        window.location.href = response.data.payment_url;
+      } else {
+        throw new Error("No payment URL received");
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || "Failed to process payment.";
+      console.error("Error initiating payment:", error);
+      showToast(errorMessage);
+      setProcessingPayment(false);
+      setShowPaymentConfirmation(false);
+    }
+  };
+
+  const handleCancelPayment = () => {
+    setShowPaymentConfirmation(false);
+    setSelectedCourse(null);
+  };
+
+  // Check if user is enrolled in a course
+  const getEnrollmentId = (courseId) => {
+    const enrollment = enrolledCourses.find(
+      enrollment => enrollment.courseId?._id === courseId
+    );
+    return enrollment ? enrollment._id : null;
+  };
+
+  if (loading) return <p>Loading courses...</p>;
+  if (error) return <p className="text-red-500">{error}</p>;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+    <div className="min-h-screen bg-gray-50 p-4 md:p-16">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-4xl font-bold text-gray-800 mb-8 text-center">
           Beauty Courses
         </h1>
+
+        {/* Payment Confirmation Modal */}
+        {showPaymentConfirmation && selectedCourse && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full">
+              <h3 className="text-xl font-semibold mb-4">Confirm Enrollment</h3>
+              <p className="mb-4">You are about to enroll in:</p>
+              <div className="bg-gray-100 p-4 rounded mb-4">
+                <h4 className="font-medium">{selectedCourse.courseTitle}</h4>
+                <p className="text-gray-600 text-sm mb-2">{selectedCourse.courseDescription}</p>
+                <p className="font-medium">Price: Rs {selectedCourse.coursePrice}</p>
+              </div>
+              <p className="mb-4">You will be redirected to Khalti to complete the payment.</p>
+              <div className="flex justify-end space-x-4">
+                <button 
+                  onClick={handleCancelPayment}
+                  className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100"
+                  disabled={processingPayment}
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handlePaymentConfirm}
+                  className="px-4 py-2 bg-pink-600 text-white rounded-md hover:bg-pink-700"
+                  disabled={processingPayment}
+                >
+                  {processingPayment ? "Processing..." : "Proceed to Payment"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Available Courses Section */}
         <section className="mb-12">
           <h2 className="text-2xl font-semibold text-gray-700 mb-6">Available Courses</h2>
           <div className="grid md:grid-cols-2 gap-6">
             {courses.map(course => (
-              <div key={course.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">{course.title}</h3>
-                <p className="text-gray-600 mb-4">{course.description}</p>
+              <div key={course._id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">{course.courseTitle}</h3>
+                <p className="text-gray-600 mb-4">{course.courseDescription}</p>
                 <div className="flex justify-between items-center mb-4">
                   <span className="text-sm font-medium text-pink-600">
-                    Duration: {course.duration}
+                    Duration: {course.courseDuration} weeks
                   </span>
                 </div>
-                <button 
-                  onClick={() => handleEnroll(course.id)}
-                  className="w-full bg-pink-600 text-white py-2 rounded-md hover:bg-pink-700 transition-colors"
-                >
-                  Enroll Now
-                </button>
+                <div className="flex justify-between items-center mb-4">
+                  <span className="text-sm font-medium text-black">
+                    Price: Rs {course.coursePrice}
+                  </span>
+                </div>
+                {getEnrollmentId(course._id) ? (
+                  <button 
+                    onClick={() => navigate(`/courses/progress/${getEnrollmentId(course._id)}`)}
+                    className="w-full py-2 rounded-md bg-gray-400 text-white cursor-pointer"
+                  >
+                    View Course
+                  </button>
+                ) : (
+                  <button 
+                    onClick={() => handleEnrollClick(course)}
+                    className="w-full py-2 rounded-md bg-pink-600 hover:bg-pink-700 text-white"
+                  >
+                    Enroll Now
+                  </button>
+                )}
               </div>
             ))}
           </div>
         </section>
-
-        {/* Enrolled Courses Section */}
-        {enrolledCourses.length > 0 && (
-          <section className="mb-12">
-            <h2 className="text-2xl font-semibold text-gray-700 mb-6">My Courses</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              {enrolledCourses.map(course => (
-                <div key={course.id} className="bg-white rounded-lg shadow-md p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="text-xl font-semibold text-gray-800">{course.title}</h3>
-                      <p className="text-gray-500 text-sm mt-1">
-                        Enrolled on: {course.enrolledDate}
-                      </p>
-                    </div>
-                    <span className="text-pink-600 font-semibold">
-                      {course.progress}% Completed
-                    </span>
-                  </div>
-                  
-                  {/* Progress Bar */}
-                  <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
-                    <div 
-                      className="bg-pink-600 h-2 rounded-full" 
-                      style={{ width: `${course.progress}%` }}
-                    ></div>
-                  </div>
-
-                  {/* Course Modules */}
-                  <div className="space-y-3">
-                    <h4 className="font-medium text-gray-700">Course Modules:</h4>
-                    {course.modules.map((module, index) => (
-                      <label 
-                        key={index} 
-                        className="flex items-center space-x-3 cursor-pointer"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={module.completed || false}
-                          onChange={() => updateProgress(course.id, index)}
-                          className="form-checkbox h-5 w-5 text-pink-600 rounded"
-                        />
-                        <span className={`text-gray-600 ${module.completed ? 'line-through text-gray-400' : ''}`}>
-                          {typeof module === 'string' ? module : module.content}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
       </div>
     </div>
   );

@@ -1,19 +1,131 @@
-import * as React from "react";
+import React, { useState, useEffect } from "react";
 import ProductCard from "./ProductCard.jsx";
 import CategoryFilter from "./CategoryFilter";
+import axios from "axios";
+import BrandFilter from "./BrandFilter.jsx";
+import { useAuth } from "../Context/AuthContext.jsx";
 
 function ProductsPage() {
-  const categories = ["Skincare", "Haircare", "Kerabon", "Brilliare", "Lotus"];
-  
-  const products = [
-    {
-      image: "https://cdn.builder.io/api/v1/image/assets/TEMP/78bedce0bb2c23d9930bb82e3a83c5710ffc6c2b0c3af876f0320d4a5a8acfed?placeholderIfAbsent=true&apiKey=cfca82077f5c43a2b0ca74d2f8c59792",
-      wishlistIcon: "https://cdn.builder.io/api/v1/image/assets/TEMP/367098c046b7a69fa10e5a24c776e7e979a5b37643613e30d30bbcb7a493fe06?placeholderIfAbsent=true&apiKey=cfca82077f5c43a2b0ca74d2f8c59792",
-      title: "Brilliare Skin Brightening Mosturizer - 150ml",
-      price: "1200"
+  const categories = ["Skincare", "Haircare", "Nailcare"];
+  const brands = ["Brillare", "Kerabon", "Lotus", "Dermaco"]
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [products, setProducts] = useState([]); //Store products
+  const [loading, setLoading] = useState(true); //Loading state for initial load
+  const [searchLoading, setSearchLoading] = useState(false); //Loading state for search
+  const [error, setError] = useState(null); //Error state
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentSearch, setCurrentSearch] = useState(""); // Track the active search term
+  const [sortOrder, setSortOrder] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedBrand, setSelectedBrand] = useState("");
+  const [recommendedProducts, setRecommendedProducts] = useState([]);
+  const { user } = useAuth(); //Get user from context
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/products");
+
+        const updatedProducts = response.data.map(product => ({
+          ...product,
+          image: product.image.startsWith("/uploads")
+            ? `http://localhost:5000${product.image}`
+            : product.image
+        }));
+        setProducts(updatedProducts); //Set products in state
+        setFilteredProducts(updatedProducts);
+      }
+      catch (error) {
+        setError("Failed to load products.");
+      }
+      finally {
+        setLoading(false); //Stop loading
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  // Handle search submission with delay
+  const handleSearchSubmit = () => {
+    setSearchLoading(true); // Start loading effect
+    
+    // Simulate 3 second loading time before search results appear
+    setTimeout(() => {
+      setCurrentSearch(searchTerm);
+      setSearchLoading(false); // End loading effect
+    }, 3000);
+  };
+
+  // Handle Enter key press
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSearchSubmit();
     }
-    // Additional products would be added here in the same format
-  ];
+  };
+
+  //Filter products based on active search term and other filters
+  useEffect(() => {
+    let updatedList = [...products];
+
+    // Only apply filtering if there's an active search term
+    if (currentSearch) {
+      updatedList = updatedList.filter((product) => 
+        // Search by title (name)
+        product.title.toLowerCase().includes(currentSearch.toLowerCase()) ||
+        // Search by brand
+        product.brand.toLowerCase().includes(currentSearch.toLowerCase()) ||
+        // Search by category
+        product.category.toLowerCase().includes(currentSearch.toLowerCase())
+      );
+    }
+
+    // Apply category filter if selected
+    if (selectedCategory) {
+      updatedList = updatedList.filter(
+        (product) => product.category === selectedCategory
+      );
+    }
+
+    // Apply brand filter if selected
+    if (selectedBrand) {
+      updatedList = updatedList.filter(
+        (product) => product.brand === selectedBrand
+      );
+    }
+
+    //Sort by price if sortOrder is set
+    if (sortOrder === "asc") {
+      updatedList.sort((a, b) => a.price - b.price);
+    }
+    else if (sortOrder === "desc") {
+      updatedList.sort((a, b) => b.price - a.price);
+    }
+
+    setFilteredProducts(updatedList);
+  }, [currentSearch, products, sortOrder, selectedCategory, selectedBrand]);
+
+  useEffect(() => {
+    if (!user?._id) return;
+  
+    const fetchRecommendations = async () => {
+      try {
+        const res = await axios.get(`http://localhost:5000/api/recommendations/${user._id}`);
+        setRecommendedProducts(res.data.recommendedProducts);
+      } catch (error) {
+        console.log("No recommendations yet.");
+      }
+    };
+  
+    fetchRecommendations();
+  }, [user?._id]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p className="text-2xl text-gray-600">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex overflow-hidden flex-col bg-white">
@@ -25,97 +137,100 @@ function ProductsPage() {
           className="object-contain self-stretch w-full aspect-[2.76] max-md:max-w-full"
         />
         <div className="flex flex-wrap gap-5 justify-between mt-14 w-full text-2xl max-w-[1769px] max-md:mt-10 max-md:max-w-full">
-          <CategoryFilter categories={categories} />
-          <button className="flex overflow-hidden gap-2.5 self-start px-8 py-3.5 bg-white border border-black border-solid rounded-[100px] max-md:px-5">
-            <span className="grow my-auto">Sort by</span>
-            <img
-              loading="lazy"
-              src="https://cdn.builder.io/api/v1/image/assets/TEMP/ac30c86e27ae0206f629ef6e29cc8303d77ebf59fd737b027005d7ab960f90fe?placeholderIfAbsent=true&apiKey=cfca82077f5c43a2b0ca74d2f8c59792"
-              alt=""
-              className="object-contain shrink-0 aspect-[0.68] w-[23px]"
-            />
-          </button>
+          <CategoryFilter
+            categories={categories}
+            selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
+          />
+
+          <BrandFilter
+            brands={brands}
+            selectedBrand={selectedBrand}
+            setSelectedBrand={setSelectedBrand}
+          />
+          <div className="flex items-center gap-4">
+            {/* Sort dropdown */}
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+              className="p-3 border border-gray-300 rounded-lg text-gray-800"
+            >
+              <option value="">Sort by Price</option>
+              <option value="asc">Low to High</option>
+              <option value="desc">High to Low</option>
+            </select>
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-5 justify-between items-start mt-9 w-full max-w-[1773px] max-md:max-w-full">
           <h1 className="self-end mt-6 text-4xl font-bold">All Products</h1>
-          <form className="flex overflow-hidden flex-wrap gap-10 self-start px-9 py-3.5 text-2xl bg-zinc-100 rounded-[100px] max-md:px-5 max-md:max-w-full">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSearchSubmit();
+            }}
+            className="flex overflow-hidden flex-wrap gap-10 self-start px-9 py-3.5 text-2xl bg-zinc-100 rounded-[100px] max-md:px-5 max-md:max-w-full">
             <label htmlFor="searchProducts" className="sr-only">Search Products</label>
             <input
               id="searchProducts"
               type="search"
-              placeholder="Search Products"
-              className="my-auto bg-transparent border-none outline-none"
+              placeholder="Search by name, brand, or category"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyPress={handleKeyPress}
+              className="my-auto bg-transparent border-none outline-none w-64"
             />
-            <button type="submit" aria-label="Search">
-              <img
-                loading="lazy"
-                src="https://cdn.builder.io/api/v1/image/assets/TEMP/949ec9bf238f8b26842958af30e08e7ac6eebdb4fd56983d4c6380667ea990a9?placeholderIfAbsent=true&apiKey=cfca82077f5c43a2b0ca74d2f8c59792"
-                alt=""
-                className="object-contain shrink-0 w-10 aspect-[1.14]"
-              />
+            <button 
+              type="submit" 
+              aria-label="Search"
+              className="flex items-center justify-center"
+              disabled={searchLoading}
+            >
+              {searchLoading ? (
+                <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-gray-900"></div>
+              ) : (
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  className="h-6 w-6 text-gray-500" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" 
+                  />
+                </svg>
+              )}
             </button>
           </form>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 p-20">
-        {products.map((product, index) => (
-          <ProductCard key={index} {...product} />
-        ))}
-      </div>
-
-      <footer className="flex flex-col items-center mt-16 w-full max-md:mt-10 max-md:max-w-full">
-        <div className="mt-24 w-full max-w-[1721px] max-md:mt-10 max-md:max-w-full">
-          <div className="flex gap-5 max-md:flex-col">
-            <div className="flex flex-col w-[33%] max-md:ml-0 max-md:w-full">
-              <img
-                loading="lazy"
-                src="https://cdn.builder.io/api/v1/image/assets/TEMP/41e8ebd661321a4351ec945d707d4f3c514c00ad76ff61c48b7c4486bbc9be62?placeholderIfAbsent=true&apiKey=cfca82077f5c43a2b0ca74d2f8c59792"
-                alt="Company logo"
-                className="object-contain grow mt-32 w-full aspect-[1.34] max-md:mt-10 max-md:max-w-full"
-              />
-            </div>
-            <nav className="flex flex-col ml-5 w-[18%] max-md:ml-0 max-md:w-full">
-              <div className="flex flex-col items-center self-stretch my-auto font-medium text-center max-md:mt-10">
-                <h2 className="text-4xl text-pink-500">Quick Links</h2>
-                <ul className="mt-9 space-y-5">
-                  <li><a href="/services" className="text-2xl text-black">Services</a></li>
-                  <li><a href="/appointment" className="text-2xl text-black">Book Appointment</a></li>
-                  <li><a href="/about" className="text-2xl text-black">About us</a></li>
-                  <li><a href="/products" className="text-2xl text-black">Products</a></li>
-                  <li><a href="/enroll" className="text-2xl text-black">Enroll now</a></li>
-                </ul>
-              </div>
-            </nav>
-            <div className="flex flex-col ml-5 w-[49%] max-md:ml-0 max-md:w-full">
-              <div className="flex flex-col items-center w-full text-2xl font-medium text-black max-md:mt-10 max-md:max-w-full">
-                <nav aria-label="Pagination" className="flex flex-wrap gap-5 justify-between self-stretch whitespace-nowrap max-md:max-w-full">
-                  <button className="overflow-hidden px-8 py-3 bg-stone-200 max-md:px-5">Prev</button>
-                  <button className="overflow-hidden px-8 py-3 bg-stone-200 max-md:px-5">1</button>
-                  <button className="overflow-hidden px-8 py-3 bg-stone-200 max-md:px-5">2</button>
-                  <button className="overflow-hidden px-8 py-3 bg-stone-200 max-md:px-5">3</button>
-                  <button className="overflow-hidden px-8 py-3 bg-stone-200 max-md:px-5">4</button>
-                  <button className="overflow-hidden px-7 py-3 bg-stone-200 max-md:px-5">Next</button>
-                </nav>
-                <h2 className="mt-9 ml-4 text-4xl text-center text-pink-500">Connect With Us</h2>
-                <a href="tel:+9779805238286" className="mt-8 text-center">+977 9805238286</a>
-                <div className="flex gap-4 mt-4">
-                  <a href="#" aria-label="Facebook">
-                    <img loading="lazy" src="https://cdn.builder.io/api/v1/image/assets/TEMP/46896395a2997ca29e909d384da273dab34913f431ecda5f85c62e7b90ac9426?placeholderIfAbsent=true&apiKey=cfca82077f5c43a2b0ca74d2f8c59792" alt="" className="object-contain aspect-[0.37] w-[52px]" />
-                  </a>
-                  <a href="#" aria-label="Instagram">
-                    <img loading="lazy" src="https://cdn.builder.io/api/v1/image/assets/TEMP/cb03af537c20e167cd7aa6cd349b8b78921f776009adccfbac7f070dd8423df7?placeholderIfAbsent=true&apiKey=cfca82077f5c43a2b0ca74d2f8c59792" alt="" className="object-contain aspect-[0.43] w-[63px]" />
-                  </a>
-                </div>
-              </div>
-            </div>
+      {searchLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-20 p-20">
+          <div className="flex flex-col items-center justify-center col-span-full">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-gray-900 mb-4"></div>
+            <p className="text-2xl text-gray-600">Searching products...</p>
           </div>
         </div>
-        <div className="overflow-hidden self-stretch px-16 py-3.5 mt-2.5 w-full text-xl font-medium text-center text-black bg-pink-100 max-md:px-5 max-md:max-w-full">
-          Copyright ©2024 Seeras Makeover Unisex Parlour And Saloon All rights reserved
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-20 p-20">
+          {filteredProducts.length > 0 ? (
+            filteredProducts.map(product => (
+              <div key={product._id}>
+                <ProductCard {...product} />
+              </div>
+            ))
+          ) : (
+            <div className="col-span-full text-center text-2xl text-gray-600">
+              No products found matching your search criteria.
+            </div>
+          )}
         </div>
-      </footer>
+      )}
     </div>
   );
 }
