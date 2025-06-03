@@ -11,7 +11,7 @@ import makeover from "../assets/makeover.png";
 import haircare from "../assets/haircare.png";
 import nailcare from "../assets/nailcare.png";
 import makeupClass from "../assets/makeupclass.png"
-import nailClass from "../assets/nailClass.png"
+import nailClass from "../assets/nailclass.png"
 import hairCutTraining from "../assets/haircuttraining.png"
 import certificate from "../assets/certificate.png"
 
