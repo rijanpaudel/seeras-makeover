@@ -64,7 +64,11 @@ export const deleteBlockedSlot = async (req, res) => {
 
 export const getBlockedTimes = async (req, res) => {
   try {
+<<<<<<< HEAD
     const { date, subServiceId } = req.query;
+=======
+    const { date } = req.query;
+>>>>>>> 3ba96876bed626446a07dc67a0c3f372d923666a
 
     if (!date) {
       return res.status(400).json({ message: "Date query param is required" });
@@ -77,6 +81,7 @@ export const getBlockedTimes = async (req, res) => {
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
 
+<<<<<<< HEAD
     // Build the query for finding blocked slots
     const query = {
       date: {
@@ -108,5 +113,57 @@ export const getBlockedTimes = async (req, res) => {
   } catch (error) {
     console.error("Error fetching blocked times:", error);
     res.status(500).json({ message: "Error fetching blocked times", error: error.message });
+=======
+    console.log('Searching for blocked slots between:', startOfDay, 'and', endOfDay);
+
+    // Find every BlockedSlot whose "date" falls on that day
+    const blockedDocs = await BlockedSlot.find({
+      date: {
+        $gte: startOfDay,
+        $lte: endOfDay
+      }
+    });
+
+    const blockedTimesSet = new Set();
+
+    blockedDocs.forEach(slot => {
+      // Convert startTime and endTime to total minutes
+      const [startH, startM] = slot.startTime.split(":").map(Number);
+      const [endH, endM] = slot.endTime.split(":").map(Number);
+
+      let startTotal = startH * 60 + startM;
+      let endTotal   = endH * 60 + endM;
+
+      // Ensure start time is before end time
+      if (endTotal < startTotal) {
+        endTotal = startTotal;
+      }
+
+      for (let t = startTotal; t <= endTotal; t += 60) {
+        const h = Math.floor(t / 60);
+        const m = t % 60;
+        const dt = new Date();
+        dt.setHours(h, m, 0, 0);
+
+        const timeStr = dt.toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true
+        });
+        blockedTimesSet.add(timeStr);
+      }
+    });
+
+    // Convert Set to Array so front end can do .includes(...)
+    const blockedTimes = Array.from(blockedTimesSet);
+
+    return res.status(200).json({ blockedTimes });
+  } catch (error) {
+    console.error("Error fetching blocked times:", error);
+    return res.status(500).json({
+      message: "Error fetching blocked times",
+      error: error.message
+    });
+>>>>>>> 3ba96876bed626446a07dc67a0c3f372d923666a
   }
 };

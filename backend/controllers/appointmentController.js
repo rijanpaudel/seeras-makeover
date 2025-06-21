@@ -20,19 +20,33 @@ export const bookAppointment = async (req, res) => {
   try {
     let appointmentDateTime;
     let time24;
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> 3ba96876bed626446a07dc67a0c3f372d923666a
     try {
       // Convert time to 24-hour format
       time24 = convertTo24Hour(appointmentTime);
       const [hours, minutes] = time24.split(':').map(Number);
+<<<<<<< HEAD
 
+=======
+      
+>>>>>>> 3ba96876bed626446a07dc67a0c3f372d923666a
       // Create Date object from parts
       const [year, month, day] = appointmentDate.split('-').map((part, index) => {
         return index === 1 ? parseInt(part) - 1 : parseInt(part);
       });
+<<<<<<< HEAD
 
       appointmentDateTime = new Date(year, month, day, hours, minutes);
 
+=======
+      
+      appointmentDateTime = new Date(year, month, day, hours, minutes);
+      
+>>>>>>> 3ba96876bed626446a07dc67a0c3f372d923666a
       if (isNaN(appointmentDateTime.getTime())) {
         throw new Error("Invalid date");
       }
@@ -40,6 +54,7 @@ export const bookAppointment = async (req, res) => {
       console.error("Date parsing error:", err);
       return res.status(400).json({ message: "Invalid date or time format" });
     }
+<<<<<<< HEAD
 
     // Check if time slot is already booked
     const startOfDay = new Date(appointmentDateTime);
@@ -67,12 +82,37 @@ export const bookAppointment = async (req, res) => {
     // Check if the time slot is blocked by admin
     const blockedSlot = await BlockedSlot.findOne({
       subServiceId,
+=======
+    
+    // Check if time slot is already booked
+    const startOfDay = new Date(appointmentDateTime);
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    const endOfDay = new Date(appointmentDateTime);
+    endOfDay.setHours(23, 59, 59, 999);
+    
+    const existingAppointment = await Appointment.findOne({
+      subServiceId: subServiceId,
+      appointmentDateTime: appointmentDateTime,
+      status: { $ne: "Cancelled" } // Don't count cancelled appointments
+    });
+      
+    if (existingAppointment) {
+      return res.status(400).json({ 
+        message: "This time slot is already booked. Please select a different time." 
+      });
+    }
+    
+    // Check if the time slot is blocked by admin
+    const blockedSlot = await BlockedSlot.findOne({
+>>>>>>> 3ba96876bed626446a07dc67a0c3f372d923666a
       date: {
         $gte: startOfDay,
         $lte: endOfDay
       },
       startTime: time24
     });
+<<<<<<< HEAD
 
     if (blockedSlot) {
       return res.status(400).json({
@@ -81,6 +121,12 @@ export const bookAppointment = async (req, res) => {
         blockedSlot: {
           id: blockedSlot._id,
         }
+=======
+    
+    if (blockedSlot) {
+      return res.status(400).json({ 
+        message: "This time slot is not available for booking. Please select a different time." 
+>>>>>>> 3ba96876bed626446a07dc67a0c3f372d923666a
       });
     }
 
@@ -126,7 +172,11 @@ export const bookAppointment = async (req, res) => {
             <li><strong>Full Name:</strong> ${user.fullName}</li>
             <li><strong>Email:</strong> ${user.email}</li>
             <li><strong>Phone:</strong> ${user.phoneNumber}</li>
+<<<<<<< HEAD
             <li><strong>Appointment Date & :</strong> ${formattedDateTime}</li>
+=======
+            <li><strong>Appointment Date & Time:</strong> ${formattedDateTime}</li>
+>>>>>>> 3ba96876bed626446a07dc67a0c3f372d923666a
           </ul>
           <p>We look forward to seeing you at your scheduled appointment time.</p>
           <p>Best Regards,<br/>Seeras Makeover</p>
@@ -165,10 +215,18 @@ export const bookAppointment = async (req, res) => {
       "A new booking of appointment",
       adminEmailHTML
     );
+<<<<<<< HEAD
     res.status(201).json({ message: "Appointment Book Successfully", appointment: newAppointment });
   } catch (error) {
     console.error("Error booking appoointment:", error);
     res.status(500).json({ message: "Error booking appoointment:", error });
+=======
+    
+    res.status(201).json({ message: "Appointment Book Successfully", appointment: newAppointment });
+  } catch (error) {
+    console.error("Error booking appointment:", error);
+    res.status(500).json({ message: "Error booking appointment:", error });
+>>>>>>> 3ba96876bed626446a07dc67a0c3f372d923666a
   }
 };
 
@@ -178,8 +236,13 @@ function convertTo24Hour(timeStr) {
   // Handle different time formats
   let hours, minutes, period;
 
+<<<<<<< HEAD
   // Match patterns
   const timeMatch = timeStr.match(/(\d{1,2}):(\d{2}) (AM|PM)/i);
+=======
+  // Match patterns like "11:00 AM" or "1:00 PM"
+  const timeMatch = timeStr.trim().match(/(\d{1,2}):(\d{2})\s+(AM|PM)/i);
+>>>>>>> 3ba96876bed626446a07dc67a0c3f372d923666a
 
   if (timeMatch) {
     hours = parseInt(timeMatch[1], 10);
@@ -297,6 +360,12 @@ export const getBookedTimes = async (req, res) => {
     const end = new Date(date);
     end.setHours(23, 59, 59, 999);
 
+<<<<<<< HEAD
+=======
+    console.log('Searching for appointments between:', start, 'and', end);
+    console.log('For subServiceId:', subServiceId);
+
+>>>>>>> 3ba96876bed626446a07dc67a0c3f372d923666a
     // Find appointments for the selected date and service
     // Only include appointments that are not cancelled
     const appointments = await Appointment.find({
@@ -305,6 +374,7 @@ export const getBookedTimes = async (req, res) => {
       status: { $ne: "Cancelled" } // Exclude cancelled appointments
     });
 
+<<<<<<< HEAD
     // Format times exactly as they appear in the UI
     const bookedTimes = appointments.map(app =>
       app.appointmentDateTime.toLocaleTimeString('en-US', {
@@ -313,6 +383,20 @@ export const getBookedTimes = async (req, res) => {
         hour12: true
       })
     );
+=======
+    console.log('Found appointments:', appointments.length);
+
+    // Format times exactly as they appear in the UI
+    const bookedTimes = appointments.map(app => {
+      const timeStr = app.appointmentDateTime.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+      console.log('Formatted appointment time:', timeStr);
+      return timeStr;
+    });
+>>>>>>> 3ba96876bed626446a07dc67a0c3f372d923666a
 
     console.log("Returning booked times:", bookedTimes);
     res.json({ bookedTimes });

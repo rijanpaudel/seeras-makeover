@@ -24,7 +24,10 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
+<<<<<<< HEAD
     "mongodb": "^6.17.0",
+=======
+>>>>>>> 3ba96876bed626446a07dc67a0c3f372d923666a
     "mongoose": "^8.9.6",
     "multer": "^1.4.5-lts.1",
     "node-cron": "^3.0.3",
