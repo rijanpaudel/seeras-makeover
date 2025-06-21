@@ -64,11 +64,7 @@ export const deleteBlockedSlot = async (req, res) => {
 
 export const getBlockedTimes = async (req, res) => {
   try {
-<<<<<<< HEAD
-    const { date, subServiceId } = req.query;
-=======
     const { date } = req.query;
->>>>>>> 3ba96876bed626446a07dc67a0c3f372d923666a
 
     if (!date) {
       return res.status(400).json({ message: "Date query param is required" });
@@ -81,39 +77,6 @@ export const getBlockedTimes = async (req, res) => {
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
 
-<<<<<<< HEAD
-    // Build the query for finding blocked slots
-    const query = {
-      date: {
-        $gte: startOfDay,
-        $lte: endOfDay,
-      }
-    };
-
-    // Only add subServiceId to query if it exists
-    if (subServiceId) {
-      query.subServiceId = subServiceId;
-    }
-
-    const blocked = await BlockedSlot.find(query);
-
-    // Format times to match what's displayed in the UI
-    const blockedTimes = blocked.map(slot => {
-      const [h, m] = slot.startTime.split(':').map(Number);
-      const d = new Date();
-      d.setHours(h, m, 0, 0);
-      return d.toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-      });
-    });
-
-    res.status(200).json({ blockedTimes });
-  } catch (error) {
-    console.error("Error fetching blocked times:", error);
-    res.status(500).json({ message: "Error fetching blocked times", error: error.message });
-=======
     console.log('Searching for blocked slots between:', startOfDay, 'and', endOfDay);
 
     // Find every BlockedSlot whose "date" falls on that day
@@ -164,6 +127,5 @@ export const getBlockedTimes = async (req, res) => {
       message: "Error fetching blocked times",
       error: error.message
     });
->>>>>>> 3ba96876bed626446a07dc67a0c3f372d923666a
   }
 };

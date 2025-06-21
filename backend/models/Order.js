@@ -26,8 +26,6 @@ const orderSchema = new mongoose.Schema({
 
 
 const Order = mongoose.model("Order", orderSchema);
-<<<<<<< HEAD
+
 export default Order;
-=======
-export default Order;
->>>>>>> 3ba96876bed626446a07dc67a0c3f372d923666a
+

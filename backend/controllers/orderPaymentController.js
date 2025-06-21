@@ -233,8 +233,4 @@ export const verifyPayment = async (req, res) => {
     console.error("Error verifying Khalti payment:", error);
     return res.status(500).json({ message: "Error verifying payment" });
   }
-<<<<<<< HEAD
 };
-=======
-};
->>>>>>> 3ba96876bed626446a07dc67a0c3f372d923666a
