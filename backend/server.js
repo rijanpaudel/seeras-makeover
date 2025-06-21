@@ -3,10 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import mongoose from "mongoose";
 import authRoutes from "./routes/authRoutes.js";
-<<<<<<< HEAD
 import resetPasswordRoutes from "./routes/resetPasswordRoutes.js";
-=======
->>>>>>> 3ba96876bed626446a07dc67a0c3f372d923666a
 import productRoutes from "./routes/productRoutes.js";
 import courseRoutes from "./routes/courseRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
@@ -70,11 +67,8 @@ app.use("/api/payment", orderPaymentRoutes);
 
 app.use("/api/course-payment", coursePaymentRoutes);
 
-<<<<<<< HEAD
 app.use("/api/reset-password", resetPasswordRoutes);
 
-=======
->>>>>>> 3ba96876bed626446a07dc67a0c3f372d923666a
 //Function to see the admin user
 const seedAdminUser = async () => {
   try {
