@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useToast } from '../Context/ToastContext';
-import { set } from 'mongoose';
 
 const ForgotPassword = () => {
     const [formData, setFormData] = useState({ email: '' });
