@@ -45,6 +45,11 @@ app.use(express.json());
 
 app.use("/uploads", express.static(path.join(path.resolve(), "uploads")));
 
+app.get('/', (req, res) => {
+  res.send('API is running');
+});
+
+
 app.use("/api/products", productRoutes);
 
 app.use("/api/courses", courseRoutes);
@@ -68,6 +73,7 @@ app.use("/api/payment", orderPaymentRoutes);
 app.use("/api/course-payment", coursePaymentRoutes);
 
 app.use("/api/reset-password", resetPasswordRoutes);
+
 
 //Function to see the admin user
 const seedAdminUser = async () => {
