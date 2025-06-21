@@ -73,6 +73,13 @@ const Login = () => {
             Sign in
           </button>
         </form>
+         <div className="mt-4 text-center">
+          <p className='text-xl'>
+            <Link to="/forgot-password" className="text-blue-500">
+              Forgot Password?
+            </Link>
+          </p>
+        </div>
         <div className="mt-4 text-center">
           <p className='text-xl'>
             Don't have an account?{' '}

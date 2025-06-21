@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from "react-route
 import Navbar from "./Navbar/Navbar";
 import Register from "./Register/Register";
 import Login from "./Login/Login";
+import ForgotPassword from "./Login/ForgotPassword";
 import Home from "./Home/Home";
 import AppointmentService from "./BookAppointment/AppointmentService";
 import SubservicesPage from "./BookAppointment/SubservicesPage";
@@ -51,6 +52,7 @@ export default function App() {
                     <Route path="/" element={<Home />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/login" element={<Login />} />
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/appointment" element={<AppointmentService />} />
                     <Route path="/appointment/subservice/:mainService" element={<SubservicesPage />} />
                     <Route path="/datetimeselector/:subServiceId" element={<DateTimeSelector />} />
