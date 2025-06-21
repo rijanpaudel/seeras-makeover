@@ -23,7 +23,7 @@ const CourseManagement = () => {
 
   const fetchCourses = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/courses/all-course");
+      const response = await axios.get(`${BASE_URL}/api/courses/all-course`);
       setCourses(response.data);
     } catch (error) {
       setError("Failed to load courses.");
@@ -70,7 +70,7 @@ const CourseManagement = () => {
     if (isEditing) {
       //Edit course
       try {
-        await axios.put(`http://localhost:5000/api/courses/edit-course/${newCourse._id}`, courseData);
+        await axios.put(`${BASE_URL}/api/courses/edit-course/${newCourse._id}`, courseData);
         await fetchCourses(); //Refresht the courses
         resetForm();
       } catch (error) {
@@ -80,7 +80,7 @@ const CourseManagement = () => {
     } else {
       //Add new course
       try {
-        await axios.post("http://localhost:5000/api/courses/add-course", courseData);
+        await axios.post(`${BASE_URL}/api/courses/add-course`, courseData);
         await fetchCourses();
         resetForm();
       } catch (error) {
@@ -93,7 +93,7 @@ const CourseManagement = () => {
   const handleDeleteCourse = async (id) => {
     if (window.confirm("Are you sure you want to delete this course?")) {
       try {
-        await axios.delete(`http://localhost:5000/api/courses/delete-course/${id}`);
+        await axios.delete(`${BASE_URL}/api/courses/delete-course/${id}`);
         await fetchCourses();
       } catch (error) {
         setError("Error deleting course.");

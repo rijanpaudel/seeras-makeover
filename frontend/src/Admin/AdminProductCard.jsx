@@ -24,7 +24,7 @@ const AdminProductCard = ({ _id, image, title, description, price, stock, onProd
   const handleEdit = async () => {
     setIsLoading(true);
     try {
-      await axios.put(`http://localhost:5000/api/products/edit/${_id}`, {
+      await axios.put(`${BASE_URL}/api/products/edit/${_id}`, {
         title: updatedTitle,
         description: updatedDescription,
         price: updatedPrice,
@@ -46,7 +46,7 @@ const AdminProductCard = ({ _id, image, title, description, price, stock, onProd
     
     setIsLoading(true);
     try {
-      await axios.delete(`http://localhost:5000/api/products/delete/${_id}`);
+      await axios.delete(`${BASE_URL}/api/products/delete/${_id}`);
       showMessage("Product deleted successfully!", "success");
       onProductUpdate();
     } catch (error) {
