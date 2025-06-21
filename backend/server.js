@@ -33,9 +33,21 @@ if (!process.env.MONGO_URI) {
 const app = express();
 
 // Enable CORS to allow frontend requests
+const allowedOrigins = [
+  "http://localhost:5173",               // local dev
+  "https://your-frontend-site.netlify.app" // your deployed frontend URL
+];
+
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: function(origin, callback) {
+      // allow requests with no origin like curl, Postman, mobile apps
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) === -1) {
+        return callback(new Error("Not allowed by CORS"), false);
+      }
+      return callback(null, true);
+    },
     credentials: true,
   })
 );
