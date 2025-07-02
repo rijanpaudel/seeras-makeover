@@ -35,7 +35,7 @@ const app = express();
 // Enable CORS to allow frontend requests
 const allowedOrigins = [
   "http://localhost:5173",               // local dev
-  "https://your-frontend-site.netlify.app" // your deployed frontend URL
+  "https://seeras-makeover.netlify.app" // your deployed frontend URL
 ];
 
 app.use(
