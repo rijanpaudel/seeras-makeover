@@ -5,79 +5,85 @@ import logo from "../assets/logo.png";
 import { Link } from "react-router-dom";
 
 const Footer = () => {
+  const quickLinks = [
+    { to: "/services", text: "Services" },
+    { to: "/appointment", text: "Book Appointment" },
+    { to: "/aboutus", text: "About us" },
+    { to: "/products", text: "Products" },
+    { to: "/enroll", text: "Enroll now" }
+  ];
+
   return (
-    <div className="bg-transparent flex justify-center w-full">
-      <div className="w-full md:w-[1920px] h-auto relative py-8 md:py-16">
-        <img
-          className="w-[200px] md:w-[344px] h-auto mx-auto md:ml-[65px]"
-          alt="Seera's makeover logo"
-          src={logo}
-        />
-
-        <div className="mt-8 md:absolute md:top-8 md:left-[771px] font-medium text-pink-500 text-[32px] md:text-[40px] text-center tracking-[0] leading-[normal] whitespace-nowrap">
-          Quick Links
-        </div>
-
-        <div className="mt-8 md:absolute md:top-8 md:left-[1315px] font-medium text-pink-500 text-[32px] md:text-[40px] text-center tracking-[0] leading-[normal] whitespace-nowrap">
-          Connect With Us
-        </div>
-
-        <div className="mt-8 md:absolute md:top-[117px] md:left-[820px] font-medium text-black text-[20px] md:text-[25px] text-center tracking-[0] leading-[normal] whitespace-nowrap">
-          <Link to="/services" className="hover:text-pink-500 transition-colors duration-300">
-            Services
-          </Link>
-        </div>
-
-        <div className="mt-8 md:absolute md:w-[226px] md:h-[241px] md:top-[111px] md:left-[1347px] text-center md:text-left">
-          <div className="md:absolute md:top-0 md:left-0 font-medium text-black text-[20px] md:text-[25px] whitespace-nowrap">
-            +977 9805238286
+    <footer className="bg-transparent w-full py-8 px-4">
+      <div className="max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Logo Section */}
+          <div className="flex justify-center md:justify-start">
+            <img
+              className="w-36 sm:w-40 md:w-48 h-auto"
+              alt="Seera's makeover logo"
+              src={logo}
+            />
           </div>
 
-          
-
-          <div className="flex justify-center md:block mt-4 md:mt-0">
-            <a href="https://www.facebook.com/makeoverseer/" target="_blank">
-              <img
-                className="w-[36px] h-auto md:w-[52px] md:h-auto mx-2 md:mx-0 md:absolute md:top-[60px] md:left-0"
-                alt="Facebook"
-                src={facebook}
-              />
-            </a>
-            <a href="https://www.instagram.com/seeras_makeover/" target="_blank">
-              <img
-                className="w-[42px] h-auto md:w-[63px] md:h-auto mx-2 md:mx-0 md:absolute md:top-[60px] md:left-[70px]"
-                alt="Instagram"
-                src={instagram}
-              />
-            </a>
+          {/* Quick Links Section */}
+          <div className="text-center">
+            <h3 className="font-medium text-pink-500 text-2xl sm:text-2xl md:text-3xl mb-4">
+              Quick Links
+            </h3>
+            <nav className="flex flex-col space-y-3">
+              {quickLinks.map((link) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className="text-base sm:text-lg font-medium hover:text-pink-500 transition-colors duration-300"
+                >
+                  {link.text}
+                </Link>
+              ))}
+            </nav>
           </div>
-        </div>
 
-        <div className="mt-8 md:absolute md:top-[165px] md:left-[757px] font-medium text-black text-[20px] md:text-[25px] text-center tracking-[0] leading-[normal] whitespace-nowrap">
-          <Link to="/appointment" className="hover:text-pink-500 transition-colors duration-300">
-            Book Appointment
-          </Link>
-        </div>
-
-        <div className="mt-8 md:absolute md:top-[213px] md:left-[827px] font-medium text-black text-[20px] md:text-[25px] text-center tracking-[0] leading-[normal] whitespace-nowrap">
-          <Link to ="/aboutus" className="hover:text-pink-500 transition-colors duration-300">
-            About us
-          </Link>
-        </div>
-
-        <div className="mt-8 md:absolute md:top-[261px] md:left-[828px] font-medium text-black text-[20px] md:text-[25px] text-center tracking-[0] leading-[normal] whitespace-nowrap">
-          <Link to="/products" className="hover:text-pink-500 transition-colors duration-300">
-            Products
-          </Link>
-        </div>
-
-        <div className="mt-8 md:absolute md:top-[304px] md:left-[820px] font-medium text-black text-[20px] md:text-[25px] text-center tracking-[0] leading-[normal] whitespace-nowrap">
-          <Link to="/enroll" className="hover:text-pink-500 transition-colors duration-300">
-            Enroll now
-          </Link>
+          {/* Connect Section */}
+          <div className="text-center md:text-left">
+            <h3 className="font-medium text-pink-500 text-2xl sm:text-2xl md:text-3xl mb-4">
+              Connect With Us
+            </h3>
+            <div className="space-y-3">
+              <p className="font-medium text-base sm:text-lg">
+                +977 9805238286
+              </p>
+              
+              {/* Social Icons */}
+              <div className="flex justify-center md:justify-start space-x-4 mt-4">
+                <a 
+                  href="https://www.facebook.com/makeoverseer/" 
+                  target="_blank"
+                  className="transform hover:scale-110 transition-transform duration-300"
+                >
+                  <img
+                    className="w-8 sm:w-10 md:w-12 h-auto"
+                    alt="Facebook"
+                    src={facebook}
+                  />
+                </a>
+                <a 
+                  href="https://www.instagram.com/seeras_makeover/" 
+                  target="_blank"
+                  className="transform hover:scale-110 transition-transform duration-300"
+                >
+                  <img
+                    className="w-9 sm:w-11 md:w-14 h-auto"
+                    alt="Instagram"
+                    src={instagram}
+                  />
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </footer>
   );
 };
 

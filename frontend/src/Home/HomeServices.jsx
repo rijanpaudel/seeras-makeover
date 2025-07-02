@@ -39,38 +39,39 @@ const HomeServices = () => {
   const goToRoute = () => {
     navigate("/services");
   }
+  
   return (
-    <div className="bg-white px-4 py-10">
-      <div className="max-w-7xl mx-auto text-center">
-        <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold mb-10 md:mb-20">
+    <div className="bg-white px-4 py-8 sm:py-10">
+      <div className="max-w-6xl mx-auto text-center">
+        <h1 className="text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-semibold mb-8 md:mb-12">
           Services at Seeras Makeover
         </h1>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 lg:gap-16 mb-10 md:mb-16">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8 lg:gap-12 mb-8 md:mb-12">
           {services.map((service, index) => (
             <div
               key={index}
-              className="flex flex-col items-center group transition-transform duration-300"
+              className="flex flex-col items-center group transition-transform duration-300 hover:scale-105"
             >
-              <div className="w-32 md:w-44 mb-4">
+              <div className="w-24 sm:w-28 md:w-32 lg:w-36 mb-3">
                 <img
                   src={service.image}
                   alt={service.alt}
                   className="w-full h-auto rounded-lg shadow-md group-hover:shadow-lg transition-shadow duration-300"
                 />
               </div>
-              <p className="text-xl md:text-2xl lg:text-3xl group-hover:text-pink-500 transition-colors duration-300">
+              <p className="text-base sm:text-lg md:text-xl lg:text-2xl group-hover:text-pink-500 transition-colors duration-300">
                 {service.name}
               </p>
             </div>
           ))}
         </div>
 
-
-
         <div className="flex justify-center">
-          <button className="px-6 py-2 bg-pink-500 text-white font-medium rounded shadow"
-            onClick={goToRoute}>
+          <button 
+            className="px-5 py-2 bg-pink-500 text-white text-sm sm:text-base font-medium rounded shadow hover:bg-pink-600 transition-colors duration-300"
+            onClick={goToRoute}
+          >
             Explore More
           </button>
         </div>
