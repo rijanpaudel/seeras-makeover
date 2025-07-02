@@ -21,7 +21,7 @@ const ForgotPassword = () => {
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
-            await axios.post("http://localhost:5000/api/reset-password/verify-email", formData);
+            await axios.post(`${BASE_URL}/api/reset-password/verify-email`, formData);
             setRegisteredEmail(formData.email);
 
             showToast("OTP sent to your email");
@@ -37,7 +37,7 @@ const ForgotPassword = () => {
         if (!otp.trim()) return showToast("Please enter OTP");
 
         try {
-            await axios.post("http://localhost:5000/api/reset-password/verify-otp-reset", {
+            await axios.post(`${BASE_URL}/api/reset-password/verify-otp-reset`, {
                 email: registeredEmail,
                 otp: otp
             });
@@ -54,7 +54,7 @@ const ForgotPassword = () => {
         if (!newPassword.trim()) return showToast("Please enter a new password");
 
         try {
-            await axios.post("http://localhost:5000/api/reset-password/reset-password", {
+            await axios.post(`${BASE_URL}/api/reset-password/reset-password`, {
                 email: registeredEmail,
                 newPassword
             });

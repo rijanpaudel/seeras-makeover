@@ -53,35 +53,35 @@ const AdminDashboard = () => {
     setError(null);
     try {
       // Fetch appointments count
-      const appointmentsRes = await axios.get('http://localhost:5000/api/admin/appointments/count')
+      const appointmentsRes = await axios.get(`${BASE_URL}/api/admin/appointments/count`)
         .catch(err => {
           console.error("Error fetching appointments count:", err);
           return { data: { count: 0 } };
         });
 
       // Fetch active customers
-      const customersRes = await axios.get('http://localhost:5000/api/admin/customers/active')
+      const customersRes = await axios.get(`${BASE_URL}/api/admin/customers/active`)
         .catch(err => {
           console.error("Error fetching active customers:", err);
           return { data: { count: 0, growthRate: 0 } };
         });
 
       // Fetch ongoing courses
-      const coursesRes = await axios.get('http://localhost:5000/api/admin/courses/ongoing')
+      const coursesRes = await axios.get(`${BASE_URL}/api/admin/courses/ongoing`)
         .catch(err => {
           console.error("Error fetching ongoing courses:", err);
           return { data: { count: 0, completionRate: 0 } };
         });
 
       // Fetch recent appointments
-      const recentAppointmentsRes = await axios.get('http://localhost:5000/api/admin/appointments/recent')
+      const recentAppointmentsRes = await axios.get(`${BASE_URL}/api/admin/appointments/recent`)
         .catch(err => {
           console.error("Error fetching recent appointments:", err);
           return { data: [] };
         });
 
       // Fetch monthly appointment data
-      const monthlyAppointmentsRes = await axios.get('http://localhost:5000/api/appointments/monthly')
+      const monthlyAppointmentsRes = await axios.get(`${BASE_URL}/api/appointments/monthly`)
         .catch(err => {
           console.error("Error fetching monthly appointments:", err);
           // Fallback to generated data if API fails
@@ -89,7 +89,7 @@ const AdminDashboard = () => {
         });
 
       // Fetch service distribution data
-      const serviceDistributionRes = await axios.get('http://localhost:5000/api/appointments/services-distribution')
+      const serviceDistributionRes = await axios.get(`${BASE_URL}/api/appointments/services-distribution`)
         .catch(err => {
           console.error("Error fetching service distribution:", err);
           // Fallback to generated data if API fails

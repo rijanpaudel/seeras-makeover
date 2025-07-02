@@ -18,7 +18,7 @@ function ProductCard({ _id, image, title, price, brand, category }) {
     }
 
     try {
-      const response = await axios.post("http://localhost:5000/api/cart/add", {
+      const response = await axios.post(`${BASE_URL}/api/cart/add`, {
         userId: user._id,
         productId: _id,
         quantity: 1,

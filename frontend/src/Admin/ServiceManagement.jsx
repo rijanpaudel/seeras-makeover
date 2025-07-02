@@ -19,7 +19,7 @@ const ServiceManagement = () => {
   useEffect(() => {
     const fetchSubServices = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/sub-services/${mainService}`);
+        const response = await axios.get(`${BASE_URL}/api/sub-services/${mainService}`);
         setSubServices(response.data); // Set the fetched sub-services for the selected service
       } catch (error) {
         console.error("Error fetching sub-services:", error);
@@ -41,12 +41,12 @@ const ServiceManagement = () => {
         formData.append("image", newSubService.image); // Append image file
       }
 
-      await axios.post("http://localhost:5000/api/sub-services/add", formData, {
+      await axios.post(`${BASE_URL}/api/sub-services/add`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       })
 
       // Refresh the list after adding new sub-service
-      const response = await axios.get(`http://localhost:5000/api/sub-services/${mainService}`);
+      const response = await axios.get(`${BASE_URL}/api/sub-services/${mainService}`);
       setSubServices(response.data);
 
       // Reset form
@@ -76,13 +76,13 @@ const ServiceManagement = () => {
 
   const handleUpdateSubService = async () => {
     try {
-      await axios.put(`http://localhost:5000/api/sub-services/edit/${currentService._id}`, {
+      await axios.put(`${BASE_URL}/api/sub-services/edit/${currentService._id}`, {
         ...newSubService,
         price: Number(newSubService.price),
       });
 
       // Refresh the list after updating the sub-service
-      const response = await axios.get(`http://localhost:5000/api/sub-services/${mainService}`);
+      const response = await axios.get(`${BASE_URL}/api/sub-services/${mainService}`);
       setSubServices(response.data);
 
       // Reset form
@@ -101,7 +101,7 @@ const ServiceManagement = () => {
 
   const handleDeleteClick = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/sub-services/delete/${id}`);
+      await axios.delete(`${BASE_URL}/api/sub-services/delete/${id}`);
 
       setSubServices(subServices.filter(service => service._id !== id));
     } catch (error) {
@@ -247,7 +247,7 @@ const ServiceManagement = () => {
               className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
             >
               {service.image && (
-                <img src={`http://localhost:5000${service.image}`} alt={service.name} className="w-full h-48 object-cover rounded-lg mb-4" />
+                <img src={`${BASE_URL}${service.image}`} alt={service.name} className="w-full h-48 object-cover rounded-lg mb-4" />
               )}
               <div className="flex justify-between items-start">
                 <div>

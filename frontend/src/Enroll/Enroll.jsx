@@ -20,7 +20,7 @@ const Enroll = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/courses/all-course");
+        const response = await axios.get(`${BASE_URL}/api/courses/all-course`);
         setCourses(response.data);
       } catch (error) {
         setError("Failed to load courses.");
@@ -37,7 +37,7 @@ const Enroll = () => {
     if (user?._id) {
       const fetchEnrolledCourses = async () => {
         try {
-          const response = await axios.get(`http://localhost:5000/api/enrollments/user/${user._id}`);
+          const response = await axios.get(`${BASE_URL}/api/enrollments/user/${user._id}`);
           setEnrolledCourses(response.data);
         } catch (error) {
           console.error("Error fetching enrolled courses:", error);
@@ -97,7 +97,7 @@ const Enroll = () => {
 
       // Initiate payment with Khalti
       const response = await axios.post(
-        "http://localhost:5000/api/course-payment/initiate", 
+        `${BASE_URL}/api/course-payment/initiate`, 
         paymentData
       );
 

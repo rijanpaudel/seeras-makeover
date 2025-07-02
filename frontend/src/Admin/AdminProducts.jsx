@@ -25,13 +25,13 @@ const AdminProducts = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/products");
+      const response = await axios.get(`${BASE_URL}/api/products`);
       const products = response.data;
 
       //Fix image URL if they are relative
       const updatedProducts = products.map((product) => {
         if(product.image && product.image.startsWith("/uploads")){
-          product.image = `http://localhost:5000${product.image}`;
+          product.image = `${BASE_URL}${product.image}`;
         }
         return product;
       });
@@ -78,7 +78,7 @@ const AdminProducts = () => {
       formData.append("stock", newProduct.stock);
       formData.append("image", newProduct.image);
 
-      await axios.post("http://localhost:5000/api/products/add", formData, {
+      await axios.post(`${BASE_URL}/api/products/add`, formData, {
         headers: { "Content-Type": "multipart/form-data" }
       });
 

@@ -13,7 +13,7 @@ const CustomerManagement = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/auth/all-users");
+        const response = await axios.get(`${BASE_URL}/api/auth/all-users`);
         setUsers(response.data);
       } catch (error) {
         setError("Failed to load users.");

@@ -19,7 +19,7 @@ const Login = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/login", formData);
+      const response = await axios.post(`${BASE_URL}/api/auth/login`, formData);
 
       //Store user data in local storage
       localStorage.setItem("token", response.data.token);
@@ -27,7 +27,7 @@ const Login = () => {
 
       // Fetch cart immediately after login
       try {
-        await axios.get(`http://localhost:5000/api/cart/${response.data.user._id}`);
+        await axios.get(`${BASE_URL}/api/cart/${response.data.user._id}`);
       } catch (error) {
         showToast(error);
       }

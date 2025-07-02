@@ -7,7 +7,7 @@ const ServiceItem = ({ service, isExpanded, onClick }) => {
   useEffect(() => {
     const fetchSubServices = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/sub-services/${service.name}`);
+        const response = await axios.get(`${BASE_URL}/api/sub-services/${service.name}`);
         setSubServices(response.data);  // Setting the fetched sub-services in state
       } catch (error) {
         console.error("Error fetching sub-services:", error);

@@ -16,7 +16,7 @@ const AdminBlockedSlots = () => {
   // Fetch existing blocked slots
   const fetchSlots = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/blocked-slots");
+      const response = await axios.get(`/api/blocked-slots`);
       setSlots(response.data);
     } catch (err) {
       setError("Error fetching blocked slots");
@@ -35,7 +35,7 @@ const AdminBlockedSlots = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.post("http://localhost:5000/api/blocked-slots/create", formData);
+      await axios.post(`${BASE_URL}/api/blocked-slots/create`, formData);
       setFormData({ date: "", startTime: "", endTime: "" });
       fetchSlots();
     } catch (err) {
@@ -47,7 +47,7 @@ const AdminBlockedSlots = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/blocked-slots/delete/${id}`);
+      await axios.delete(`${BASE_URL}/api/blocked-slots/delete/${id}`);
       fetchSlots();
     } catch (err) {
       setError("Error deleting blocked slot");

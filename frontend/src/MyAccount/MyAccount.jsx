@@ -35,7 +35,7 @@ function MyAccount() {
   const fetchPurchases = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:5000/api/orders/purchases/${user._id}`);
+      const response = await axios.get(`${BASE_URL}/api/orders/purchases/${user._id}`);
       setPurchases(response.data);
     } catch (err) {
       console.error('Error fetching purchases:', err);
@@ -48,7 +48,7 @@ function MyAccount() {
 
   const fetchAppointments = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/appointments/appointmentHistory/${user._id}`);
+      const response = await axios.get(`${BASE_URL}/api/appointments/appointmentHistory/${user._id}`);
       setAppointments(response.data);
     } catch (error) {
       console.error("Error fetching appointments:", error);
@@ -76,7 +76,7 @@ function MyAccount() {
         phoneNumber: formData.phoneNumber
       };
 
-      const response = await axios.put(`http://localhost:5000/api/auth/${user._id}`, updatePayload);
+      const response = await axios.put(`${BASE_URL}/api/auth/${user._id}`, updatePayload);
       if (response.status === 200) {
         showToast('Profile updated successfully');
         login(response.data);

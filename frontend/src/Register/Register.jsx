@@ -48,7 +48,7 @@ const Register = () => {
 
     try {
       //Send form data to backend API
-      await axios.post("http://localhost:5000/api/auth/register", formData);
+      await axios.post(`${BASE_URL}/api/auth/register`, formData);
       setRegisteredEmail(formData.email);
       showToast("OTP sent to your email");
       setOtpMode(true);
@@ -76,7 +76,7 @@ const Register = () => {
     if (!otp.trim()) return showToast("Please enter OTP");
 
     try {
-      await axios.post("http://localhost:5000/api/auth/verify-otp", {
+      await axios.post(`${BASE_URL}/api/auth/verify-otp`, {
         email: registeredEmail,
         otp: otp
       });

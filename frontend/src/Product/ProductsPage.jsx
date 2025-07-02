@@ -24,12 +24,12 @@ function ProductsPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/products");
+        const response = await axios.get(`${BASE_URL}/api/products`);
 
         const updatedProducts = response.data.map(product => ({
           ...product,
           image: product.image.startsWith("/uploads")
-            ? `http://localhost:5000${product.image}`
+            ? `${BASE_URL}${product.image}`
             : product.image
         }));
         setProducts(updatedProducts); //Set products in state
@@ -109,7 +109,7 @@ function ProductsPage() {
   
     const fetchRecommendations = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/recommendations/${user._id}`);
+        const res = await axios.get(`${BASE_URL}/api/recommendations/${user._id}`);
         setRecommendedProducts(res.data.recommendedProducts);
       } catch (error) {
         console.log("No recommendations yet.");

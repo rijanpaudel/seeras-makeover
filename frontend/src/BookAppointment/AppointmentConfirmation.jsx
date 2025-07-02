@@ -26,7 +26,7 @@ const AppointmentConfirmation = () => {
 
     const fetchSubServiceDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/sub-services/service/${subServiceId}`);
+        const response = await axios.get(`${BASE_URL}/api/sub-services/service/${subServiceId}`);
         setSubService(response.data);
       } catch (error) {
         console.error("Error fetching subservice details:", error);
@@ -50,7 +50,7 @@ const AppointmentConfirmation = () => {
     setError(null);
 
     try {
-      const response = await axios.post("http://localhost:5000/api/appointments/book", {
+      const response = await axios.post(`${BASE_URL}/api/appointments/book`, {
         userId,
         subServiceId,
         appointmentDate,

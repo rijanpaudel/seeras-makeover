@@ -13,7 +13,7 @@ const CustomerDetails = () => {
   useEffect(() => {
     const fetchCustomerDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/auth/user/${userId}`);
+        const response = await axios.get(`${BASE_URL}/api/auth/user/${userId}`);
         setCustomer(response.data);
       } catch (error) {
         console.error("Error fetching customer details:", error);

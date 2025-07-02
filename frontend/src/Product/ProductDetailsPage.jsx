@@ -16,12 +16,12 @@ function ProductDetailsPage() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/products/${id}`);
+        const response = await axios.get(`${BASE_URL}/api/products/${id}`);
         const productData = response.data;
 
         // Handle image URL
         if (productData.image?.startsWith("/uploads")) {
-          productData.image = `http://localhost:5000${productData.image}`;
+          productData.image = `${BASE_URL}${productData.image}`;
         }
 
         setProduct(productData);
@@ -41,7 +41,7 @@ function ProductDetailsPage() {
   const fetchCart = async () => {
     if (!user?._id) return;
     try {
-      const response = await axios.get(`http://localhost:5000/api/cart/${user._id}`);
+      const response = await axios.get(`${BASE_URL}/api/cart/${user._id}`);
       console.log("Updated Cart Data:", response.data);
     } catch (error) {
       console.error("Error fetching cart:", error);
@@ -60,7 +60,7 @@ function ProductDetailsPage() {
     }
   
     try {
-      const response = await axios.post("http://localhost:5000/api/cart/add", {
+      const response = await axios.post(`${BASE_URL}/api/cart/add`, {
         userId: user._id,
         productId: product._id,
         quantity: quantity,

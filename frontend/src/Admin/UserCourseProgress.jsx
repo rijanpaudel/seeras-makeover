@@ -13,7 +13,7 @@ const UserCourseProgress = ({ editable = false }) => {
   const fetchEnrollment = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/enrollments/single/${enrollmentId}`
+        `${BASE_URL}/api/enrollments/single/${enrollmentId}`
       );
       const fetched = response.data;
       const moduleCount = fetched.courseId?.modules?.length || 0;
@@ -57,7 +57,7 @@ const UserCourseProgress = ({ editable = false }) => {
 
     try {
       await axios.put(
-        `http://localhost:5000/api/enrollments/progress/${enrollment._id}`,
+        `${BASE_URL}/api/enrollments/progress/${enrollment._id}`,
         { progress, completedModules: newCompleted }
       );
       // Update local state

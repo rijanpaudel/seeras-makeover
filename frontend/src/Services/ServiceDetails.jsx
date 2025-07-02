@@ -13,7 +13,7 @@ const ServiceDetails = () => {
   useEffect(() => {
     const fetchService = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/sub-services/service/${id}`);
+        const response = await axios.get(`${BASE_URL}/api/sub-services/service/${id}`);
         setService(response.data);
       } catch (error) {
         console.error('Error fetching service:', error);
@@ -57,7 +57,7 @@ const ServiceDetails = () => {
           <div className="relative">
             {service.image ? (
               <img
-                src={`http://localhost:5000${service.image}`}
+                src={`${BASE_URL}${service.image}`}
                 alt={service.name}
                 className="w-full h-[500px] object-cover rounded-2xl shadow-lg"
               />

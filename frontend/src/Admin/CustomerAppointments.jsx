@@ -16,11 +16,11 @@ const CustomerAppointments = () => {
       try {
         setLoading(true);
         // Fetch customer details
-        const customerResponse = await axios.get(`http://localhost:5000/api/auth/user/${userId}`);
+        const customerResponse = await axios.get(`${BASE_URL}/api/auth/user/${userId}`);
         setCustomer(customerResponse.data);
         
         // Fetch appointments
-        const appointmentsResponse = await axios.get(`http://localhost:5000/api/appointments/appointmentHistory/${userId}`);
+        const appointmentsResponse = await axios.get(`${BASE_URL}/api/appointments/appointmentHistory/${userId}`);
         setAppointments(appointmentsResponse.data);
       } catch (err) {
         console.error("Error fetching data:", err);

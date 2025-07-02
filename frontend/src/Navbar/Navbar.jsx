@@ -20,7 +20,7 @@ const Navbar = () => {
     const fetchCartCount = async () => {
       if (!user?._id) return; // Don't fetch if no user
       try {
-        const response = await axios.get(`http://localhost:5000/api/cart/${user._id}`);
+        const response = await axios.get(`${BASE_URL}/api/cart/${user._id}`);
         setCartCount(response.data.items.length);
       } catch (error) {
         console.error("Error fetching cart count:", error);

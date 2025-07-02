@@ -16,11 +16,11 @@ const CustomerEnrollments = () => {
       try {
         setLoading(true);
         // Fetch customer details
-        const customerResponse = await axios.get(`http://localhost:5000/api/auth/user/${userId}`);
+        const customerResponse = await axios.get(`${BASE_URL}/api/auth/user/${userId}`);
         setCustomer(customerResponse.data);
         
         // Fetch enrollments
-        const enrollmentsResponse = await axios.get(`http://localhost:5000/api/enrollments/user/${userId}`);
+        const enrollmentsResponse = await axios.get(`${BASE_URL}/api/enrollments/user/${userId}`);
         setEnrollments(enrollmentsResponse.data);
       } catch (err) {
         console.error("Error fetching data:", err);

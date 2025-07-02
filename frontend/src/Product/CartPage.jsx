@@ -22,7 +22,7 @@ const CartPage = () => {
 
       try {
         console.log(`Fetching cart for user: ${user._id}`);
-        const response = await axios.get(`http://localhost:5000/api/cart/${user._id}`);
+        const response = await axios.get(`${BASE_URL}/api/cart/${user._id}`);
         console.log("Cart Data:", response.data);
 
         if (!response.data.items || response.data.items.length === 0) {
@@ -52,7 +52,7 @@ const CartPage = () => {
     try {
       // This assumes you have an API endpoint to update quantity
       // If not, you'll need to create one or modify the add endpoint to handle updates
-      await axios.post(`http://localhost:5000/api/cart/add`, {
+      await axios.post(`${BASE_URL}/api/cart/add`, {
         userId: user._id,
         productId,
         quantity: 1 // Add one more
@@ -86,7 +86,7 @@ const CartPage = () => {
   const handleRemoveItem = async (productId) => {
     setUpdating(true);
     try {
-      await axios.delete(`http://localhost:5000/api/cart/remove/${user._id}/${productId}`);
+      await axios.delete(`${BASE_URL}/api/cart/remove/${user._id}/${productId}`);
 
       // Update the local cart state
       setCart(prevCart => ({
@@ -173,7 +173,7 @@ const CartPage = () => {
                 <div className="w-16 h-16 bg-gray-100 rounded-md flex-shrink-0 flex items-center justify-center">
                   {item.product?.image ? (
                     <img
-                      src={`http://localhost:5000${item.product.image}`}
+                      src={`${BASE_URL}${item.product.image}`}
                       alt={item.product?.title || "Product"}
                       className="w-full h-full object-cover rounded-md"
                     />

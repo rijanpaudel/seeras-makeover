@@ -26,7 +26,7 @@ const PaymentVerification = () => {
       }
 
       try {
-        const response = await axios.post('http://localhost:5000/api/course-payment/verify', { pidx });
+        const response = await axios.post(`${BASE_URL}/api/course-payment/verify`, { pidx });
         
         if (response.data.status === 'Completed') {
           setStatus('success');

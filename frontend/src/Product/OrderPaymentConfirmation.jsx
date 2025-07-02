@@ -27,7 +27,7 @@ const OrderPaymentConfirmation = () => {
         // Add a delay to ensure the backend has time to process
         setTimeout(async () => {
           try {
-            const res = await axios.post("http://localhost:5000/api/payment/verify", { pidx });
+            const res = await axios.post(`${BASE_URL}/api/payment/verify`, { pidx });
             console.log("Payment verification response:", res.data);
             
             if (res.data.status === "Completed") {

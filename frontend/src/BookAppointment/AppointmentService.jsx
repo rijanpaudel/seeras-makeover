@@ -1,4 +1,3 @@
-// AppointmentService.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import makeup from "../assets/makeover.png";

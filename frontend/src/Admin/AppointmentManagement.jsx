@@ -22,7 +22,7 @@ const AppointmentManagement = () => {
   const fetchAppointments = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get("http://localhost:5000/api/appointments/all");
+      const { data } = await axios.get(`${BASE_URL}/api/appointments/all`);
       setAppointments(data);
       setError(null);
     } catch {
@@ -35,7 +35,7 @@ const AppointmentManagement = () => {
   const updateStatus = async (id, newStatus) => {
     try {
       await axios.put(
-        `http://localhost:5000/api/appointments/update/${id}`,
+        `${BASE_URL}/api/appointments/update/${id}`,
         { status: newStatus }
       );
       fetchAppointments();
@@ -55,7 +55,7 @@ const AppointmentManagement = () => {
   const submitEdit = async () => {
     try {
       await axios.put(
-        `http://localhost:5000/api/appointments/update/${editId}`,
+        `${BASE_URL}/api/appointments/update/${editId}`,
         { 
           appointmentDate: editDate, 
           appointmentTime: `${editTime} ${( +editTime.slice(0,2) >= 12 ? 'PM' : 'AM' )}`
@@ -71,7 +71,7 @@ const AppointmentManagement = () => {
   const deleteAppointment = async (id) => {
     if (!window.confirm("Are you sure you want to delete this appointment?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/appointments/delete/${id}`);
+      await axios.delete(`${BASE_URL}/api/appointments/delete/${id}`);
       fetchAppointments();
     } catch (err) {
       console.error("Failed to delete appointment", err);

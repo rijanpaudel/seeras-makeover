@@ -18,7 +18,7 @@ const Services = () => {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/sub-services");
+        const response = await axios.get(`${BASE_URL}/api/sub-services`);
         const services = response.data;
 
         // Group services by mainService using display names
@@ -63,7 +63,7 @@ const Services = () => {
 
     const fetchRecommendations = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/recommendations/${user._id}`);
+        const res = await axios.get(`${BASE_URL}/api/recommendations/${user._id}`);
         console.log("Service recommendations:", res.data); // log to debug
         setRecommendedServices(res.data?.recommendedServices || []);
       } catch (err) {

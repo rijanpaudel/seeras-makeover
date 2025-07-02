@@ -12,7 +12,7 @@ const CourseProgress = () => {
   useEffect(() => {
     const fetchEnrollment = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/enrollments/single/${enrollmentId}`);
+        const response = await axios.get(`${BASE_URL}/api/enrollments/single/${enrollmentId}`);
         setEnrollment(response.data);
       } catch (err) {
         console.error("Error fetching enrollment:", err);

@@ -15,7 +15,7 @@ const OrderManagement = () => {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("http://localhost:5000/api/orders/all");
+      const response = await axios.get(`${BASE_URL}/api/orders/all`);
       console.log("Orders response:", response.data);
       setOrders(response.data);
     } catch (error) {
@@ -29,7 +29,7 @@ const OrderManagement = () => {
 
   const updateOrderStatus = async (orderId, status) => {
     try {
-      await axios.put(`http://localhost:5000/api/orders/update/${orderId}`, { status });
+      await axios.put(`${BASE_URL}/api/orders/update/${orderId}`, { status });
       await fetchOrders(); // Refresh orders after update
     } catch (error) {
       setError("Failed to update order status.");
@@ -40,7 +40,7 @@ const OrderManagement = () => {
   const handleDeleteOrder = async (orderId) => {
     if (window.confirm("Are you sure you want to delete this order?")) {
       try {
-        await axios.delete(`http://localhost:5000/api/orders/delete/${orderId}`);
+        await axios.delete(`${BASE_URL}/api/orders/delete/${orderId}`);
         await fetchOrders();
       } catch (error) {
         setError("Error deleting order.");

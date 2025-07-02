@@ -75,7 +75,7 @@ const CheckoutPage = () => {
       // For Cash on Delivery, directly place the order without payment gateway
       if (paymentMethod === "cod") {
         const orderRes = await axios.post(
-          "http://localhost:5000/api/orders/place-cod",
+          `${BASE_URL}/api/orders/place-cod`,
           orderData
         );
         
@@ -110,7 +110,7 @@ const CheckoutPage = () => {
         console.log("Payment Init Request:", paymentInitData);
 
         const paymentInitRes = await axios.post(
-          "http://localhost:5000/api/orders/place",
+          `${BASE_URL}/api/orders/place`,
           paymentInitData
         );
 
